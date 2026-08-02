@@ -1,0 +1,106 @@
+---
+import { ArrowUpRight } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+interface Props { lang: 'lv' | 'en'; alternateUrl: string; }
+const { lang, alternateUrl } = Astro.props;
+const lv = lang === 'lv';
+const copy = lv ? {
+  title: 'Par mums',
+  description: 'digitalhumanities.lv ir sadarbības un informācijas platforma digitālo humanitāro zinātņu kopienai Latvijā.',
+  aboutTitle: 'Platforma',
+  about: 'Mēs apvienojam Latvijas pētniecības institūcijas un pētniekus, popularizējam digitālās humanitārās zinātnes un sekmējam sadarbību Latvijā un starptautiskā mērogā. Vietnē apkopojam informāciju par aktualitātēm, pasākumiem, projektiem, pētniecības infrastruktūrām, resursiem un rīkiem.',
+  developedBy: 'Digitālo platformu digitalhumanities.lv izstrādā',
+  developedByName: 'LU Digitālo humanitāro zinātņu centrs',
+  published: 'Jaunā versija publicēta 2026. gada 3. augustā.',
+  contactsTitle: 'Kontakti',
+  coordinationTitle: 'digitalhumanities.lv koordinēšana',
+  partnerContactsTitle: 'Partneru kontakti',
+  newsLabel: 'Ziņas un atjauninājumi sūtāmi',
+  socialTitle: 'Seko mums',
+  institutionsTitle: 'Institūcijas',
+  institutionsText: 'Platformas attīstībā un digitālo humanitāro zinātņu kopienas veidošanā iesaistās Latvijas pētniecības, augstākās izglītības un kultūras institūcijas.',
+  supportTitle: 'Atbalsts',
+  supportText: '“Latvijas Universitāte un institūti Eiropas pētniecības telpā – izcilība pētniecībā un sadarbībā” (Nr. 1.1.1.5/3/25/I/011)',
+} : {
+  title: 'About us',
+  description: 'digitalhumanities.lv is a collaboration and information platform for the digital humanities community in Latvia.',
+  aboutTitle: 'The platform',
+  about: 'We bring together Latvian research institutions and researchers, promote digital humanities, and foster collaboration in Latvia and internationally. The website gathers information about updates, events, projects, research infrastructures, resources and tools.',
+  developedBy: 'The digital platform digitalhumanities.lv is developed by the',
+  developedByName: 'University of Latvia Digital Humanities Center',
+  published: 'The new version was published on 3 August 2026.',
+  contactsTitle: 'Contacts',
+  coordinationTitle: 'digitalhumanities.lv coordination',
+  partnerContactsTitle: 'Partner contacts',
+  newsLabel: 'Send news and updates to',
+  socialTitle: 'Follow us',
+  institutionsTitle: 'Institutions',
+  institutionsText: 'Latvian research, higher education and cultural institutions contribute to the development of the platform and the digital humanities community.',
+  supportTitle: 'Support',
+  supportText: '“University of Latvia and Institutes in the European Research Area – Excellence in Research and Collaboration” (No. 1.1.1.5/3/25/I/011)',
+};
+
+const supporters = [
+  {
+    name: lv ? 'Latvijas Universitāte' : 'University of Latvia',
+    lightImage: lv ? '/assets/support/lu-lv-light.png' : '/assets/support/lu-en-light.png',
+    darkImage: lv ? '/assets/support/lu-lv-dark.png' : '/assets/support/lu-en-dark.png',
+    href: 'https://www.lu.lv/',
+  },
+  {
+    name: lv ? 'Eiropas Savienība un Nacionālais attīstības plāns' : 'European Union and the National Development Plan',
+    lightImage: '/assets/support/eu-recovery-nap.png',
+    darkImage: '/assets/support/eu-recovery-nap-white.svg',
+  },
+];
+const social = [
+  [lv ? 'Facebook lapa' : 'Facebook page', 'https://www.facebook.com/digitalhumanities.lv'],
+  [lv ? 'Facebook grupa' : 'Facebook group', 'https://www.facebook.com/groups/digitalhumanities.lv'],
+  ['YouTube', 'https://www.youtube.com/@digitalhumanitieslv'],
+];
+const partnerContacts = lv ? [
+  { institution: 'LU Literatūras, folkloras un mākslas institūts', people: [{ name: 'Ilze Ļaksa-Timinska', email: 'dh@lulfmi.lv' }] },
+  { institution: 'Latvijas Nacionālā bibliotēka', people: [{ name: 'Anda Baklāne', email: 'dh@lnb.lv' }] },
+  { institution: 'LU Matemātikas un informātikas institūts', people: [{ name: 'Kristīne Pokratniece', email: 'kristine.pokratniece@lumii.lv' }] },
+  { institution: 'CLARIN-LV', people: [{ name: 'Inguna Skadiņa', email: 'info@clarin.lv' }] },
+  { institution: 'DARIAH-LV', people: [{ name: 'Sanita Reinsone', email: 'dhc@lu.lv' }, { name: 'Ilze Ļaksa-Timinska', email: 'dh@lulfmi.lv' }] },
+] : [
+  { institution: 'Institute of Literature, Folklore and Art, University of Latvia', people: [{ name: 'Ilze Ļaksa-Timinska', email: 'dh@lulfmi.lv' }] },
+  { institution: 'National Library of Latvia', people: [{ name: 'Anda Baklāne', email: 'dh@lnb.lv' }] },
+  { institution: 'Institute of Mathematics and Computer Science, University of Latvia', people: [{ name: 'Kristīne Pokratniece', email: 'kristine.pokratniece@lumii.lv' }] },
+  { institution: 'CLARIN-LV', people: [{ name: 'Inguna Skadiņa', email: 'info@clarin.lv' }] },
+  { institution: 'DARIAH-LV', people: [{ name: 'Sanita Reinsone', email: 'dhc@lu.lv' }, { name: 'Ilze Ļaksa-Timinska', email: 'dh@lulfmi.lv' }] },
+];
+const institutions = lv ? [
+  { name: 'LU Digitālo humanitāro zinātņu centrs', href: 'https://www.hzf.lu.lv/par-mums/centri/digitalo-humanitaro-zinatnu-centrs/' },
+  { name: 'LU Literatūras, folkloras un mākslas institūts', href: 'https://lulfmi.lv/' },
+  { name: 'Latvijas Nacionālā bibliotēka', href: 'https://www.lnb.lv/' },
+  { name: 'LU Matemātikas un informātikas institūts', href: 'https://lumii.lv/' },
+] : [
+  { name: 'Digital Humanities Centre, University of Latvia', href: 'https://www.hzf.lu.lv/en/about-us/centres/digital-humanities-center/' },
+  { name: 'Institute of Literature, Folklore and Art, University of Latvia', href: 'https://lulfmi.lv/en' },
+  { name: 'National Library of Latvia', href: 'https://www.lnb.lv/en/' },
+  { name: 'Institute of Mathematics and Computer Science, University of Latvia', href: 'https://lumii.lv/en/' },
+];
+---
+<BaseLayout title={`${copy.title} — Digital Humanities LV`} description={copy.description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="page-heading shell"><HomeBackLink lang={lang} /><h1>{copy.title}</h1><p class="lead">{copy.description}</p></section>
+  <div class="about-sections shell">
+    <section class="about-section"><h2>{copy.aboutTitle}</h2><div><p>{copy.about}</p><p class="about-developed-by">{copy.developedBy} <a href="https://ul-dhc.github.io/" target="_blank" rel="noreferrer">{copy.developedByName}<ArrowUpRight size={14} /></a>. {copy.published}</p></div></section>
+    <section id={lv ? 'kontakti' : 'contacts'} class="about-section"><h2>{copy.contactsTitle}</h2><div class="about-contact-groups">
+      <div class="about-contact-group"><h3>{copy.coordinationTitle}</h3><p><strong>{lv ? 'LU Digitālo humanitāro zinātņu centrs' : 'Digital Humanities Centre, University of Latvia'}:</strong> Sanita Reinsone, <a href="mailto:sanita.reinsone@lu.lv">sanita.reinsone@lu.lv</a>.</p><p>{copy.newsLabel} <a href="mailto:dhc@lu.lv">dhc@lu.lv</a></p></div>
+      <div class="about-contact-group"><h3>{copy.partnerContactsTitle}</h3><div class="about-partner-contacts">{partnerContacts.map((contact) => <p><strong>{contact.institution}:</strong> {contact.people.map((person, index) => <>{index > 0 && '; '}{person.name}, <a href={`mailto:${person.email}`}>{person.email}</a></>)}</p>)}</div></div>
+    </div></section>
+    <section class="about-section"><h2>{copy.socialTitle}</h2><div class="about-links">{social.map(([label, href]) => <a href={href} target="_blank" rel="noreferrer">{label}<ArrowUpRight size={16} /></a>)}</div></section>
+    <section id={lv ? 'institucijas' : 'institutions'} class="about-section"><h2>{copy.institutionsTitle}</h2><div><p>{copy.institutionsText}</p><div class="about-institutions">{institutions.map((institution) => <a href={institution.href} target="_blank" rel="noreferrer"><span>{institution.name}</span><ArrowUpRight size={17} /></a>)}</div></div></section>
+    <section id={lv ? 'atbalsts' : 'support'} class="about-section about-support">
+      <h2>{copy.supportTitle}</h2>
+      <div class="about-support-content">
+        <p>{copy.supportText}</p>
+        <div class="about-supporters">{supporters.map((supporter) => <figure>{supporter.href ? <a href={supporter.href} target="_blank" rel="noreferrer"><img class="theme-light-logo" src={supporter.lightImage} alt={supporter.name} loading="lazy" /><img class="theme-dark-logo" src={supporter.darkImage} alt={supporter.name} loading="lazy" /></a> : <><img class="theme-light-logo" src={supporter.lightImage} alt={supporter.name} loading="lazy" /><img class="theme-dark-logo" src={supporter.darkImage} alt={supporter.name} loading="lazy" /></>}</figure>)}</div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

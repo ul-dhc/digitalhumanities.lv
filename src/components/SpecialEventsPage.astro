@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+const lv = lang === 'lv';
+const events = lv ? [
+  { year: '2026', date: '5.–6. marts', title: 'CLARIN–DARIAH pavasara konference', text: 'Divu dienu konference par valodu resursiem, digitālajām pētniecības infrastruktūrām un DARIAH-LV attīstību.', href: '/lv/pasakumi/clarin-dariah-pavasara-konference-2026/', accent: 'conference' },
+  { year: '2024', date: '25.–26. aprīlis', title: 'Baltijas DH forums', text: 'Pirmais Baltijas digitālo humanitāro zinātņu forums — konference, demonstrāciju sesija un starptautiska tīklošanās Rīgā.', href: '/en/events/baltic-dh-forum-2024/', accent: 'forum' }
+] : [
+  { year: '2026', date: '5–6 March', title: 'CLARIN–DARIAH Spring Conference', text: 'A two-day conference on language resources, digital research infrastructures and the development of DARIAH-LV.', href: '/en/events/clarin-dariah-spring-conference-2026/', accent: 'conference' },
+  { year: '2024', date: '25–26 April', title: 'Baltic DH Forum', text: 'The first Baltic Digital Humanities Forum — a conference, demonstration session and international networking event in Riga.', href: '/en/events/baltic-dh-forum-2024/', accent: 'forum' }
+];
+---
+<BaseLayout title={lv ? 'Īpašie pasākumi' : 'Special events'} description={lv ? 'Digitalhumanities.lv īpašo pasākumu arhīvs.' : 'Archive of special events by digitalhumanities.lv.'} lang={lang} alternateUrl={lv ? '/en/events/' : '/lv/pasakumi/'}>
+  <div class="shell special-events-page">
+    <HomeBackLink lang={lang} />
+    <header class="page-heading special-events-heading"><h1>{lv ? 'Īpašie pasākumi' : 'Special events'}</h1><p class="lead">{lv ? 'Pasākumi, kuru programmai un materiāliem saglabājam atsevišķu mikrovietni.' : 'Events whose programme and materials are preserved in a dedicated microsite.'}</p></header>
+    <div class="special-event-grid">{events.map((event) => <a class={`special-event-card ${event.accent}`} href={event.href}><div class="special-event-year">{event.year}</div><div><span>{event.date}</span><h2>{event.title}</h2><p>{event.text}</p><strong>{lv ? 'Atvērt pasākuma lapu →' : 'Open event page →'}</strong></div></a>)}</div>
+  </div>
+</BaseLayout>

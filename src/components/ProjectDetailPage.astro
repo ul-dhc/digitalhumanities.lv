@@ -1,0 +1,150 @@
+---
+import { ArrowDown, ArrowLeft, CalendarRange } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LegacyProjectBlock from './LegacyProjectBlock.astro';
+import ProjectEventArchive from './ProjectEventArchive.astro';
+
+interface Link { text: string; url: string; }
+interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?: string; }
+interface Props { lang: 'lv' | 'en'; slug: string; acronym: string; title: string; years: string; blocks: Block[]; alternateUrl: string; }
+const { lang, slug, acronym, title, years, blocks, alternateUrl } = Astro.props;
+const isLv = lang === 'lv';
+const logoMarkerIndex = blocks.findIndex((block) => /^(projekta institūcijas|project institutions)$/i.test(block.text || ''));
+const rawContentBlocks = logoMarkerIndex >= 0 ? blocks.slice(0, logoMarkerIndex) : blocks;
+const footerLogos = logoMarkerIndex >= 0 ? blocks.slice(logoMarkerIndex + 1).filter((block) => block.tag === 'img') : [];
+const firstHeadingIndex = rawContentBlocks.findIndex((block) => block.tag === 'h1' || block.tag === 'h2');
+const leadingBlocks = firstHeadingIndex > 0 ? rawContentBlocks.slice(0, firstHeadingIndex) : [];
+const featureImage = leadingBlocks.find((block) => block.tag === 'img');
+const contentBlocks = featureImage ? rawContentBlocks.filter((block) => block !== featureImage) : rawContentBlocks;
+
+interface Section { title: string; blocks: Block[]; events: boolean; }
+interface ProjectFact { label: string; value: string; keywords: string[]; wide: boolean; }
+const sections: Section[] = [];
+let current: Section = { title: isLv ? 'Par projektu' : 'About the project', blocks: [], events: false };
+const sectionHeading = /^(norises|notikumi|projekta aktualitātes|informācija par projektu|kopsavilkums|sadarbības partneri|apraksts|projekta institūcijas|events|activities|project updates|project information|information about the project|about the project|summary|project partners|description|project institutions)$/i;
+for (const block of contentBlocks) {
+  if ((block.tag === 'h1' || block.tag === 'h2') && sectionHeading.test((block.text || '').trim())) {
+    if (current.blocks.length) sections.push(current);
+    const events = /^(norises|notikumi|projekta aktualitātes|events|activities|project updates|chronicle)/i.test(block.text || '');
+    current = { title: block.text || '', blocks: [], events };
+  } else {
+    const promote = block.tag === 'p' && /^(kopsavilkums|summary|projekta virzieni uzdevumu īstenošanai:?|project directions:?|project work packages:?)$/i.test((block.text || '').trim());
+    current.blocks.push(block.tag === 'h1' || block.tag === 'h2' || promote ? { ...block, tag: 'h3' } : block);
+  }
+}
+if (current.blocks.length) sections.push(current);
+const aboutHeading = /^(par projektu|about the project|informācija par projektu|project information|information about the project)$/i;
+const aboutCandidates = sections.filter((section) => !section.events && aboutHeading.test(section.title));
+if (aboutCandidates.length > 1) {
+  const primary = aboutCandidates[0];
+  for (const duplicate of aboutCandidates.slice(1)) {
+    primary.blocks.push(...duplicate.blocks);
+    sections.splice(sections.indexOf(duplicate), 1);
+  }
+}
+const profileLogos: Block[] = [];
+for (const section of sections) {
+  if (section.events) continue;
+  const trailing: Block[] = [];
+  while (section.blocks.at(-1)?.tag === 'img') trailing.unshift(section.blocks.pop()!);
+  profileLogos.push(...trailing);
+}
+const projectLogos = profileLogos.length > 0 ? profileLogos : footerLogos;
+const normalizedTitle = title.trim().replace(/\s+/g, ' ').toLocaleLowerCase(lang);
+const normalizedAcronym = acronym.trim().replace(/\s+/g, ' ').toLocaleLowerCase(lang);
+const nameLabel = isLv ? /^Projekta nosaukums\s*\((latviski|angliski)\)\s*:/i : /^Project title\s*\((Latvian|English)\)\s*:/i;
+const sectionFacts = new Map<Section, ProjectFact[]>();
+const keywordSets: Record<string, { lv: string[]; en: string[] }> = {
+  digilate: { lv: ['valodu tehnoloģijas', 'mākslīgais intelekts', 'digitālie valodas resursi', 'latviešu valoda', 'latgaliešu valoda'], en: ['language technology', 'artificial intelligence', 'digital language resources', 'Latvian', 'Latgalian'] },
+  vti: { lv: ['valodu tehnoloģijas', 'digitālās prasmes', 'mākslīgais intelekts', 'izglītība'], en: ['language technology', 'digital skills', 'artificial intelligence', 'education'] },
+  dheli: { lv: ['digitālās humanitārās zinātnes', 'FAIR dati', 'atvērtā zinātne', 'pētniecības infrastruktūra'], en: ['digital humanities', 'FAIR data', 'open science', 'research infrastructure'] },
+  'dh-vpp': { lv: ['digitālie resursi', 'humanitārās zinātnes', 'pētniecības infrastruktūra', 'valodu tehnoloģijas'], en: ['digital resources', 'humanities', 'research infrastructure', 'language technology'] },
+  late: { lv: ['latviešu valoda', 'valodniecība', 'valodu tehnoloģijas', 'digitālie resursi'], en: ['Latvian', 'linguistics', 'language technology', 'digital resources'] },
+  'teiktas-dziesmas': { lv: ['teiktās dziesmas', 'kultūras mantojums', 'mūzikas analīze', 'digitālās metodes'], en: ['spoken songs', 'cultural heritage', 'music analysis', 'digital methods'] },
+  'lu-open': { lv: ['sabiedriskā zinātne (Citizen science)', 'atvērtie dati', 'digitālās humanitārās zinātnes', 'valodu tehnoloģijas', 'kultūras mantojums', 'mākslīgais intelekts'], en: ['citizen science', 'open data', 'digital humanities', 'language technology', 'cultural heritage', 'artificial intelligence'] },
+  'going-beyond-search': { lv: ['digitālās prasmes', 'bibliotēkas', 'pētniecības kopienas', 'Ziemeļvalstu un Baltijas sadarbība'], en: ['digital skills', 'libraries', 'research communities', 'Nordic–Baltic cooperation'] },
+};
+type FactKey = 'number' | 'source' | 'period' | 'amount';
+const factLabels: Record<FactKey, string> = isLv
+  ? { number: 'Projekta numurs', source: 'Finansējuma avots', period: 'Īstenošanas periods', amount: 'Finansējuma summa' }
+  : { number: 'Project number', source: 'Funding source', period: 'Implementation period', amount: 'Funding amount' };
+const factPatterns: Array<[FactKey, RegExp]> = isLv
+  ? [
+      ['number', /^(?:Projekta\s+(?:numurs|Nr\.?))\s*:\s*(.+)$/i],
+      ['period', /^(?:Projekta\s+īstenošana|Īstenošanas periods)\s*:\s*(.+)$/i],
+      ['amount', /^(?:Projekta\s+kopējais finansējums|Projekta finansējums|Finansējuma summa)\s*:\s*(.+)$/i],
+      ['source', /^(?:Projekta finansētājs|Finansējuma avots|Finansē)\s*:\s*(.+)$/i],
+    ]
+  : [
+      ['number', /^(?:Project\s+(?:number|No\.?))\s*:\s*(.+)$/i],
+      ['period', /^(?:Project implementation|Implementation period)\s*:\s*(.+)$/i],
+      ['amount', /^(?:Total project funding|Project funding|Funding amount)\s*:\s*(.+)$/i],
+      ['source', /^(?:Project funder|Funded by|Funding source)\s*:\s*(.+)$/i],
+    ];
+const factValues = new Map<FactKey, string>();
+for (const section of sections.filter((item) => !item.events)) {
+  section.blocks = section.blocks.flatMap((block) => {
+    const raw = (block.text || '').trim();
+    const normalized = raw.replace(/\s+/g, ' ').toLocaleLowerCase(lang);
+    if ((block.tag === 'h3' || block.tag === 'p') && (normalized === normalizedTitle || normalized === normalizedAcronym)) return [];
+    if (nameLabel.test(raw)) return [];
+    if (/^(Atslēgas vārdi|Keywords)\s*:/i.test(raw)) return [];
+    if (!raw || block.tag === 'img') return [block];
+    const remainingLines: string[] = [];
+    for (const line of raw.split('\n').map((item) => item.trim()).filter(Boolean)) {
+      const matched = factPatterns.find(([, pattern]) => pattern.test(line));
+      if (!matched) remainingLines.push(line);
+      else {
+        const [, pattern] = matched;
+        const value = line.match(pattern)?.[1]?.trim();
+        if (value && !factValues.has(matched[0])) factValues.set(matched[0], value);
+      }
+    }
+    return remainingLines.length ? [{ ...block, text: remainingLines.join('\n') }] : [];
+  });
+}
+let aboutSection = sections.find((section) => !section.events && aboutHeading.test(section.title));
+if (!aboutSection) aboutSection = sections.find((section) => !section.events);
+if (!aboutSection) {
+  aboutSection = { title: isLv ? 'Par projektu' : 'About the project', blocks: [], events: false };
+  sections.unshift(aboutSection);
+}
+aboutSection.title = isLv ? 'Par projektu' : 'About the project';
+const facts: ProjectFact[] = (['number', 'source', 'period', 'amount'] as FactKey[])
+  .filter((key) => factValues.has(key))
+  .map((key) => ({ label: factLabels[key], value: factValues.get(key)!, keywords: [], wide: key === 'source' }));
+const profileKeywords = keywordSets[slug]?.[lang] || [];
+if (profileKeywords.length) facts.push({ label: isLv ? 'Atslēgas vārdi' : 'Keywords', value: '', keywords: profileKeywords, wide: true });
+if (facts.length) sectionFacts.set(aboutSection, facts);
+const orderedSections = [...sections.filter((section) => !section.events), ...sections.filter((section) => section.events)];
+---
+<BaseLayout title={`${acronym} — ${title}`} description={title} lang={lang} alternateUrl={alternateUrl}>
+  <article class="project-detail" data-project-slug={slug}>
+    <header class="project-detail-hero shell">
+      <a class="back-link" href={isLv ? '/lv/projekti/' : '/en/projects/'}><ArrowLeft size={17} />{isLv ? 'Visi projekti' : 'All projects'}</a>
+      <div class="project-detail-meta"><strong>{acronym}</strong><span><CalendarRange size={16} />{years}</span></div>
+      <h1>{title}</h1>
+    </header>
+    {featureImage && <div class="project-feature shell"><LegacyProjectBlock block={featureImage} /></div>}
+    <nav class="project-detail-index shell" aria-label={isLv ? 'Projekta lapas saturs' : 'Project page contents'}>
+      {orderedSections.map((section, index) => <a href={`#section-${index + 1}`}><span>{section.title}</span><ArrowDown size={15} aria-hidden="true" /></a>)}
+    </nav>
+    <div class="project-detail-sections shell">
+      {orderedSections.map((section, index) => (
+        <section id={`section-${index + 1}`} class:list={['project-detail-section', { 'event-history': section.events }]}> 
+          <div class="project-detail-section-heading"><h2>{section.title}</h2></div>
+          {section.events ? <ProjectEventArchive blocks={section.blocks} lang={lang} slug={slug} /> : <div class="legacy-project-copy">
+            {sectionFacts.has(section) && <dl class="project-facts">
+              {sectionFacts.get(section)!.map((fact) => <div class:list={['project-fact', { 'project-fact-wide': fact.wide, 'project-fact-keywords': fact.keywords.length > 0 }]}>
+                <dt>{fact.label}</dt>
+                <dd>{fact.keywords.length > 0 ? <div class="project-keyword-list">{fact.keywords.map((keyword) => <span>{keyword}</span>)}</div> : fact.value}</dd>
+              </div>)}
+            </dl>}
+            {section.blocks.map((block) => <LegacyProjectBlock block={block} />)}
+          </div>}
+        </section>
+      ))}
+    </div>
+    {projectLogos.length > 0 && <div class="project-logo-bar shell" aria-label={isLv ? 'Projekta logotipi' : 'Project logos'}>{projectLogos.map((logo) => <LegacyProjectBlock block={logo} />)}</div>}
+  </article>
+</BaseLayout>

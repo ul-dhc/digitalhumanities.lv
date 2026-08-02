@@ -1,0 +1,70 @@
+---
+import { ChevronDown, Menu, Moon, Sun, X } from '@lucide/astro';
+
+interface Props { lang: 'lv' | 'en'; alternateUrl: string; }
+const { lang, alternateUrl } = Astro.props;
+const isLv = lang === 'lv';
+const prefix = `/${lang}`;
+const items = isLv ? [
+  ['Norises', `${prefix}/aktualitates/`],
+  ['Resursi', `${prefix}/resursi-un-riki/`],
+  ['Projekti', `${prefix}/projekti/`],
+  ['BSSDH', `${prefix}/bssdh/`],
+  ['Infrastruktūras', `${prefix}/infrastrukturas/`],
+  ['Par mums', `${prefix}/par-mums/`],
+] : [
+  ['Events', `${prefix}/updates/`],
+  ['Resources', `${prefix}/resources-and-tools/`],
+  ['Projects', `${prefix}/projects/`],
+  ['BSSDH', `${prefix}/bssdh/`],
+  ['Infrastructures', `${prefix}/infrastructures/`],
+  ['About us', `${prefix}/about-us/`],
+];
+const updatesMain = isLv
+  ? [['Visas aktualitātes', '/lv/aktualitates/'], ['Pasākumi', '/lv/pasakumi/']]
+  : [['All updates', '/en/updates/'], ['Events', '/en/events/']];
+const updateSeries = isLv
+  ? [['Semināru cikls', '/lv/seminari/'], ['Raidieraksts', '/lv/raidieraksts/'], ['Digitālās pētniecības seriāls', '/lv/digitalas-petniecibas-serials/']]
+  : [['Workshop series', '/en/workshop-series/'], ['Podcast', '/en/podcast/'], ['Digital Humanities Series', '/en/digital-humanities-series/']];
+const specialEvents = isLv ? [
+  ['CLARIN–DARIAH pavasara konference', '2026', '/lv/pasakumi/clarin-dariah-pavasara-konference-2026/'],
+  ['Baltijas DH forums', '2024', '/en/events/baltic-dh-forum-2024/']
+] : [
+  ['CLARIN–DARIAH Spring Conference', '2026', '/en/events/clarin-dariah-spring-conference-2026/'],
+  ['Baltic DH Forum', '2024', '/en/events/baltic-dh-forum-2024/']
+];
+---
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href={`${prefix}/`} aria-label="Digital Humanities LV">
+      <img src="/assets/dh-logo.png" width="2040" height="700" alt="Digital Humanities LV" />
+    </a>
+    <nav class="desktop-nav" aria-label={isLv ? 'Galvenā izvēlne' : 'Main navigation'}>
+      {items.map(([label, href], index) => index === 0 ? (
+        <div class="nav-dropdown">
+          <a href={href}>{label}</a>
+          <button class="dropdown-toggle" aria-expanded="false" aria-label={isLv ? 'Atvērt norišu izvēlni' : 'Open events menu'}><ChevronDown size={16} /></button>
+          <div class="dropdown-panel updates-dropdown">
+            {updatesMain.map(([text, url]) => <a class="dropdown-primary" href={url}>{text}</a>)}
+            {specialEvents.map(([text, year, url]) => <a class="dropdown-child" href={url}><span>{text}</span><small>{year}</small></a>)}
+            {updateSeries.map(([text, url]) => <a class="dropdown-primary" href={url}>{text}</a>)}
+          </div>
+        </div>
+      ) : <a href={href}>{label}</a>)}
+    </nav>
+    <div class="header-tools">
+      <a class="language" href={alternateUrl}>{isLv ? 'EN' : 'LV'}</a>
+      <button class="icon-button text-scale" type="button" aria-label={isLv ? 'Mainīt teksta izmēru' : 'Change text size'}>A+</button>
+      <button class="icon-button theme-toggle" type="button" aria-label={isLv ? 'Mainīt krāsu režīmu' : 'Change colour mode'}><Sun class="sun" size={19} /><Moon class="moon" size={19} /></button>
+      <button class="icon-button menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label={isLv ? 'Atvērt izvēlni' : 'Open menu'}><Menu class="menu-open" size={22} /><X class="menu-close" size={22} /></button>
+    </div>
+  </div>
+  <nav id="mobile-menu" class="mobile-nav" aria-label={isLv ? 'Mobilā izvēlne' : 'Mobile navigation'}>
+    {items.map(([label, href]) => <a href={href}>{label}</a>)}
+    <div class="mobile-subnav mobile-special-events">
+      <a href={updatesMain[1][1]}>{updatesMain[1][0]}</a>
+      {specialEvents.map(([text, year, url]) => <a class="mobile-child" href={url}>{text} <small>{year}</small></a>)}
+      {updateSeries.map(([text, url]) => <a href={url}>{text}</a>)}
+    </div>
+  </nav>
+</header>
