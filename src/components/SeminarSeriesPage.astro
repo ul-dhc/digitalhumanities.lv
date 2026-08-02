@@ -1,0 +1,146 @@
+---
+import { CalendarDays, Check, ExternalLink, Link2, Play, Search, Users } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+type Language = 'lv' | 'en';
+interface Props { lang: Language; alternateUrl: string; }
+const { lang, alternateUrl } = Astro.props;
+const isLv = lang === 'lv';
+
+const common = [
+  { id: '2026-05-13-digitalais-lasisanas-mantojums', date: '2026-05-13', image: '/media/archive/2026/5239729-exploring-the-digital-heritage-of-reading.jpg', infoLv: '/lv/seminari/exploring-the-digital-heritage-of-reading/', infoEn: '/en/updates/exploring-the-digital-heritage-of-reading/' },
+  { id: '2026-04-08-datu-vizualizacija', date: '2026-04-08', image: '/assets/seminars/2026-04-08.jpg', infoLv: '/lv/seminari/notiks-seminars-datu-vizualizacija-humanitaro-zinatnu-petniekiem/', infoEn: '/lv/seminari/notiks-seminars-datu-vizualizacija-humanitaro-zinatnu-petniekiem/', video: 'https://www.youtube.com/watch?v=KcSC_INNHcI' },
+  { id: '2025-11-05-kvantitativas-pieejas', date: '2025-11-05', image: '/assets/seminars/2025-11-05.jpg', infoLv: '/lv/seminari/notiks-seminars-kvantitativas-pieejas-vesturiskajai-vizualajai-kulturai/', infoEn: '/en/workshop-series/a-seminar-will-take-place-titled-quantitative-approaches-to-historical-visual/', video: 'https://www.youtube.com/watch?v=n_XRfWVdPZI' },
+  { id: '2025-05-21-mi-riki-arhiva', date: '2025-05-21', image: '/assets/seminars/2025-05-21.jpg', infoLv: '/lv/seminari/notiks-seminars-latvijas-valsts-kinofotofonodokumentu-arhiva-pieredze-mi-riku/', infoEn: '/lv/seminari/notiks-seminars-latvijas-valsts-kinofotofonodokumentu-arhiva-pieredze-mi-riku/', video: 'https://www.youtube.com/watch?v=8bZTl9z7OiI' },
+  { id: '2025-05-06-digitala-muzikologija', date: '2025-05-06', dateEnd: '2025-05-07', image: '/assets/seminars/2025-05-06.jpg', infoLv: '/lv/aktualitates/6-7-maija-riga-notiks-phd-jana-hajica-lekcijas-un-darbnicas-digitala/', infoEn: '/en/updates/6-7-may-jan-hajic-phd-will-give-lectures-and-workshops-on-digital-musicology/' },
+  { id: '2025-04-03-pieklustamiba', date: '2025-04-03', image: '/assets/seminars/2025-04-03.jpg', infoLv: '/lv/seminari/aicinam-uz-seminaru-digitalo-humanitaro-zinatnu-resursu-un-riku-pieklustamiba/', infoEn: '/lv/seminari/aicinam-uz-seminaru-digitalo-humanitaro-zinatnu-resursu-un-riku-pieklustamiba/' },
+  { id: '2024-06-20-opening-the-trilogy', date: '2024-06-20', image: '/assets/seminars/2024-06-20.jpg', infoLv: '/lv/seminari/notiks-praktiskais-seminars-opening-the-trilogy-folklore-taxonomies-annotated/', infoEn: '/en/updates/opening-the-trilogy-folklore-taxonomies-annotated-texts-for-reproducible/' },
+  { id: '2024-05-22-dh-un-vesture', date: '2024-05-22', image: '/assets/seminars/2024-05-22.jpg', infoLv: '/en/updates/webinar-tracing-nazi-fascist-violence-to-reinterpret-world-war-ii-history/', infoEn: '/en/updates/webinar-tracing-nazi-fascist-violence-to-reinterpret-world-war-ii-history/', video: 'https://www.youtube.com/watch?v=RJuKVIN8mBY' },
+  { id: '2024-03-27-petniecibas-dati', date: '2024-03-27', image: '/assets/seminars/2024-03-27.jpg', infoLv: '/lv/seminari/notiks-seminars-petniecibas-dati-datu-repozitoriji-un-datu-sagatavosana/', infoEn: '/lv/seminari/notiks-seminars-petniecibas-dati-datu-repozitoriji-un-datu-sagatavosana/', video: 'https://www.youtube.com/watch?v=FoMRD00LF5U' },
+  { id: '2023-12-13-dariah-campus', date: '2023-12-13', image: '/assets/seminars/2023-12-13.jpg', infoLv: '/en/workshop-series/third-digitalhumanities-lv-seminar/', infoEn: '/en/workshop-series/third-digitalhumanities-lv-seminar/' },
+  { id: '2023-05-18-runas-korpusi', date: '2023-05-18', image: '/assets/seminars/2023-05-18.jpg', infoLv: '/en/updates/on-the-development-and-use-of-speech-corpora-on-18-may/', infoEn: '/en/updates/on-the-development-and-use-of-speech-corpora-on-18-may/', video: 'https://www.youtube.com/watch?v=mYRmsBJJFzg' },
+  { id: '2023-04-12-leksikas-digitala-petnieciba', date: '2023-04-12', image: '/assets/seminars/2023-04-12.jpg', infoLv: '/en/workshop-series/first-seminar-in-the-digitalhumanities-lv-seminar-series/', infoEn: '/en/workshop-series/first-seminar-in-the-digitalhumanities-lv-seminar-series/', video: 'https://www.youtube.com/watch?v=AMsC7gcQRKw' },
+];
+
+const lv = [
+  { speakers: 'Dr. Fransuā Viņāls (Dr. François Vignale, Lemānas Universitāte)', title: 'Exploring the digital heritage of reading: multilingualism, automatic detection and annotation', description: 'Seminārā aplūkotas inovatīvas metodes un rīki daudzvalodīgu tekstu korpusu analīzei, lasīšanas pieredzes aprakstu automātiskai identificēšanai un semantiskai anotēšanai. Iepazīstinot ar starpdisciplināro projektu READ-IT, tika demonstrēta dabiskās valodas apstrādes, ontoloģiju un semantiskās meklēšanas izmantošana digitālo avotu izpētē.' },
+  { speakers: 'Anda Baklāne (Latvijas Nacionālā bibliotēka)', title: 'Datu vizualizācija humanitāro zinātņu pētniekiem', description: 'Šajā seminārā tika aplūkota datu vizualizācijas nozīme humanitāro zinātņu pētniecībā, pievēršoties dažādiem vizualizācijas veidiem un to pielietojumam. Tika analizēti arī datu sagatavošanas principi un rīki, kā arī vizualizācijas loma digitālajās humanitārajās zinātnēs.' },
+  { speakers: 'Mila Oiva (Turku Universitāte)', title: 'Quantitative Approaches to Historical Visual Culture – an Example of Soviet Newsreels (Kvantitatīvās pieejas vēsturiskajai vizuālajai kultūrai – Padomju kinohroniku piemērs)', description: 'Šajā seminārā tika aplūkotas kvantitatīvās pieejas vēsturiskās vizuālās kultūras izpētē, īpašu uzmanību pievēršot Padomju kinohroniku analīzei. Tika demonstrēts, kā digitālās metodes, tostarp attēlu vektoru iebūvējumi un multimodālie valodu modeļi, palīdz atklāt ilgtermiņa pārmaiņas un nepārtrauktību audiovizuālajos materiālos.' },
+  { speakers: 'Natālija Lāce (Latvijas Valsts kinofotofonodokumentu arhīvs)', title: 'Latvijas Valsts kinofotofonodokumentu arhīva pieredze MI rīku izmantošanā: jauna pieeja vēsturisko dokumentu pieejamības veicināšanā', description: 'Šajā seminārā tika aplūkota mākslīgā intelekta rīku izmantošana arhīvu darbā, īpaši Latvijas Valsts kinofotofonodokumentu arhīva pieredze dokumentu aprakstīšanā, meklēšanā un pieejamības uzlabošanā. Tika analizētas dažādas informācijas ieguves pieejas, salīdzinot tradicionālās metodes ar MI risinājumiem, un izvērtēta to efektivitāte vēsturisko dokumentu izmantošanā.' },
+  { speakers: 'Jan Hajič jr. (Prāgas Kārļa Universitāte, Mūzikas skaitļošanas grupa Matemātikas un fizikas fakultātē)', title: 'Digital Musicology and Gregorian Chant Computing (Digitālā muzikoloģija un gregorisko dziedājumu skaitļošana)', description: 'Šajās lekcijās un darbnīcās tika sniegts ieskats digitālajā muzikoloģijā, tās metodēs, iespējās un ierobežojumos, īpašu uzmanību pievēršot optiskajai mūzikas atpazīšanai un gregorisko dziedājumu analīzei. Praktiskajās nodarbībās dalībnieki iepazinās ar digitāliem rīkiem un pieejām muzikālo datu analīzē.' },
+  { speakers: 'Pēteris Jurčenko (digitālās lietojamības un piekļūstamības eksperts)', title: 'Digitālo humanitāro zinātņu resursu un rīku piekļūstamība', description: 'Seminārs bija veltīts piekļūstamības nozīmei digitālajā vidē, īpaši resursos un rīkos, kas izstrādāti digitālo humanitāro zinātņu jomā.' },
+  { speakers: 'Džošua Hagerdons (neatkarīgais pētnieks, dzejnieks un datu zinātnieks)', title: 'Opening the Trilogy: Folklore Taxonomies & Annotated Texts for Reproducible Research (Atverot Trilogy: folkloras taksonomijas un anotēti teksti reproducējamiem pētījumiem)', description: 'Šajā praktiskajā seminārā tika aplūkots darbs ar folkloras tekstu korpusiem un taksonomiskajiem datiem, izmantojot digitālo humanitāro zinātņu pieejas. Dalībnieki iepazinās ar Trilogy repozitoriju un tā iespējām reproducējamas pētniecības veikšanai.' },
+  { speakers: 'Džovanni Pjetro Vitāli (Parīzes Saklē universitāte)', title: 'Digitālās humanitārās zinātnes un vēstures pētniecība: pārdomas par avotiem, metodēm un datu vizualizāciju', description: 'Šajā tiešsaistes seminārā tika aplūkota vēstures pētniecības un digitālo rīku savstarpējā saikne, pievēršoties tam, kā digitālās metodes var atbalstīt vai izaicināt historiogrāfiju. Tika prezentēts piecu gadu pētniecības projekts par vardarbību pret civiliedzīvotājiem Itālijā 1943.–1945. gadā, izmantojot arhīvu avotus un datu vizualizācijas paņēmienus, vienlaikus rosinot dalībniekus uz metodoloģiskām pārdomām.' },
+  { speakers: 'Jānis Daugavietis (Latvijas Universitātes Literatūras, folkloras un mākslas institūts)', title: 'Pētniecības dati, datu repozitoriji un datu sagatavošana publicēšanai', description: 'Šajā tiešsaistes seminārā tika iepazīstināts ar pētniecības datu politiku un prakses pamatiem, īpašu uzmanību pievēršot pētniecības datu lomai plašākā atvērtās zinātnes ietvarā. Tika skaidroti tādi pamatjēdzieni kā FAIR principi, metadati, datu pārvaldības plāni un datu repozitoriji, kā arī aplūkoti pieejamības, anonimizācijas un datu sagatavošanas publicēšanai jautājumi, tos ilustrējot ar piemēriem no Latvijas pētniecības konteksta.' },
+  { speakers: 'Vikija Gārneta (DARIAH-EU)', title: "DARIAH Campus: What's in it for You! (DARIAH Campus: Kas tajā ir tev!)", description: 'Šajā tiešsaistes seminārā tika aplūkota digitālo humanitāro zinātņu apmācību un tiešsaistes mācību iespēju ainava, īpašu uzmanību pievēršot platformai DARIAH Campus. Tika apspriests, kā platforma atbalsta dažādas lietotāju grupas Eiropas digitālās mākslas un humanitāro zinātņu kopienā un veicina prasmju attīstību un zināšanu apmaiņu.' },
+  { speakers: 'Ilze Auziņa (Latvijas Universitātes Matemātikas un informātikas institūts); Antra Kļavinska (Rēzeknes Tehnoloģiju akadēmija); Guna Rābante-Buša (Latvijas Universitātes Matemātikas un informātikas institūts)', title: 'Runas korpusu izveide un to izmantojums', description: 'Šajā seminārā tika aplūkota runas korpusu loma valodu tehnoloģiju attīstībā un prezentētas pieejas šādu resursu veidošanai un izmantošanai. Tajā tika iekļauti gadījumu pētījumi par mūsdienīga latgaliešu runas korpusa izstrādi un praktiskas demonstrācijas par runas datu apstrādi, izmantojot ELAN programmatūru.' },
+  { speakers: 'Anda Baklāne (Latvijas Nacionālā bibliotēka)', title: 'Dzejas un prozas leksikas digitālā pētniecība: no atslēgvārda līdz semantiskajam laukam', description: 'Šajā seminārā tika aplūkotas digitālās metodes dzejas un prozas vārdu krājuma analīzei, parādot, kā pieejas, kas balstītas uz atslēgvārdiem, var paplašināt līdz plašākai semantisko lauku analīzei.' },
+];
+
+const en = [
+  { speakers: 'Dr. François Vignale (Le Mans University)', title: 'Exploring the Digital Heritage of Reading: Multilingualism, Automatic Detection and Annotation', description: 'The workshop explored innovative methods and tools for analysing multilingual text corpora, automatically identifying and semantically annotating descriptions of reading experiences. Through the interdisciplinary READ-IT project, it presented the use of natural language processing, ontologies and semantic search for large-scale exploration of digital sources.' },
+  { speakers: 'Anda Baklāne (National Library of Latvia)', title: 'Datu vizualizācija humanitāro zinātņu pētniekiem (Data Visualization for Digital Humanities Researchers)', description: 'This seminar explored the role of data visualization in humanities research, focusing on different types of visualizations and their applications. It also examined data preparation principles and tools, as well as the significance of visualization in digital humanities.' },
+  { speakers: 'Mila Oiva (University of Turku)', title: 'Quantitative Approaches to Historical Visual Culture – an Example of Soviet Newsreels', description: 'Workshop presenting quantitative and digital approaches to the analysis of historical visual culture, using Soviet newsreels as a case study for working with audiovisual historical materials in digital humanities research.' },
+  { speakers: 'Natālija Lāce (Latvian State Archive of Audiovisual Documents)', title: 'Latvijas Valsts kinofotofonodokumentu arhīva pieredze MI rīku izmantošanā: jauna pieeja vēsturisko dokumentu pieejamības veicināšanā (The Experience of the Latvian State Archive of Audiovisual Documents in Using AI Tools: A New Approach to Enhancing the Accessibility of Historical Documents)', description: 'Workshop presenting the experience of the Latvian State Archive of Audiovisual Documents in applying artificial intelligence tools to improve the accessibility, description, and use of historical audiovisual materials.' },
+  { speakers: 'Jan Hajič jr. (Charles University, Institute of Formal and Applied Linguistics)', title: 'Digital Musicology and Gregorian Chant Computing', description: 'Lectures and hands-on workshops introducing computational approaches to musicological research, focusing on digital analysis and processing of Gregorian chant and musical heritage materials.' },
+  { speakers: 'Pēteris Jurčenko (digital usability and accessibility expert)', title: 'Digitālo humanitāro zinātņu resursu un rīku piekļūstamība (Accessibility of Digital Humanities Resources and Tools)', description: 'The seminar focused on the importance of accessibility in digital environments, particularly in resources and tools developed within the field of digital humanities.' },
+  { speakers: 'Joshua Hagedorn (independent researcher, poet, and data scientist)', title: 'Opening the Trilogy: Folklore Taxonomies & Annotated Texts for Reproducible Research', description: 'This hands-on workshop, held within the framework of the Congress of the International Society for Research on Folklore Narratives 2024, introduced participants to working with text corpora and taxonomic data in folklore research using digital humanities approaches. It focused on the Trilogy repository and demonstrated how annotated texts and classification systems can support reproducible research and machine learning applications.' },
+  { speakers: 'Giovanni Pietro Vitali (Université de Versailles Saint-Quentin-en-Yvelines – Université Paris-Saclay)', title: 'Digital Humanities and Historical Research: Reflecting on Sources, Methods, and Data Visualisation', description: 'This online seminar explored the relationship between historical research and digital tools, focusing on how digital methods can support or challenge historiography. It presented a five-year research project on violence against civilians in Italy between 1943 and 1945, using archival sources and data visualisation techniques, while also encouraging methodological reflection among participants.' },
+  { speakers: 'Jānis Daugavietis (Institute of Literature, Folklore and Art, University of Latvia)', title: 'Pētniecības dati, datu repozitoriji un datu sagatavošana publicēšanai (Research Data, Data Repositories, and Data Preparation for Publication)', description: 'This online seminar introduced the fundamentals of research data policies and practices, with a focus on the role of research data within the broader framework of open science. It explained key concepts such as FAIR principles, metadata, data management plans, and data repositories, while also addressing issues of accessibility, anonymisation, and data preparation for publication, illustrated with examples from the Latvian research context.' },
+  { speakers: 'Vicky Garnett (DARIAH-EU)', title: "DARIAH Campus: What's in it for You!", description: 'This online seminar explored the landscape of digital humanities training and online learning opportunities, with a particular focus on the DARIAH Campus platform. It discussed how the platform supports different user groups within the European digital arts and humanities community and contributes to skills development and knowledge sharing.' },
+  { speakers: 'Ilze Auziņa (Institute of Mathematics and Informatics, University of Latvia); Antra Kļavinska (Rezekne Academy of Technologies); Guna Rābante-Buša (Institute of Mathematics and Informatics, University of Latvia)', title: 'Runas korpusu izveide un to izmantojums (Creating and Using Speech Corpora)', description: 'This seminar examined the role of speech corpora in the development of language technologies and presented approaches to building and using such resources. It included case studies on the development of a modern Latgalian speech corpus and practical demonstrations of speech data processing using ELAN software.' },
+  { speakers: 'Anda Baklāne (National Library of Latvia)', title: 'Dzejas un prozas leksikas digitālā pētniecība: no atslēgvārda līdz semantiskajam laukam (Digital Research of Poetry and Prose Lexis: From Keyword to Semantic Field)', description: 'This seminar explored digital methods for analyzing the vocabulary of poetry and prose, demonstrating how keyword-based approaches can be expanded into broader semantic field analysis.' },
+];
+
+const content = isLv ? lv : en;
+const items = common.map((item, index) => ({ ...item, ...content[index], info: isLv ? item.infoLv : item.infoEn }));
+const labels = isLv ? {
+  title: 'Digitalhumanities.lv semināru cikls', shortTitle: 'Semināru cikls', kicker: 'Zināšanu un pieredzes apmaiņas platforma', intro: 'Digitalhumanities.lv/DARIAH-LV semināru cikls ir paredzēts pētniekiem, studentiem, kultūras mantojuma ekspertiem un citiem digitālo humanitāro zinātņu interesentiem. Tā mērķis ir pieredzes apmaiņa un diskusijas par digitālo humanitāro zinātņu jaunākajiem pētījumiem, rīkiem un metodēm.', detail: 'Semināri tiek organizēti sadarbībā ar DARIAH-LV un dažādiem digitālo humanitāro zinātņu projektiem, kurus īsteno partnerinstitūcijas. Tie mēdz notikt gan klātienē, gan attālināti. Grafiks nav stingri noteikts, tomēr ierasti gada laikā tiek organizēti aptuveni 3–4 semināri.', archive: 'Semināru arhīvs', search: 'Meklēt pēc tēmas vai runātāja', allYears: 'Visi gadi', expandAll: 'Izvērst visu', collapseAll: 'Sakļaut visu', found: 'semināri', speakers: 'Runātāji', info: 'Plašāka informācija', video: 'Skatīties video', copy: 'Kopēt saiti uz semināru', copied: 'Saite nokopēta', empty: 'Nav atrasts neviens seminārs.', expand: 'Izvērst semināra informāciju', dateLocale: 'lv-LV', description: 'Digitalhumanities.lv semināru cikla informācija un arhīvs.'
+} : {
+  title: 'Digitalhumanities.lv Workshop Series', shortTitle: 'Workshop series', kicker: 'A platform for sharing knowledge and experience', intro: 'The Digitalhumanities.lv Workshop Series creates a shared space for researchers, students, cultural heritage professionals, and interested communities to meet, learn, and exchange experiences around digital humanities practices.', detail: 'The workshops are organised in collaboration with DARIAH-LV and various digital humanities projects implemented by partner institutions. They may take place both in person and online. The schedule is not fixed, but typically around 3–4 workshops are organised each year.', archive: 'Workshop archive', search: 'Search by topic or speaker', allYears: 'All years', expandAll: 'Expand all', collapseAll: 'Collapse all', found: 'workshops', speakers: 'Speakers', info: 'More information', video: 'Watch video', copy: 'Copy link to workshop', copied: 'Link copied', empty: 'No workshops found.', expand: 'Expand workshop information', dateLocale: 'en-GB', description: 'Information and archive for the Digitalhumanities.lv Workshop Series.'
+};
+const years = [...new Set(items.map(item => item.date.slice(0, 4)))];
+const formatter = new Intl.DateTimeFormat(labels.dateLocale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const formatDate = (item: typeof items[number]) => item.dateEnd
+  ? formatter.formatRange(new Date(item.date), new Date(item.dateEnd))
+  : formatter.format(new Date(item.date));
+---
+<BaseLayout title={`${labels.shortTitle} – Digital Humanities LV`} description={labels.description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="seminar-hero shell">
+    <div class="seminar-hero-copy">
+      <HomeBackLink lang={lang} />
+      <p class="eyebrow">{labels.kicker}</p>
+      <h1>{labels.title}</h1>
+      <p class="lead">{labels.intro}</p>
+    </div>
+    <figure class="seminar-identity" aria-hidden="true"><img src={isLv ? '/assets/seminars/series-mark-lv.png' : '/assets/seminars/series-mark.png'} alt="" width={isLv ? 6912 : 1350} height={isLv ? 3456 : 709} /></figure>
+  </section>
+  <section class="seminar-about shell"><p>{labels.detail}</p><dl><div><dt>{isLv ? 'Kopš' : 'Since'}</dt><dd>2023</dd></div><div><dt>{isLv ? 'Arhīvā' : 'In the archive'}</dt><dd>{items.length}</dd></div><div><dt>{isLv ? 'Sadarbībā ar' : 'In cooperation with'}</dt><dd>DARIAH · CLARIN</dd></div></dl></section>
+  <section class="seminar-archive shell" data-seminar-archive>
+    <div class="seminar-archive-heading"><div><p class="section-label">2023–2026</p><h2>{labels.archive}</h2></div><p><strong data-seminar-count>{items.length}</strong> {labels.found}</p></div>
+    <div class="seminar-toolbar">
+      <label class="seminar-search"><Search size={18} /><span class="sr-only">{labels.search}</span><input type="search" placeholder={labels.search} data-seminar-search /></label>
+      <div class="seminar-filter-actions"><div class="seminar-years" aria-label={isLv ? 'Filtrēt pēc gada' : 'Filter by year'}><button type="button" class="is-active" data-year-filter="all">{labels.allYears}</button>{years.map(year => <button type="button" data-year-filter={year}>{year}</button>)}</div><button class="seminar-bulk-toggle" type="button" data-seminar-bulk data-expand-label={labels.expandAll} data-collapse-label={labels.collapseAll} aria-expanded="false">{labels.expandAll}</button></div>
+    </div>
+    <div class="seminar-list">
+      {items.map((item, index) => <details class="seminar-item" id={item.id} data-seminar-item data-year={item.date.slice(0, 4)} data-search={`${item.title} ${item.speakers} ${item.description}`.toLocaleLowerCase(lang)} open={index === 0}>
+        <summary aria-label={`${labels.expand}: ${item.title}`}>
+          <div class="seminar-thumb"><img src={item.image} alt="" width="1200" height="600" loading={index === 0 ? 'eager' : 'lazy'} /></div>
+          <div class="seminar-summary-copy"><div class="seminar-date"><CalendarDays size={16} /><time datetime={item.date}>{formatDate(item)}</time></div><h3>{item.title}</h3><p>{item.speakers}</p></div>
+          <button class="seminar-copy-link" type="button" data-copy={item.id} data-copy-label={labels.copy} data-copied-label={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={18} /><Check class="check-icon" size={18} /></button>
+        </summary>
+        <div class="seminar-body"><img src={item.image} alt={`${item.title} – ${isLv ? 'semināra vizuālais materiāls' : 'workshop visual'}`} width="1200" height="600" loading="lazy" /><div class="seminar-body-copy"><p class="seminar-speakers"><Users size={17} /><span><strong>{labels.speakers}</strong>{item.speakers}</span></p><p>{item.description}</p><div class="seminar-actions"><a href={item.info} target={item.info.startsWith('http') ? '_blank' : undefined} rel={item.info.startsWith('http') ? 'noopener noreferrer' : undefined}><ExternalLink size={16} />{labels.info}</a>{item.video && <a href={item.video} target="_blank" rel="noopener noreferrer"><Play size={16} />{labels.video}</a>}</div></div></div>
+      </details>)}
+      <p class="seminar-empty" data-seminar-empty hidden>{labels.empty}</p>
+    </div>
+  </section>
+  <script is:inline>
+    (() => {
+      const archive = document.querySelector('[data-seminar-archive]');
+      if (!archive) return;
+      const items = [...archive.querySelectorAll('[data-seminar-item]')];
+      const search = archive.querySelector('[data-seminar-search]');
+      const yearButtons = [...archive.querySelectorAll('[data-year-filter]')];
+      const count = archive.querySelector('[data-seminar-count]');
+      const empty = archive.querySelector('[data-seminar-empty]');
+      const bulkToggle = archive.querySelector('[data-seminar-bulk]');
+      let year = 'all';
+      const updateBulkToggle = () => {
+        if (!bulkToggle) return;
+        const visibleItems = items.filter(item => !item.hidden);
+        const allOpen = visibleItems.length > 0 && visibleItems.every(item => item.open);
+        bulkToggle.textContent = allOpen ? bulkToggle.dataset.collapseLabel : bulkToggle.dataset.expandLabel;
+        bulkToggle.setAttribute('aria-expanded', String(allOpen));
+        bulkToggle.disabled = visibleItems.length === 0;
+      };
+      const render = () => {
+        const query = search?.value.trim().toLocaleLowerCase(document.documentElement.lang) || '';
+        let visible = 0;
+        items.forEach(item => { const show = (year === 'all' || item.dataset.year === year) && (!query || item.dataset.search.includes(query)); item.hidden = !show; if (show) visible++; });
+        if (count) count.textContent = String(visible);
+        if (empty) empty.hidden = visible !== 0;
+        updateBulkToggle();
+      };
+      search?.addEventListener('input', render);
+      yearButtons.forEach(button => button.addEventListener('click', () => { year = button.dataset.yearFilter || 'all'; yearButtons.forEach(item => item.classList.toggle('is-active', item === button)); render(); }));
+      bulkToggle?.addEventListener('click', () => {
+        const visibleItems = items.filter(item => !item.hidden);
+        const shouldOpen = visibleItems.some(item => !item.open);
+        visibleItems.forEach(item => item.open = shouldOpen);
+        updateBulkToggle();
+      });
+      items.forEach(item => item.addEventListener('toggle', updateBulkToggle));
+      archive.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async event => {
+        event.preventDefault(); event.stopPropagation();
+        const id = button.dataset.copy; if (!id) return;
+        const url = `${location.origin}${location.pathname}#${id}`;
+        try { await navigator.clipboard.writeText(url); } catch { const helper = document.createElement('textarea'); helper.value = url; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove(); }
+        history.replaceState(null, '', `#${id}`); button.classList.add('is-copied'); button.setAttribute('aria-label', button.dataset.copiedLabel || '');
+        setTimeout(() => { button.classList.remove('is-copied'); button.setAttribute('aria-label', button.dataset.copyLabel || ''); }, 1800);
+      }));
+      const openHash = () => { const target = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (target?.matches('[data-seminar-item]')) { target.hidden = false; target.open = true; requestAnimationFrame(() => target.scrollIntoView({ block: 'start' })); } };
+      addEventListener('hashchange', openHash); render(); openHash();
+    })();
+  </script>
+</BaseLayout>

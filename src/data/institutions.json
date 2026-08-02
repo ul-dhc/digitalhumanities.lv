@@ -1,0 +1,252 @@
+[
+  {
+    "code": "lu",
+    "lv": "Latvijas Universitāte",
+    "en": "University of Latvia"
+  },
+  {
+    "code": "lu-dhc",
+    "lv": "LU Digitālo humanitāro zinātņu centrs",
+    "en": "University of Latvia Digital Humanities Center"
+  },
+  {
+    "code": "lu-lfmi",
+    "lv": "LU Literatūras, folkloras un mākslas institūts",
+    "en": "Institute of Literature, Folklore and Art, University of Latvia"
+  },
+  {
+    "code": "lu-mii",
+    "lv": "LU Matemātikas un informātikas institūts",
+    "en": "University of Latvia – Institute of Mathematics and Computer Science"
+  },
+  {
+    "code": "lu-fsi",
+    "lv": "LU Filozofijas un socioloģijas institūts",
+    "en": "University of Latvia Institute of Philosophy and Sociology"
+  },
+  {
+    "code": "lu-lavi",
+    "lv": "LU Latviešu valodas institūts",
+    "en": "University of Latvia Institute of Latvian Language"
+  },
+  {
+    "code": "lu-liv",
+    "lv": "LU Lībiešu institūts",
+    "en": "University of Latvia Livonian Institute"
+  },
+  {
+    "code": "lu-lvi",
+    "lv": "LU Latvijas vēstures institūts",
+    "en": "University of Latvia Institute of Latvian History"
+  },
+  {
+    "code": "lnb",
+    "lv": "Latvijas Nacionālā bibliotēka",
+    "en": "National Library of Latvia"
+  },
+  {
+    "code": "kisc",
+    "lv": "Kultūras informācijas sistēmu centrs",
+    "en": "Culture Information Systems Centre"
+  },
+  {
+    "code": "rtu-rezekne",
+    "lv": "RTU Rēzekne",
+    "en": "RTU Rēzekne"
+  },
+  {
+    "code": "lata",
+    "lv": "Latvijas Atvērto tehnoloģiju asociācija",
+    "en": "Latvian Open Technology Association"
+  },
+  {
+    "code": "unesco-lnk",
+    "lv": "UNESCO Latvijas Nacionālā komisija",
+    "en": "Latvian National Commission for UNESCO"
+  },
+  {
+    "code": "lva",
+    "lv": "Latviešu valodas aģentūra",
+    "en": "Latvian Language Agency"
+  },
+  {
+    "code": "lbtu",
+    "lv": "Latvijas Biozinātņu un tehnoloģiju universitāte",
+    "en": "Latvia University of Life Sciences and Technologies"
+  },
+  {
+    "code": "liepu",
+    "lv": "Liepājas Universitāte",
+    "en": "Liepāja University"
+  },
+  {
+    "code": "lnkc",
+    "lv": "Latvijas Nacionālais kultūras centrs",
+    "en": "Latvian National Centre for Culture"
+  },
+  {
+    "code": "rmm",
+    "lv": "Latvijas Nacionālais rakstniecības un mūzikas muzejs",
+    "en": "Latvian National Museum of Literature and Music"
+  },
+  {
+    "code": "tilde",
+    "lv": "Tilde",
+    "en": "Tilde"
+  },
+  {
+    "code": "tieto",
+    "lv": "Tieto Latvia",
+    "en": "Tieto Latvia"
+  },
+  {
+    "code": "europeana",
+    "lv": "Europeana",
+    "en": "Europeana"
+  },
+  {
+    "code": "lursoft",
+    "lv": "Lursoft",
+    "en": "Lursoft"
+  },
+  {
+    "code": "cemety",
+    "lv": "SIA “CEMETY”",
+    "en": "CEMETY Ltd."
+  },
+  {
+    "code": "ciltskoki",
+    "lv": "SIA “Ciltskoki”",
+    "en": "Ciltskoki Ltd."
+  },
+  {
+    "code": "sabiedriskie-mediji",
+    "lv": "Sabiedrisko mediju biedrība",
+    "en": "Society for Public Media"
+  },
+  {
+    "code": "dodies",
+    "lv": "dodies.lv",
+    "en": "dodies.lv"
+  },
+  {
+    "code": "eu",
+    "lv": "Eiropas Savienība",
+    "en": "European Union"
+  },
+  {
+    "code": "lna",
+    "lv": "Latvijas Nacionālais arhīvs",
+    "en": "National Archives of Latvia"
+  },
+  {
+    "code": "venta",
+    "lv": "Ventspils Augstskola",
+    "en": "Ventspils University of Applied Sciences"
+  },
+  {
+    "code": "vdaa",
+    "lv": "Valsts digitālās attīstības aģentūra",
+    "en": "State Digital Development Agency"
+  },
+  {
+    "code": "lka",
+    "lv": "Latvijas Kultūras akadēmija",
+    "en": "Latvian Academy of Culture"
+  },
+  {
+    "code": "du",
+    "lv": "Daugavpils Universitāte",
+    "en": "Daugavpils University"
+  },
+  {
+    "code": "lkm",
+    "lv": "Latgales Kultūrvēstures muzejs",
+    "en": "Latgale Culture and History Museum"
+  },
+  {
+    "code": "lgia",
+    "lv": "Latvijas Ģeotelpiskās informācijas aģentūra",
+    "en": "Latvian Geospatial Information Agency"
+  },
+  {
+    "code": "vdu",
+    "lv": "Vītauta Dižā Universitāte",
+    "en": "Vytautas Magnus University"
+  },
+  {
+    "code": "lmic",
+    "lv": "Latvijas Mūzikas informācijas centrs",
+    "en": "Latvian Music Information Centre"
+  },
+  {
+    "code": "rpiva",
+    "lv": "Rīgas Pedagoģijas un izglītības vadības akadēmija",
+    "en": "Riga Teacher Training and Educational Management Academy"
+  },
+  {
+    "code": "lu-hzf",
+    "lv": "LU Humanitāro zinātņu fakultāte",
+    "en": "University of Latvia – Faculty of Humanities"
+  },
+  {
+    "code": "uit",
+    "lv": "Norvēģijas Arktikas universitāte UiT",
+    "en": "UiT The Arctic University of Norway"
+  },
+  {
+    "code": "uio",
+    "lv": "Oslo Universitāte",
+    "en": "University of Oslo"
+  },
+  {
+    "code": "dzivesstasts",
+    "lv": "Latvijas mutvārdu vēstures pētnieku asociācija “Dzīvesstāsts”",
+    "en": "Association of Latvian Oral History Researchers “Life Story”"
+  },
+  {
+    "code": "open-storage",
+    "lv": "Biedrība “Atvērtās krātuves”",
+    "en": "Open Repositories Society"
+  },
+  {
+    "code": "lbtu-esaf",
+    "lv": "LBTU Ekonomikas un sabiedrības attīstības fakultāte",
+    "en": "Faculty of Economics and Social Development at Latvia University of Life Sciences and Technologies"
+  },
+  {
+    "code": "lbtu-fb",
+    "lv": "LBTU Fundamentālā bibliotēka",
+    "en": "Fundamental Library at Latvia University of Life Sciences and Technologies"
+  },
+  {
+    "code": "rtu",
+    "lv": "Rīgas Tehniskā universitāte",
+    "en": "Riga Technical University"
+  },
+  {
+    "code": "timenote",
+    "lv": "Biedrība “Timenote.info”",
+    "en": "Timenote.info Society"
+  },
+  {
+    "code": "rsu",
+    "lv": "Rīgas Stradiņa universitāte",
+    "en": "Rīga Stradiņš University"
+  },
+  {
+    "code": "rtu-liepaja",
+    "lv": "RTU Liepāja",
+    "en": "RTU Liepāja"
+  },
+  {
+    "code": "lza",
+    "lv": "Latvijas Zinātņu akadēmija",
+    "en": "Latvian Academy of Sciences"
+  },
+  {
+    "code": "jvlma",
+    "lv": "Jāzepa Vītola Latvijas Mūzikas akadēmija",
+    "en": "Jāzeps Vītols Latvian Academy of Music"
+  }
+]

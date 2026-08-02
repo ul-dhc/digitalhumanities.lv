@@ -1,0 +1,26 @@
+---
+import { ArrowUpRight } from '@lucide/astro';
+
+interface Link { text: string; url: string; }
+interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?: string; }
+interface Props { block: Block; }
+const { block } = Astro.props;
+
+type Segment = { type: 'text'; text: string } | { type: 'link'; text: string; url: string };
+const segments: Segment[] = [];
+const unmatched: Link[] = [];
+let remaining = block.text || '';
+for (const link of block.links || []) {
+  const label = link.text.trim();
+  if (!label) { unmatched.push(link); continue; }
+  const index = remaining.indexOf(label);
+  if (index < 0) { unmatched.push(link); continue; }
+  if (index > 0) segments.push({ type: 'text', text: remaining.slice(0, index) });
+  segments.push({ type: 'link', text: label, url: link.url });
+  remaining = remaining.slice(index + label.length);
+}
+if (remaining) segments.push({ type: 'text', text: remaining });
+if (!segments.length) segments.push({ type: 'text', text: block.text || '' });
+---
+{block.tag === 'img' && block.src ? <figure class="legacy-project-image"><img src={block.src} alt={block.alt || ''} loading="lazy" /></figure> : block.tag === 'h3' ? <h3>{segments.map((segment) => segment.type === 'link' ? <a class="legacy-inline-link" href={segment.url} target="_blank" rel="noreferrer">{segment.text}<ArrowUpRight size={12} /></a> : segment.text)}</h3> : block.tag === 'li' ? <div class="legacy-list-item">{segments.map((segment) => segment.type === 'link' ? <a class="legacy-inline-link" href={segment.url} target="_blank" rel="noreferrer">{segment.text}<ArrowUpRight size={12} /></a> : segment.text)}</div> : <p class:list={{ 'legacy-multiline': (block.text || '').includes('\n') }}>{segments.map((segment) => segment.type === 'link' ? <a class="legacy-inline-link" href={segment.url} target="_blank" rel="noreferrer">{segment.text}<ArrowUpRight size={12} /></a> : segment.text)}</p>}
+{unmatched.length > 0 && <div class="legacy-unmatched-links">{unmatched.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.text || link.url}<ArrowUpRight size={12} /></a>)}</div>}

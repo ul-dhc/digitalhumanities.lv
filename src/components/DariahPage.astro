@@ -1,0 +1,122 @@
+---
+import { ArrowDown, ArrowUpRight, Building2, CircleUserRound, Network, Shapes } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+const isLv = lang === 'lv';
+const alternateUrl = isLv ? '/en/dariah-lv/' : '/lv/dariah-lv/';
+
+const copy = isLv ? {
+  title: 'DARIAH-LV',
+  description: 'Latvijas nacionālais sadarbības tīkls digitālajām pētniecības metodēm, resursiem un infrastruktūrām humanitārajās zinātnēs.',
+  intro: 'DARIAH-LV savieno Latvijas pētniecības, augstākās izglītības un atmiņas institūcijas ar Eiropas digitālo humanitāro zinātņu infrastruktūru.',
+  nav: ['Par DARIAH', 'DARIAH-LV Latvijā', 'Finansējums un atbalsts', 'Institūcijas', 'Kontakti'],
+  aboutTitle: 'Kas ir DARIAH ERIC?',
+  aboutBody: 'DARIAH ERIC ir izkliedēta Eiropas digitālā pētniecības infrastruktūra mākslas un humanitārajām zinātnēm. Tā atbalsta digitāli iespējotu pētniecību un izglītību, savienojot pētniekus, institūcijas, kompetences, datus, rīkus, pakalpojumus un mācību resursus.',
+  aboutAside: 'DARIAH nav viena centralizēta platforma. Tā ir cilvēku, institūciju, zināšanu un digitālo pakalpojumu sadarbības infrastruktūra.',
+  lvTitle: 'DARIAH ERIC Latvijā',
+  lvBody: 'Latvijas digitālo humanitāro zinātņu attīstības stratēģija paredz Latvijas pievienošanos DARIAH ERIC pilntiesīgas dalībvalsts statusā. Nacionālā konsorcija pamatu veido pēdējos gados nostiprinātā digitālo humanitāro zinātņu ekosistēma un sadarbības tīkls digitalhumanities.lv.',
+  directions: 'Galvenie darbības virzieni',
+  directionItems: ['Digitālo pētniecības resursu un pakalpojumu ilgtspējīga attīstība', 'Kompetenču, metožu un mācību materiālu apmaiņa', 'Latvijas infrastruktūru savietojamība un integrācija Eiropas tīklos', 'Sadarbība starp pētniekiem, tehnoloģiju ekspertiem un atmiņas institūcijām'],
+  membersTitle: 'DARIAH-LV institūcijas',
+  membersIntro: 'Atbalstu nacionālā konsorcija izveidei un iesaistei tajā paudušas Latvijas augstākās izglītības, pētniecības un atmiņas institūcijas.',
+  members: ['Latvijas Universitātes Literatūras, folkloras un mākslas institūts', 'Latvijas Universitāte', 'Latvijas Universitātes Matemātikas un informātikas institūts', 'Latvijas Nacionālā bibliotēka', 'Rīgas Tehniskā universitāte', 'Latvijas Kultūras akadēmija', 'Jāzepa Vītola Latvijas Mūzikas akadēmija'],
+  contactTitle: 'Pārvaldība un kontakti',
+  fundingTitle: 'Finansējums un atbalsts',
+  funding: 'Latvijas dalību DARIAH ERIC atbalsta Izglītības un zinātnes ministrija. Nacionālā mezgla izveidi stiprina mērķēts publiskais finansējums, tostarp 1.1.1.5. pasākums “Latvijas pilnvērtīgas dalības nodrošināšana Apvārsnis Eiropa programmā, tajā skaitā nodrošinot kompleksu atbalsta instrumentu klāstu un sasaisti ar RIS3 specializācijas jomu attīstīšanu”.',
+  fundingResult: 'Šis atbalsts nodrošina institucionālo kapacitāti, starpinstitucionālo koordināciju un digitālās infrastruktūras ilgtspējīgu attīstību.',
+  fundingProject: 'Atbalsta projekts: “Latvijas Universitāte un institūti Eiropas Pētniecības telpā — izcilība, aktivitāte, mobilitāte, kapacitāte” (Nr. 1.1.1.5/3/25/I/011).',
+  contactBody: 'DARIAH-LV darbību vada Sanita Reinsone, Latvijas Universitātes Humanitāro zinātņu fakultātes asociētā profesore. Publicitāti un komunikāciju koordinē Ilze Ļaksa-Timinska, Latvijas Universitātes Literatūras, folkloras un mākslas institūta pētniece.',
+  contactLink: 'Sazināties ar mums',
+  external: 'Apmeklēt DARIAH ERIC tīmekļvietni',
+} : {
+  title: 'DARIAH-LV',
+  description: 'Latvia’s national cooperation network for digital research methods, resources and infrastructures in the humanities.',
+  intro: 'DARIAH-LV connects Latvia’s research, higher education and memory institutions with the European digital humanities infrastructure.',
+  nav: ['About DARIAH', 'DARIAH-LV in Latvia', 'Funding and support', 'Institutions', 'Contacts'],
+  aboutTitle: 'What is DARIAH ERIC?',
+  aboutBody: 'DARIAH ERIC is a distributed European digital research infrastructure for the arts and humanities. It supports digitally enabled research and education by connecting researchers, institutions, expertise, data, tools, services and learning resources.',
+  aboutAside: 'DARIAH is not a single centralised platform. It is a collaborative infrastructure of people, institutions, knowledge and digital services.',
+  lvTitle: 'DARIAH ERIC in Latvia',
+  lvBody: 'Latvia’s digital humanities development strategy provides for Latvia’s accession to DARIAH ERIC as a full member state. The national consortium builds on the digital humanities ecosystem strengthened in recent years and the digitalhumanities.lv cooperation network.',
+  directions: 'Main areas of activity',
+  directionItems: ['Sustainable development of digital research resources and services', 'Exchange of expertise, methods and learning materials', 'Interoperability of Latvian infrastructures and integration into European networks', 'Cooperation among researchers, technology experts and memory institutions'],
+  membersTitle: 'DARIAH-LV institutions',
+  membersIntro: 'Latvian higher education, research and memory institutions have expressed support for and interest in establishing the national consortium.',
+  members: ['Institute of Literature, Folklore and Art, University of Latvia', 'University of Latvia', 'Institute of Mathematics and Computer Science, University of Latvia', 'National Library of Latvia', 'Riga Technical University', 'Latvian Academy of Culture', 'Jāzeps Vītols Latvian Academy of Music'],
+  contactTitle: 'Governance and contacts',
+  fundingTitle: 'Funding and support',
+  funding: 'Latvia’s participation in DARIAH ERIC is supported by the Ministry of Education and Science. The establishment of the national node is strengthened through targeted public funding, including Measure 1.1.1.5, “Ensuring Latvia’s full participation in the Horizon Europe programme, including the provision of a comprehensive set of support instruments and links with the development of RIS3 specialisation areas.”',
+  fundingResult: 'This support ensures institutional capacity, inter-institutional coordination and the sustainable development of digital infrastructure.',
+  fundingProject: 'Supported by the project “University of Latvia and Institutes in the European Research Area — Excellence, Activity, Mobility, Capacity” (No. 1.1.1.5/3/25/I/011).',
+  contactBody: 'DARIAH-LV activities are led by Sanita Reinsone, Associate Professor at the Faculty of Humanities, University of Latvia. Dissemination and communication are coordinated by Ilze Ļaksa-Timinska, Researcher at the Institute of Literature, Folklore and Art, University of Latvia.',
+  contactLink: 'Contact us',
+  external: 'Visit the DARIAH ERIC website',
+};
+const anchors = isLv
+  ? ['par-dariah', 'dariah-latvija', 'finansejums', 'institucijas', 'kontakti']
+  : ['about-dariah', 'dariah-latvia', 'funding', 'institutions', 'contacts'];
+---
+<BaseLayout title={`${copy.title} — Digital Humanities LV`} description={copy.description} lang={lang} alternateUrl={alternateUrl}>
+  <div class="dariah-page" data-alternate-base={alternateUrl}>
+    <section class="dariah-hero shell">
+      <div>
+        <HomeBackLink lang={lang} />
+        <h1 class="sr-only">{copy.title}</h1>
+        <div class="dariah-hero-mark" role="img" aria-label="DARIAH-LV"></div>
+        <p class="lead">{copy.intro}</p>
+      </div>
+    </section>
+
+    <nav class="dariah-local-nav shell" aria-label={isLv ? 'Šīs lapas saturs' : 'On this page'}>
+      {anchors.map((anchor, index) => <a href={`#${anchor}`}>{copy.nav[index]}<ArrowDown size={15} /></a>)}
+    </nav>
+
+    <div class="dariah-content shell">
+      <section id={anchors[0]} class="dariah-section dariah-about">
+        <div class="dariah-section-heading"><Shapes size={27} /><p class="section-label">DARIAH ERIC</p><h2>{copy.aboutTitle}</h2></div>
+        <div class="dariah-section-copy"><p class="large-copy">{copy.aboutBody}</p><aside>{copy.aboutAside}</aside><a class="text-link" href="https://www.dariah.eu/" target="_blank" rel="noreferrer">{copy.external}<ArrowUpRight size={17} /></a></div>
+      </section>
+
+      <section id={anchors[1]} class="dariah-section">
+        <div class="dariah-section-heading"><Network size={27} /><p class="section-label">DARIAH-LV</p><h2>{copy.lvTitle}</h2></div>
+        <div class="dariah-section-copy"><p class="large-copy">{copy.lvBody}</p><h3>{copy.directions}</h3><ol class="direction-list">{copy.directionItems.map((item, index) => <li><span>{String(index + 1).padStart(2, '0')}</span>{item}</li>)}</ol></div>
+      </section>
+
+      <section id={anchors[2]} class="dariah-section">
+        <div class="dariah-section-heading"><Building2 size={27} /><p class="section-label">DARIAH-LV</p><h2>{copy.fundingTitle}</h2></div>
+        <div class="dariah-section-copy"><p class="large-copy">{copy.funding}</p><p class="funding-result">{copy.fundingResult}</p><p class="funding-project">{copy.fundingProject}</p></div>
+      </section>
+
+      <section id={anchors[3]} class="dariah-section">
+        <div class="dariah-section-heading"><Building2 size={27} /><p class="section-label">DARIAH-LV</p><h2>{copy.membersTitle}</h2><p>{copy.membersIntro}</p></div>
+        <div class="dariah-section-copy"><ul class="institution-list">{copy.members.map((member) => <li>{member}</li>)}</ul></div>
+      </section>
+
+      <section id={anchors[4]} class="dariah-section">
+        <div class="dariah-section-heading"><CircleUserRound size={27} /><p class="section-label">DARIAH-LV</p><h2>{copy.contactTitle}</h2></div>
+        <div class="dariah-section-copy"><p class="large-copy">{copy.contactBody}</p><a class="button primary" href="mailto:dhc@lu.lv">{copy.contactLink}<ArrowUpRight size={17} /></a></div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const page = document.querySelector<HTMLElement>('[data-alternate-base]');
+  const languageLink = document.querySelector<HTMLAnchorElement>('.language');
+  const hashPairs: Record<string, string> = {
+    '#par-dariah': '#about-dariah', '#about-dariah': '#par-dariah',
+    '#dariah-latvija': '#dariah-latvia', '#dariah-latvia': '#dariah-latvija',
+    '#finansejums': '#funding', '#funding': '#finansejums',
+    '#institucijas': '#institutions', '#institutions': '#institucijas',
+    '#kontakti': '#contacts', '#contacts': '#kontakti',
+  };
+  const updateLanguageLink = () => {
+    if (!page || !languageLink) return;
+    languageLink.href = `${page.dataset.alternateBase}${hashPairs[location.hash] || ''}`;
+  };
+  updateLanguageLink();
+  addEventListener('hashchange', updateLanguageLink);
+</script>
