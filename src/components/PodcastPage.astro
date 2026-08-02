@@ -1,0 +1,63 @@
+---
+import { Check, ExternalLink, Headphones, Link2, ListVideo, Play, Search, UserRound } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+type Language = 'lv' | 'en';
+interface Props { lang: Language; alternateUrl: string; }
+const { lang, alternateUrl } = Astro.props;
+const isLv = lang === 'lv';
+const playlistId = 'PLfpAVBirI9Bh3fZ_yCCMQbRENF4kKuN4V';
+
+const episodes = [
+  { number: 14, video: 'Tx7VS9Jhn-w', title: 'Bibliotēka un digitālie rīki pētniekiem', guest: 'Uldis Zariņš', description: 'Saruna par Latvijas Universitātes bibliotēku kā fizisku un digitālu bibliotēku, pētniekiem pieejamajiem digitālajiem rīkiem un mākslīgā intelekta iespējamo ietekmi uz bibliotēku darbu.' },
+  { number: 13, video: 'uBQwoNwPlBU', title: 'MI pratība humanitāram cilvēkam', guest: 'Aldis Ērglis', description: 'Saruna par mākslīgā intelekta rīkiem humanitāro un sociālo zinātņu pētniekiem, kritisko domāšanu, efektīvu uzvedņu veidošanu un darbu ar nestrukturētiem datiem.' },
+  { number: 12, video: 'jJIlLnIG5S4', title: 'Programmēšana un mākslīgais intelekts DH', guest: 'Valdis Saulespurēns', description: 'Saruna par programmēšanu, datizraci un mašīnmācīšanos digitālajās humanitārajās zinātnēs, Latvijas Nacionālās bibliotēkas pētniecības rīkiem un programmēšanas apguvi.' },
+  { number: 11, video: 'CXPysvD5cXc', title: 'Digitālās metodes vēstures pētniecībā', guest: 'Jānis Tomaševskis', description: 'Saruna par digitālo metožu izmantošanu vēstures pētniecībā un Latvijas Kara muzeja vēsturnieka pieredzi darbā ar digitāliem avotiem un pētniecības pieejām.' },
+  { number: 10, video: 'O3UnS9Fm56M', title: 'Datorlingvistikas aizsākumi Latvijā', guest: 'Sarma Kļaviņa', description: 'Atskats uz datorlingvistikas pirmsākumiem Latvijā, agrīno mašīntulkošanu, lingvistisko statistiku un latviešu publicistikas biežuma vārdnīcas tapšanu.' },
+  { number: 9, video: 'bHvM8YNXFQw', title: 'Valodniecība digitālajā laikmetā', guest: 'Sanda Rapa', description: 'Saruna par Latviešu valodas institūta darbu, digitālo tehnoloģiju lomu valodniecībā, jaunu vārdu veidošanos un sabiedrības iesaisti digitālajās talkās.' },
+  { number: 8, video: '9SdsVKlm_v0', title: 'Valodu tehnoloģijas un DH', guest: 'Inguna Skadiņa', description: 'Saruna par valodu tehnoloģiju vēsturi Latvijā, Mākslīgā intelekta laboratoriju, lielajiem valodu modeļiem latviešu valodā un valodas resursiem CLARIN repozitorijā.' },
+  { number: 7, video: 'dW-kSr-KGmw', title: 'DH no politikas veidotāju skatpunkta', guest: 'Edvards Francis Kuks', description: 'Saruna par pētnieku sadarbību ar politikas veidotājiem, valsts pētījumu programmām, RIS3, augstām digitālajām prasmēm un mikrokvalifikācijām.' },
+  { number: 6, video: 'WSv3riyhrcY', title: 'Apdraudētās kopienas: lībieši un DH', guest: 'Valts Ernštreits', description: 'Saruna par digitālo resursu nozīmi lībiešu valodas un kultūras dokumentēšanā, pētniecībā, standartizācijā un pieejamības nodrošināšanā.' },
+  { number: 5, video: '0eK4JEjKUac', title: 'Digitālo humanitāro zinātņu studijas RTU', guest: 'Marina Platonova', description: 'Saruna par digitālo humanitāro zinātņu maģistra studiju programmu RTU, tās galvenajiem virzieniem, studentu profiliem un prakses iespējām.' },
+  { number: 4, video: 'lpz-hpCr-x4', title: 'Sabiedriskā zinātne un DH', guest: 'Sanita Reinsone', description: 'Saruna par sabiedriskās zinātnes jēdzienu un situāciju Latvijā, akciju “Balsu talka”, pētnieku un līdzstrādnieku lomām un datu kvalitāti.' },
+  { number: 3, video: '_CZaGdAzvKY', title: 'Latgaliešu valoda un digitālā vide', guest: 'Sanita Martena', description: 'Saruna ar Rēzeknes Tehnoloģiju akadēmijas lietišķās valodniecības profesori Sanitu Martenu par latgaliešu valodu un digitālo vidi.' },
+  { number: 2, video: '8ajEssYdL-g', title: 'Ko darīt DH iesācējiem', guest: 'Anda Baklāne', description: 'Saruna par personisko pieredzi digitālajās humanitārajās zinātnēs, pētnieciskā lauka specifiku un ieteikumiem, ar ko sākt un ar ko labāk nesākt DH iesācējiem.' },
+  { number: 1, video: '9vAdw9o5vRE', title: 'Runas korpusi', guest: 'Ilze Auziņa', description: 'Saruna par tekstu un runas korpusu vēsturi, dzīvās valodas pētniecības specifiku, latviešu valodas runas atpazīšanu un mākslīgā intelekta apmācīšanu.' },
+].map(episode => ({ ...episode, id: `epizode-${String(episode.number).padStart(2, '0')}`, image: `/assets/podcast/episode-${String(episode.number).padStart(2, '0')}.jpg`, url: `https://www.youtube.com/watch?v=${episode.video}&list=${playlistId}&index=${episode.number}` }));
+
+const labels = isLv ? {
+  title: 'Raidieraksts “Digitālās humanitārās zinātnes”', kicker: 'Sarunas par digitālajām humanitārajām zinātnēm Latvijā', intro: 'Raidierakstā piedāvājam sarunas ar digitālo humanitāro zinātņu jomas pārstāvjiem par aktuālākajiem pētījumiem, metodēm, resursiem un pieredzi Latvijā.', detail: 'Raidierakstu kopīgi organizē Latvijas Universitātes Literatūras, folkloras un mākslas institūts un Latvijas Nacionālā bibliotēka.', playlist: 'Atskaņošanas saraksts', playlistHelp: 'Visas 14 epizodes vienuviet', openPlaylist: 'Atvērt YouTube atskaņošanas sarakstu', archive: 'Epizožu arhīvs', search: 'Meklēt pēc tēmas vai viesa', episodes: 'epizodes', episode: 'Epizode', guest: 'Viesis', moderator: 'Moderators', watch: 'Skatīties YouTube', copy: 'Kopēt saiti uz epizodi', copied: 'Saite nokopēta', empty: 'Neviena epizode netika atrasta.', originalNote: '', description: 'Raidieraksta “Digitālās humanitārās zinātnes” 14 epizožu arhīvs.'
+} : {
+  title: 'Digital Humanities Podcast', kicker: 'Conversations about digital humanities in Latvia', intro: 'The podcast features conversations with representatives of the digital humanities community about current research, methods, resources and experiences in Latvia.', detail: 'The podcast is jointly organised by the Institute of Literature, Folklore and Art, University of Latvia, and the National Library of Latvia.', playlist: 'Playlist', playlistHelp: 'All 14 episodes in one place', openPlaylist: 'Open the YouTube playlist', archive: 'Episode archive', search: 'Search by topic or guest', episodes: 'episodes', episode: 'Episode', guest: 'Guest', moderator: 'Moderator', watch: 'Watch on YouTube', copy: 'Copy link to episode', copied: 'Link copied', empty: 'No episodes found.', originalNote: 'Episode titles and descriptions are retained in Latvian where no English source text is available.', description: 'Archive of all 14 episodes of the Digital Humanities Podcast.'
+};
+---
+<BaseLayout title={`${labels.title} – Digital Humanities LV`} description={labels.description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="podcast-hero shell">
+    <div class="podcast-hero-copy"><HomeBackLink lang={lang} /><p class="eyebrow">{labels.kicker}</p><h1>{labels.title}</h1><p class="lead">{labels.intro}</p><p class="podcast-organisers">{labels.detail}</p></div>
+    <div class="podcast-player-block"><div class="podcast-player-heading"><span><ListVideo size={18} />{labels.playlist}</span><small>{labels.playlistHelp}</small></div><div class="podcast-player"><iframe src={`https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}`} title={labels.playlist} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a href={`https://www.youtube.com/playlist?list=${playlistId}`} target="_blank" rel="noopener noreferrer"><ExternalLink size={15} />{labels.openPlaylist}</a></div>
+  </section>
+  <section class="podcast-archive shell" data-podcast-archive>
+    <div class="podcast-archive-heading"><div><p class="section-label">01–14</p><h2>{labels.archive}</h2></div><p><strong data-podcast-count>{episodes.length}</strong> {labels.episodes}</p></div>
+    {labels.originalNote && <p class="podcast-language-note">{labels.originalNote}</p>}
+    <label class="podcast-search"><Search size={18} /><span class="sr-only">{labels.search}</span><input type="search" placeholder={labels.search} data-podcast-search /></label>
+    <div class="podcast-grid">
+      {episodes.map(episode => <article class="podcast-card" id={episode.id} data-podcast-item data-search={`${episode.number} ${episode.title} ${episode.guest} ${episode.description}`.toLocaleLowerCase(lang)}>
+        <a class="podcast-card-image" href={episode.url} target="_blank" rel="noopener noreferrer" aria-label={`${labels.watch}: ${episode.title}`}><img src={episode.image} alt="" width="1280" height="720" loading="lazy" /><span><Play size={22} fill="currentColor" /></span></a>
+        <div class="podcast-card-copy"><div class="podcast-card-meta"><span>{labels.episode} {episode.number}</span><button type="button" data-podcast-copy={episode.id} data-copy-label={labels.copy} data-copied-label={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={17} /><Check class="check-icon" size={17} /></button></div><h3>{episode.title}</h3><p class="podcast-guest"><UserRound size={15} /><span><strong>{labels.guest}</strong>{episode.guest}</span></p><p class="podcast-moderator"><strong>{labels.moderator}</strong> Haralds Matulis</p><p>{episode.description}</p><a class="podcast-watch" href={episode.url} target="_blank" rel="noopener noreferrer"><Headphones size={16} />{labels.watch}<ExternalLink size={14} /></a></div>
+      </article>)}
+      <p class="podcast-empty" data-podcast-empty hidden>{labels.empty}</p>
+    </div>
+  </section>
+  <script is:inline>
+    (() => {
+      const archive = document.querySelector('[data-podcast-archive]'); if (!archive) return;
+      const items = [...archive.querySelectorAll('[data-podcast-item]')]; const input = archive.querySelector('[data-podcast-search]'); const count = archive.querySelector('[data-podcast-count]'); const empty = archive.querySelector('[data-podcast-empty]');
+      const render = () => { const query = input?.value.trim().toLocaleLowerCase(document.documentElement.lang) || ''; let visible = 0; items.forEach(item => { const show = !query || item.dataset.search.includes(query); item.hidden = !show; if (show) visible++; }); if (count) count.textContent = String(visible); if (empty) empty.hidden = visible !== 0; };
+      input?.addEventListener('input', render);
+      archive.querySelectorAll('[data-podcast-copy]').forEach(button => button.addEventListener('click', async () => { const id = button.dataset.podcastCopy; if (!id) return; const url = `${location.origin}${location.pathname}#${id}`; try { await navigator.clipboard.writeText(url); } catch { const helper = document.createElement('textarea'); helper.value = url; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove(); } history.replaceState(null, '', `#${id}`); button.classList.add('is-copied'); button.setAttribute('aria-label', button.dataset.copiedLabel || ''); setTimeout(() => { button.classList.remove('is-copied'); button.setAttribute('aria-label', button.dataset.copyLabel || ''); }, 1800); }));
+      const openHash = () => { const target = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (target?.matches('[data-podcast-item]')) { target.hidden = false; requestAnimationFrame(() => target.scrollIntoView({ block: 'start' })); } };
+      addEventListener('hashchange', openHash); render(); openHash();
+    })();
+  </script>
+</BaseLayout>

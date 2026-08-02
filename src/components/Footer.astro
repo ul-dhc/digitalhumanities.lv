@@ -1,0 +1,10 @@
+---
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+---
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p>© {new Date().getFullYear()} digitalhumanities.lv</p>
+    <div><a href={lang === 'lv' ? '/lv/par-mums/#kontakti' : '/en/about-us/#contacts'}>{lang === 'lv' ? 'Kontakti' : 'Contacts'}</a></div>
+  </div>
+</footer>

@@ -1,0 +1,42 @@
+[
+  {
+    "record_id": "bssdh-2026-starts-lv",
+    "language": "lv",
+    "translation_id": "bssdh-2026-starts",
+    "content_type": "news",
+    "title": "3. augustā sākas 8. Baltijas digitālo humanitāro zinātņu vasaras skola",
+    "slug": "8-baltijas-digitalo-humanitaro-zinatnu-vasaras-skola-sakas-3-augusta",
+    "published_at": "2026-08-02",
+    "event_date": "2026-08-03",
+    "summary": "No 3. līdz 7. augustam Latvijas Nacionālajā bibliotēkā Rīgā notiks 8. Baltijas digitālo humanitāro zinātņu vasaras skola BSSDH 2026, kas šogad veltīta kultūras datu analītikai un nozīmes veidošanai.",
+    "body_markdown": "3. augustā Latvijas Nacionālajā bibliotēkā Rīgā sāksies 8. Baltijas digitālo humanitāro zinātņu vasaras skola BSSDH 2026. Tā norisināsies līdz 7. augustam un šogad pievērsīsies tēmai “Kultūras datu analītika un nozīme”. Programmā iekļautas atvērtās lekcijas, praktiskas darbnīcas un diskusijas par strukturētiem kultūras datiem, datu modelēšanu, vizualizāciju, lielajiem valodu modeļiem un digitālās pētniecības metodēm humanitārajās zinātnēs. Vasaras skolu rīko Latvijas Nacionālā bibliotēka, Latvijas Universitātes Humanitāro zinātņu fakultāte un LU Literatūras, folkloras un mākslas institūts. [Skatīt programmu un praktisko informāciju](/lv/bssdh/2026/)\n\n🎥 **Lekciju tiešraides būs skatāmas:**\n\n- [LU YouTube kanālā](https://www.youtube.com/@lutiesraides4477)\n- [LU LFMI Facebook lapā](https://www.facebook.com/lulfmi)",
+    "image_url": "/assets/bssdh/bssdh-2026-banner.webp",
+    "image_alt": "BSSDH 2026 baneris",
+    "external_url": "/lv/bssdh/2026/",
+    "featured": true,
+    "pinned": true,
+    "status": "published",
+    "archive_url": "https://digitalhumanities.lv/lv/aktualitates/#8-baltijas-digitalo-humanitaro-zinatnu-vasaras-skola-sakas-3-augusta",
+    "share_url": "https://digitalhumanities.lv/lv/aktualitates/8-baltijas-digitalo-humanitaro-zinatnu-vasaras-skola-sakas-3-augusta/"
+  },
+  {
+    "record_id": "bssdh-2026-starts-en",
+    "language": "en",
+    "translation_id": "bssdh-2026-starts",
+    "content_type": "news",
+    "title": "The 8th Baltic Summer School of Digital Humanities begins on 3 August",
+    "slug": "8th-baltic-summer-school-of-digital-humanities-begins-3-august",
+    "published_at": "2026-08-02",
+    "event_date": "2026-08-03",
+    "summary": "From 3 to 7 August, the National Library of Latvia in Riga will host the 8th Baltic Summer School of Digital Humanities, BSSDH 2026, dedicated this year to cultural data analytics and meaning.",
+    "body_markdown": "On 3 August, the 8th Baltic Summer School of Digital Humanities, BSSDH 2026, will begin at the National Library of Latvia in Riga. The summer school runs until 7 August and focuses this year on “Cultural Data Analytics and Meaning”. The programme includes open lectures, practical workshops and discussions on structured cultural data, data modelling, visualisation, large language models and digital research methods in the humanities. The summer school is organised by the National Library of Latvia, the Faculty of Humanities of the University of Latvia and the Institute of Literature, Folklore and Art, University of Latvia. [View the programme and practical information](/en/bssdh/2026/)\n\n🎥 **Lectures will be livestreamed at:**\n\n- [LU YouTube channel](https://www.youtube.com/@lutiesraides4477)\n- [LU LFMI Facebook page](https://www.facebook.com/lulfmi)",
+    "image_url": "/assets/bssdh/bssdh-2026-banner.webp",
+    "image_alt": "BSSDH 2026 banner",
+    "external_url": "/en/bssdh/2026/",
+    "featured": true,
+    "pinned": true,
+    "status": "published",
+    "archive_url": "https://digitalhumanities.lv/en/updates/#8th-baltic-summer-school-of-digital-humanities-begins-3-august",
+    "share_url": "https://digitalhumanities.lv/en/updates/8th-baltic-summer-school-of-digital-humanities-begins-3-august/"
+  }
+]
