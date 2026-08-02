@@ -25,8 +25,9 @@ jobs:
 
       - name: Sync Google Sheets and build Astro site
         uses: withastro/action@v6
-        env:
-          SITE_URL: https://digitalhumanities.lv
+       env:
+  SITE_URL: https://digitalhumanities.lv
+  BASE_PATH: /digitalhumanities.lv
         with:
           node-version: 22
           package-manager: pnpm@11.9.0
