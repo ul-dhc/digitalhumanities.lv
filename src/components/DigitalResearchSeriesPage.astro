@@ -1,0 +1,51 @@
+---
+import { Check, ExternalLink, Link2, ListVideo, Play, Search, UsersRound } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+type Language = 'lv' | 'en';
+interface Props { lang: Language; alternateUrl: string; }
+const { lang, alternateUrl } = Astro.props;
+const isLv = lang === 'lv';
+const playlistId = 'PLfpAVBirI9BjdI_yzD45XpzWp6tkn17g2';
+const available = [
+  { number: 6, video: 'ny2RPKbOQjA', lvTitle: 'Latviešu seno burtveidolu digitalizācija', enTitle: 'Digitization of Old Latvian Script', lvDescription: 'Sērija veltīta latviešu vecās drukas, gotu burtu jeb fraktūras rakstības, vēsturei un digitalizācijai.', enDescription: 'This episode explores the history of the ancient Latvian script, Latvian Gothic or Fraktur writing styles, and the challenges surrounding its digitisation.', participants: ['Pauls Daija', 'Anda Baklāne', 'Valdis Saulespurēns'] },
+  { number: 5, video: 'TgASo3p2Rjk', lvTitle: 'Dialektu digitalizācija', enTitle: 'Digitization of Dialects', lvDescription: 'Šajā sērijā uzzini par dialektu digitalizāciju.', enDescription: 'In this episode, learn about the digitisation of dialects.', participants: ['Anete Ozola', 'Anna Stafecka', 'Edmunds Trumpa'] },
+  { number: 4, video: 'XYDCgteU1Uc', lvTitle: 'Ženklinimas skaitmeninio kultūros paveldo atvėrimas', enTitle: 'Licencing – a Road to Open Digital Heritage', lvDescription: 'Šajā sērijā uzzini par digitālā kultūras mantojuma resursu licencēšanu.', enDescription: 'In this episode, learn about the licencing of digital cultural heritage resources.', participants: ['Milda Kvizikevičiūtė', 'Dovilė Ivanovienė', 'Simona Mikėnaitė'] },
+  { number: 3, video: 'llocEc7ADB4', lvTitle: 'Digitālās līdzdalības metodes', enTitle: 'Digital Participatory Methods', lvDescription: 'Šajā sērijā uzzini par digitālās pūļa iesaistes un koprades metodēm.', enDescription: 'In this episode, learn about digital crowdsourcing and co-creation methods.', participants: ['Sanita Reinsone', 'Justīne Jaudzema'] },
+  { number: 2, video: 'l4k0PMmzppA', lvTitle: 'Periodikas digitalizācija', enTitle: 'Digitization of Periodicals', lvDescription: 'Šajā sērijā uzzini, kā Latvijas Nacionālajā bibliotēkā norisinās periodikas digitalizācija.', enDescription: 'In this episode, learn about the process of periodical digitisation at the National Library of Latvia.', participants: ['Anda Baklāne', 'Kristina Papule', 'Iveta Daugule-Balode', 'Roberts Seržans'] },
+  { number: 1, video: 'KuW8RXjXAkU', lvTitle: 'Teksta datoranalīze un vizualizācija', enTitle: 'Computer Analysis and Visualization of Text', lvDescription: 'Šajā sērijā uzzini par teksta datoranalīzi un tā vizualizāciju.', enDescription: 'In this episode, learn about computer analysis of text and its visualisation.', participants: ['Anda Baklāne', 'Valdis Saulespurēns'] },
+].map(episode => ({ ...episode, title: isLv ? episode.lvTitle : episode.enTitle, description: isLv ? episode.lvDescription : episode.enDescription, id: `serija-${String(episode.number).padStart(2, '0')}`, image: `/assets/digital-research-series/episode-${String(episode.number).padStart(2, '0')}.jpg`, url: `https://www.youtube.com/watch?v=${episode.video}&list=${playlistId}&index=${episode.number}` }));
+const episodes = available;
+const labels = isLv ? {
+  title: 'Digitālās pētniecības seriāls', kicker: 'Video stāsti par digitālo pētniecību', intro: 'Video seriāls iepazīstina ar digitālo humanitāro zinātņu resursiem, metodēm un pētniecības procesiem Latvijā un Baltijas reģionā.', playlist: 'Atskaņošanas saraksts', playlistHelp: '6 publiski pieejamas sērijas', openPlaylist: 'Atvērt YouTube atskaņošanas sarakstu', archive: 'Sēriju arhīvs', search: 'Meklēt pēc tēmas vai dalībnieka', episodes: 'sērijas', episode: 'Sērija', participants: 'Dalībnieki', watch: 'Skatīties YouTube', copy: 'Kopēt saiti uz sēriju', copied: 'Saite nokopēta', empty: 'Neviena sērija netika atrasta.', description: 'Digitālās pētniecības seriāla publiski pieejamo sēriju arhīvs.'
+} : {
+  title: 'Digital Humanities Series', kicker: 'Video stories about digital research', intro: 'The video series introduces digital humanities resources, methods and research processes in Latvia and the Baltic region.', playlist: 'Playlist', playlistHelp: '6 publicly available episodes', openPlaylist: 'Open the YouTube playlist', archive: 'Series archive', search: 'Search by topic or participant', episodes: 'episodes', episode: 'Episode', participants: 'Participants', watch: 'Watch on YouTube', copy: 'Copy link to episode', copied: 'Link copied', empty: 'No episodes found.', description: 'Archive of the publicly available episodes of the Digital Humanities Series.'
+};
+---
+<BaseLayout title={`${labels.title} – Digital Humanities LV`} description={labels.description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="podcast-hero shell">
+    <div class="podcast-hero-copy"><HomeBackLink lang={lang} /><p class="eyebrow">{labels.kicker}</p><h1>{labels.title}</h1><p class="lead">{labels.intro}</p></div>
+    <div class="podcast-player-block"><div class="podcast-player-heading"><span><ListVideo size={18} />{labels.playlist}</span><small>{labels.playlistHelp}</small></div><div class="podcast-player"><iframe src={`https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}`} title={labels.playlist} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><a href={`https://www.youtube.com/playlist?list=${playlistId}`} target="_blank" rel="noopener noreferrer"><ExternalLink size={15} />{labels.openPlaylist}</a></div>
+  </section>
+  <section class="podcast-archive shell" data-video-series>
+    <div class="podcast-archive-heading"><div><p class="section-label">01–06</p><h2>{labels.archive}</h2></div><p><strong data-series-count>{episodes.length}</strong> {labels.episodes}</p></div>
+    <label class="podcast-search"><Search size={18} /><span class="sr-only">{labels.search}</span><input type="search" placeholder={labels.search} data-series-search /></label>
+    <div class="podcast-grid">
+      {episodes.map(episode => <article class="podcast-card" id={episode.id} data-series-item data-search={`${episode.number} ${episode.title} ${episode.description} ${episode.participants.join(' ')}`.toLocaleLowerCase(lang)}>
+        <a class="podcast-card-image" href={episode.url} target="_blank" rel="noopener noreferrer" aria-label={`${labels.watch}: ${episode.title}`}><img src={episode.image} alt="" width="1280" height="720" loading="lazy" /><span><Play size={22} fill="currentColor" /></span></a>
+        <div class="podcast-card-copy"><div class="podcast-card-meta"><span>{labels.episode} {episode.number}</span><button type="button" data-series-copy={episode.id} data-copy-label={labels.copy} data-copied-label={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={17} /><Check class="check-icon" size={17} /></button></div><h3>{episode.title}</h3><p class="series-participants"><UsersRound size={15} /><span><strong>{labels.participants}</strong>{episode.participants.join(', ')}</span></p><p>{episode.description}</p><a class="podcast-watch" href={episode.url} target="_blank" rel="noopener noreferrer"><Play size={16} />{labels.watch}<ExternalLink size={14} /></a></div>
+      </article>)}
+      <p class="podcast-empty" data-series-empty hidden>{labels.empty}</p>
+    </div>
+  </section>
+  <script is:inline>
+    (() => {
+      const archive = document.querySelector('[data-video-series]'); if (!archive) return; const items = [...archive.querySelectorAll('[data-series-item]')]; const input = archive.querySelector('[data-series-search]'); const count = archive.querySelector('[data-series-count]'); const empty = archive.querySelector('[data-series-empty]');
+      const render = () => { const query = input?.value.trim().toLocaleLowerCase(document.documentElement.lang) || ''; let visible = 0; items.forEach(item => { const show = !query || item.dataset.search.includes(query); item.hidden = !show; if (show) visible++; }); if (count) count.textContent = String(visible); if (empty) empty.hidden = visible !== 0; };
+      input?.addEventListener('input', render);
+      archive.querySelectorAll('[data-series-copy]').forEach(button => button.addEventListener('click', async () => { const id = button.dataset.seriesCopy; if (!id) return; const url = `${location.origin}${location.pathname}#${id}`; try { await navigator.clipboard.writeText(url); } catch { const helper = document.createElement('textarea'); helper.value = url; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove(); } history.replaceState(null, '', `#${id}`); button.classList.add('is-copied'); button.setAttribute('aria-label', button.dataset.copiedLabel || ''); setTimeout(() => { button.classList.remove('is-copied'); button.setAttribute('aria-label', button.dataset.copyLabel || ''); }, 1800); }));
+      const openHash = () => { const target = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (target?.matches('[data-series-item]')) { target.hidden = false; requestAnimationFrame(() => target.scrollIntoView({ block: 'start' })); } }; addEventListener('hashchange', openHash); render(); openHash();
+    })();
+  </script>
+</BaseLayout>

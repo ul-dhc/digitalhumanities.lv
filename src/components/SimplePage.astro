@@ -1,0 +1,11 @@
+---
+import { ArrowRight } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+interface Props { lang: 'lv'|'en'; title: string; description: string; alternateUrl: string; }
+const { lang, title, description, alternateUrl } = Astro.props;
+---
+<BaseLayout title={`${title} — Digital Humanities LV`} description={description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="page-heading shell"><HomeBackLink lang={lang} /><h1>{title}</h1><p class="lead">{description}</p></section>
+  <section class="content-placeholder shell"><p>{lang === 'lv' ? 'Šeit tiks pārnests un sakārtots esošās vietnes saturs.' : 'Existing website content will be migrated and organised here.'}</p><a href={`/${lang}/`}>{lang === 'lv' ? 'Atgriezties sākumlapā' : 'Back to home'} <ArrowRight size={17} /></a></section>
+</BaseLayout>

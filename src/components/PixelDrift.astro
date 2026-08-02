@@ -1,0 +1,343 @@
+<div class="pixel-drift" aria-hidden="true">
+  <canvas data-pixel-drift></canvas>
+</div>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-pixel-drift]');
+
+  if (canvas) {
+    const context = canvas.getContext('2d');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+    let animationFrame = 0;
+    let visible = true;
+    let particles: Particle[] = [];
+    let draggedParticle: Particle | null = null;
+    let previousDragAngle = 0;
+    let previousDragY = 0;
+    let rotationFactor = 1;
+    let targetRotation = 1;
+    let verticalDrift = 0;
+    let targetVerticalDrift = 0;
+    let verticalOffset = 0;
+    let hoveredParticle: Particle | null = null;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragMoved = false;
+    let suppressNextClick = false;
+    let nextAccentIndex = 0;
+
+    interface Particle {
+      x: number;
+      y: number;
+      previousX: number;
+      previousY: number;
+      size: number;
+      depth: number;
+      angle: number;
+      radius: number;
+      vertical: number;
+      speed: number;
+      phase: number;
+      shimmer: number;
+      accentIndex: number | null;
+    }
+
+    let seed = 4179;
+    const random = () => {
+      seed = (seed * 16807) % 2147483647;
+      return (seed - 1) / 2147483646;
+    };
+
+    const makeParticle = (): Particle => {
+      const depth = .3 + random();
+      return {
+        x: 0,
+        y: 0,
+        previousX: 0,
+        previousY: 0,
+        size: 1.5 + depth * depth * 8.2,
+        depth,
+        angle: random() * Math.PI * 2,
+        radius: Math.pow(random(), 1.45),
+        vertical: (random() + random() + random() - 1.5) / 1.5,
+        speed: (.00009 + random() * .00028) * (random() > .16 ? 1 : -1),
+        phase: random() * Math.PI * 2,
+        shimmer: .62 + random() * .38,
+        accentIndex: null,
+      };
+    };
+
+    const positionParticle = (particle: Particle, initial = false) => {
+      if (!initial) {
+        particle.previousX = particle.x;
+        particle.previousY = particle.y;
+      }
+      const centreX = width * (width < 500 ? .54 : .66);
+      const centreY = height * .5;
+      const horizontalRadius = width * (.07 + particle.radius * .57);
+      const verticalRadius = height * (.035 + particle.radius * .31);
+      const breathing = Math.sin(frame * .0012 + particle.phase) * width * .018 * particle.depth;
+      particle.x = centreX + Math.cos(particle.angle) * (horizontalRadius + breathing);
+      const baseY = centreY
+        + Math.sin(particle.angle) * verticalRadius
+        + particle.vertical * height * (.08 + particle.radius * .17)
+        + Math.cos(frame * .001 + particle.phase) * 7 * particle.depth
+        + verticalOffset * (.3 + particle.depth * .7);
+      const verticalSpan = height + 140;
+      particle.y = ((baseY + 70) % verticalSpan + verticalSpan) % verticalSpan - 70;
+      if (initial) {
+        particle.previousX = particle.x;
+        particle.previousY = particle.y;
+      }
+    };
+
+    const resize = () => {
+      if (!context) return;
+      const bounds = canvas.getBoundingClientRect();
+      const density = Math.min(devicePixelRatio || 1, 2);
+      width = Math.max(1, bounds.width);
+      height = Math.max(1, bounds.height);
+      canvas.width = Math.round(width * density);
+      canvas.height = Math.round(height * density);
+      context.setTransform(density, 0, 0, density, 0, 0);
+      seed = 4179;
+      const count = width < 500
+        ? 96
+        : width < 760
+          ? 230
+          : Math.min(650, Math.round((width * height) / 1500));
+      canvas.dataset.particleCount = String(count);
+      particles = Array.from({ length: count }, makeParticle);
+      particles.forEach(particle => positionParticle(particle, true));
+      draw();
+    };
+
+    const palette = () => document.documentElement.dataset.theme === 'dark'
+      ? { particle: '183, 132, 255', line: '166, 112, 245' }
+      : { particle: '98, 64, 232', line: '112, 83, 220' };
+
+    const accentPalette = () => document.documentElement.dataset.theme === 'dark'
+      ? ['#ff79c6', '#8fb8ff', '#d49cff', '#a78bfa', '#75d7f0', '#ef8cff']
+      : ['#c13e9a', '#4169d8', '#8b4bd8', '#6547c7', '#168fb5', '#ad4fc9'];
+
+    const draw = () => {
+      if (!context) return;
+      context.clearRect(0, 0, width, height);
+      const colour = palette();
+      const accents = accentPalette();
+
+      const centreX = width * (width < 500 ? .54 : .66);
+      const centreY = height * .5;
+      context.lineWidth = .65;
+      for (let ring = 1; ring <= 5; ring += 1) {
+        context.strokeStyle = `rgba(${colour.line}, ${.026 + ring * .006})`;
+        context.beginPath();
+        context.ellipse(centreX, centreY, width * (.105 * ring), height * (.058 * ring), 0, 0, Math.PI * 2);
+        context.stroke();
+      }
+
+      context.lineWidth = .65;
+      for (let index = 0; index < particles.length; index += 13) {
+        const start = particles[index];
+        const end = particles[(index + 5 + (index % 7)) % particles.length];
+        const distance = Math.hypot(end.x - start.x, end.y - start.y);
+        if (distance > width * .27) continue;
+        const linePosition = ((start.x + end.x) / 2) / width;
+        const lineFade = .18 + Math.max(0, Math.min(1, (linePosition - .08) / .58)) * .82;
+        context.strokeStyle = `rgba(${colour.line}, ${Math.max(.025, .16 - distance / 1200) * lineFade})`;
+        context.beginPath();
+        context.moveTo(start.x, start.y);
+        context.lineTo(end.x, end.y);
+        context.stroke();
+      }
+
+      for (let index = 0; index < particles.length; index += 1) {
+        const particle = particles[index];
+        const pulse = .8 + Math.sin(frame * .006 + particle.phase) * .14;
+        const horizontalFade = .18 + Math.max(0, Math.min(1, (particle.x / width - .06) / .58)) * .82;
+        const alpha = (.2 + particle.depth * .55) * pulse * particle.shimmer * horizontalFade;
+        const accent = particle.accentIndex === null ? null : accents[particle.accentIndex % accents.length];
+
+        if (particle.depth > .86) {
+          context.strokeStyle = accent || `rgba(${colour.particle}, ${alpha * .22})`;
+          context.globalAlpha = accent ? .26 : 1;
+          context.lineWidth = Math.max(.7, particle.size * .18);
+          context.beginPath();
+          context.moveTo(particle.previousX, particle.previousY);
+          context.lineTo(particle.x, particle.y);
+          context.stroke();
+          context.globalAlpha = 1;
+        }
+
+        if (accent) {
+          context.fillStyle = accent;
+          context.globalAlpha = .15 + pulse * .06;
+          context.fillRect(particle.x - particle.size, particle.y - particle.size, particle.size * 3, particle.size * 3);
+          context.globalAlpha = .88 + pulse * .08;
+        } else {
+          context.fillStyle = `rgba(${colour.particle}, ${alpha})`;
+        }
+        context.fillRect(particle.x, particle.y, particle.size, particle.size);
+        context.globalAlpha = 1;
+
+        if (particle === hoveredParticle || particle === draggedParticle) {
+          context.strokeStyle = accent || `rgba(${colour.particle}, ${Math.min(1, alpha + .34)})`;
+          context.lineWidth = 1.2;
+          context.strokeRect(
+            particle.x - 5,
+            particle.y - 5,
+            particle.size + 10,
+            particle.size + 10,
+          );
+        }
+
+        if (index % 19 === 0) {
+          context.fillStyle = `rgba(${colour.particle}, ${alpha * .2})`;
+          context.fillRect(
+            particle.x - particle.size * 1.5,
+            particle.y - particle.size * 1.5,
+            particle.size * 4,
+            particle.size * 4,
+          );
+        }
+      }
+    };
+
+    const animate = () => {
+      animationFrame = 0;
+      if (!visible) return;
+      frame += 1;
+      rotationFactor += (targetRotation - rotationFactor) * .018;
+      targetRotation += (1 - targetRotation) * .00065;
+      verticalDrift += (targetVerticalDrift - verticalDrift) * .024;
+      targetVerticalDrift += (0 - targetVerticalDrift) * .0011;
+      verticalOffset += verticalDrift;
+      if (Math.abs(verticalOffset) > height * 8) verticalOffset %= height + 140;
+      canvas.dataset.rotationDirection = rotationFactor < 0 ? 'reverse' : 'forward';
+      canvas.dataset.verticalDirection = verticalDrift < -.025 ? 'up' : verticalDrift > .025 ? 'down' : 'still';
+      for (const particle of particles) {
+        if (particle !== draggedParticle) {
+          particle.angle += particle.speed * (.72 + particle.depth * .5) * rotationFactor;
+          positionParticle(particle);
+        }
+      }
+      draw();
+      if (!reducedMotion.matches) animationFrame = requestAnimationFrame(animate);
+    };
+
+    const start = () => {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      if (reducedMotion.matches) draw();
+      else animationFrame = requestAnimationFrame(animate);
+    };
+
+    new ResizeObserver(resize).observe(canvas);
+    new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+      else cancelAnimationFrame(animationFrame);
+    }, { rootMargin: '100px' }).observe(canvas);
+    reducedMotion.addEventListener('change', start);
+
+    const pointerPosition = (event: PointerEvent) => {
+      const bounds = canvas.getBoundingClientRect();
+      return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    };
+
+    const nearestParticle = (x: number, y: number, maximumDistance = 42) => {
+      let nearest: Particle | null = null;
+      let nearestDistance = maximumDistance;
+      for (const particle of particles) {
+        const distance = Math.hypot(particle.x - x, particle.y - y);
+        if (distance < nearestDistance) {
+          nearest = particle;
+          nearestDistance = distance;
+        }
+      }
+      return nearest;
+    };
+
+    canvas.addEventListener('pointermove', event => {
+      const pointer = pointerPosition(event);
+      if (!draggedParticle) {
+        hoveredParticle = nearestParticle(pointer.x, pointer.y, 30);
+        canvas.classList.toggle('can-drag', Boolean(hoveredParticle));
+        return;
+      }
+      if (Math.hypot(pointer.x - dragStartX, pointer.y - dragStartY) > 7) dragMoved = true;
+
+      const centreX = width * (width < 500 ? .54 : .66);
+      const centreY = height * .5;
+      const normalizedX = (pointer.x - centreX) / Math.max(1, width * .57);
+      const normalizedY = (pointer.y - centreY) / Math.max(1, height * .31);
+      const nextAngle = Math.atan2(normalizedY, normalizedX);
+      let angleDelta = nextAngle - previousDragAngle;
+      if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+      if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+      if (Math.abs(angleDelta) > .002) targetRotation = Math.max(-3, Math.min(3, angleDelta * 80));
+      const verticalDelta = pointer.y - previousDragY;
+      if (Math.abs(verticalDelta) > .15) targetVerticalDrift = Math.max(-2.2, Math.min(2.2, verticalDelta * .09));
+      previousDragAngle = nextAngle;
+      previousDragY = pointer.y;
+      draggedParticle.angle = nextAngle;
+      draggedParticle.radius = Math.max(.08, Math.min(1, Math.hypot(normalizedX, normalizedY)));
+      draggedParticle.previousX = draggedParticle.x;
+      draggedParticle.previousY = draggedParticle.y;
+      positionParticle(draggedParticle);
+    });
+
+    canvas.addEventListener('pointerdown', event => {
+      const pointer = pointerPosition(event);
+      draggedParticle = nearestParticle(pointer.x, pointer.y, width < 500 ? 52 : 90);
+      if (!draggedParticle) return;
+      previousDragAngle = draggedParticle.angle;
+      previousDragY = pointer.y;
+      dragStartX = pointer.x;
+      dragStartY = pointer.y;
+      dragMoved = false;
+      canvas.setPointerCapture(event.pointerId);
+      canvas.classList.add('is-dragging');
+      canvas.dataset.dragActive = 'true';
+      event.preventDefault();
+    });
+
+    const endDrag = (event: PointerEvent) => {
+      if (!draggedParticle) return;
+      suppressNextClick = dragMoved;
+      draggedParticle = null;
+      hoveredParticle = null;
+      canvas.classList.remove('is-dragging', 'can-drag');
+      canvas.dataset.dragActive = 'false';
+      canvas.dataset.lastDrag = rotationFactor < 0 || targetRotation < 0 ? 'reverse' : 'forward';
+      canvas.dataset.lastVerticalDrag = verticalDrift < -.025 || targetVerticalDrift < -.025 ? 'up' : verticalDrift > .025 || targetVerticalDrift > .025 ? 'down' : 'still';
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    };
+
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('click', event => {
+      if (suppressNextClick) {
+        suppressNextClick = false;
+        return;
+      }
+      const pointer = pointerPosition(event as PointerEvent);
+      const particle = nearestParticle(pointer.x, pointer.y, width < 500 ? 52 : 90);
+      if (!particle) return;
+      particle.accentIndex = nextAccentIndex;
+      nextAccentIndex = (nextAccentIndex + 1) % accentPalette().length;
+      canvas.dataset.colouredParticles = String(particles.filter(item => item.accentIndex !== null).length);
+      draw();
+    });
+    canvas.addEventListener('pointerleave', () => {
+      if (!draggedParticle) {
+        hoveredParticle = null;
+        canvas.classList.remove('can-drag');
+      }
+    });
+  }
+</script>

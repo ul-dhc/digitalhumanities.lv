@@ -1,0 +1,7 @@
+---
+import BssdhYearPage from '../../../../components/BssdhYearPage.astro';
+import { bssdhYears } from '../../../../data/bssdh';
+export function getStaticPaths(){ return bssdhYears.map(({year}) => ({params:{year}})); }
+const { year } = Astro.params;
+---
+<BssdhYearPage lang="en" year={year!} />
