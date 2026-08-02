@@ -1,0 +1,45 @@
+name: Deploy Digitalhumanities.lv
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Syncs Google Sheets content every 6 hours
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Sync Google Sheets and build Astro site
+        uses: withastro/action@v6
+        env:
+          SITE_URL: https://digitalhumanities.lv
+        with:
+          node-version: 22
+      # If you use pnpm locally, add:
+      # package-manager: pnpm@11.9.0
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
