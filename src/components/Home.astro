@@ -1,0 +1,50 @@
+---
+import { ArrowRight, CalendarDays, Database, FolderKanban, GraduationCap, Mic2 } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PixelDrift from './PixelDrift.astro';
+
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+const lv = lang === 'lv';
+const c = lv ? {
+  title: 'Digitālās humanitārās zinātnes Latvijā',
+  intro: 'Sadarbības platforma, kas apvieno pētniecības institūcijas un pētniekus ar mērķi attīstīt digitālās humanitārās zinātnes Latvijā.',
+  primary: 'Norises', secondary: 'Par mums',
+  paths: [
+    ['Norises', 'Jaunumi un gaidāmie pasākumi', '/lv/aktualitates/', CalendarDays],
+    ['Resursi un rīki', 'Meklējama datubāze pētniecībai un mācībām', '/lv/resursi-un-riki/', Database],
+    ['Projekti', 'Digitālo humanitāro zinātņu projekti Latvijā', '/lv/projekti/', FolderKanban],
+  ],
+  series: 'Mūsu pasākumi', workshop: 'Digitalhumanities.lv semināru cikls', podcast: 'Digitalhumanities.lv raidieraksts',
+} : {
+  title: 'Digital humanities in Latvia',
+  intro: 'A collaborative platform that brings together research institutions and researchers with the aim of developing digital humanities in Latvia.',
+  primary: 'Events', secondary: 'About us',
+  paths: [
+    ['Events', 'News and upcoming events', '/en/updates/', CalendarDays],
+    ['Resources and tools', 'A searchable database for research and teaching', '/en/resources-and-tools/', Database],
+    ['Projects', 'Digital humanities projects in Latvia', '/en/projects/', FolderKanban],
+  ],
+  series: 'Our events', workshop: 'Digitalhumanities.lv workshop series', podcast: 'Digitalhumanities.lv podcast',
+};
+---
+<BaseLayout title={`${c.title} — Digital Humanities LV`} description={c.intro} lang={lang} alternateUrl={lv ? '/en/' : '/lv/'}>
+  <section class="hero shell">
+    <div class="hero-copy">
+      <h1>{c.title}</h1>
+      <p class="lead">{c.intro}</p>
+      <div class="button-row"><a class="button primary" href={lv ? '/lv/aktualitates/' : '/en/updates/'}>{c.primary}<ArrowRight size={18} /></a><a class="button secondary" href={lv ? '/lv/par-mums/' : '/en/about-us/'}>{c.secondary}</a></div>
+    </div>
+    <PixelDrift />
+  </section>
+  <section class="pathways shell" aria-label={lv ? 'Galvenās sadaļas' : 'Main sections'}>
+    {c.paths.map(([title, text, href, Icon]) => <a class="pathway" href={href as string}><Icon size={23} stroke-width={1.7} /><span><strong>{title}</strong><small>{text}</small></span><ArrowRight class="path-arrow" size={20} /></a>)}
+  </section>
+  <section class="series shell">
+    <p class="section-label">{c.series}</p>
+    <div class="series-grid">
+      <a href={lv ? '/lv/seminari/' : '/en/workshop-series/'}><GraduationCap size={26} /><span>{c.workshop}</span><ArrowRight size={19} /></a>
+      <a href={lv ? '/lv/raidieraksts/' : '/en/podcast/'}><Mic2 size={26} /><span>{c.podcast}</span><ArrowRight size={19} /></a>
+    </div>
+  </section>
+</BaseLayout>

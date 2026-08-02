@@ -1,0 +1,23 @@
+---
+import ProjectDetailPage from '../../../components/ProjectDetailPage.astro';
+import details from '../../../data/project-details.json';
+
+export function getStaticPaths() {
+  const meta = {
+    digilate: ['DigiLATE', 'Digital Resources and Artificial Intelligence Technologies for the Sustainability of the Latvian Language', '2025–2028'],
+    vti: ['VTI', 'Language Technology Initiative', '2022–2026'],
+    dheli: ['DHELI', 'Towards Development of an Open and FAIR Digital Humanities Ecosystem in Latvia', '2023–2025'],
+    'dh-vpp': ['DH VPP', 'Digital Resources for the Humanities: Integration and Development', '2020–2022'],
+    late: ['LATE', 'Research on Modern Latvian Language and Development of Language Technology', '2022–2024'],
+    'teiktas-dziesmas': ['Spoken Songs', 'Spoken Songs: Algorithms of Composition and Improvisation', '2026–2028'],
+    'going-beyond-search': ['NORDPLUS', 'Going Beyond Search: Advancing Digital Competences in Libraries and Research Communities', '2019–2021'],
+  } as const;
+  return Object.entries(meta).map(([project, data]) => ({ params: { project }, props: { project, data } }));
+}
+const { project, data } = Astro.props;
+const [acronym, title, years] = data;
+const blocks = details[`en/${project}` as keyof typeof details] || [];
+const hasLatvian = project !== 'going-beyond-search';
+const alternateUrl = hasLatvian ? `/lv/projekti/${project}/` : `/lv/projekti/#${project}`;
+---
+<ProjectDetailPage lang="en" slug={project} acronym={acronym} title={title} years={years} blocks={blocks} alternateUrl={alternateUrl} />

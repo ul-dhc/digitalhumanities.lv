@@ -1,0 +1,283 @@
+---
+import { CalendarDays, Check, ExternalLink, Link2, Pin, Search } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+import archiveData from '../data/archive.json';
+import legacyLatvianData from '../data/legacy-lv-archive.json';
+import newData from '../data/new-entries.json';
+
+type Language = 'lv' | 'en';
+interface RecordItem {
+  record_id: string;
+  language: Language;
+  translation_id: string;
+  content_type: 'news' | 'event' | 'seminar' | 'podcast';
+  title: string;
+  slug: string;
+  published_at: string;
+  event_date: string;
+  summary: string;
+  body_markdown: string;
+  image_url_original?: string;
+  image_url_new?: string;
+  image_url?: string;
+  image_alt?: string;
+  external_url?: string;
+  archive_url: string;
+  share_url: string;
+  status: string;
+  featured?: boolean;
+  pinned?: boolean;
+}
+
+interface Props {
+  lang: Language;
+  title: string;
+  description: string;
+  types: RecordItem['content_type'][];
+  alternateUrl: string;
+}
+
+const { lang, title, description, types, alternateUrl } = Astro.props;
+const allItems = [...new Map(
+  [...(legacyLatvianData as RecordItem[]), ...(archiveData as RecordItem[]), ...(newData as RecordItem[])]
+    .map(item => [item.record_id, item]),
+).values()];
+const items = allItems
+  .filter(item => item.language === lang && types.includes(item.content_type) && item.status === 'published')
+  .sort((a, b) => Number(Boolean(b.pinned || b.featured)) - Number(Boolean(a.pinned || a.featured)) || b.published_at.localeCompare(a.published_at));
+const otherLanguage = lang === 'lv' ? 'en' : 'lv';
+const otherLanguageItems = allItems.filter(item => item.language === otherLanguage && item.status === 'published');
+const counterpartByTranslationId = new Map(
+  otherLanguageItems.filter(item => item.translation_id).map(item => [item.translation_id, item.archive_url]),
+);
+const counterpartBySlug = new Map(otherLanguageItems.map(item => [item.slug, item.archive_url]));
+const dateFormatter = new Intl.DateTimeFormat(lang === 'lv' ? 'lv-LV' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+const labels = lang === 'lv' ? {
+  search: 'Meklēt arhīvā', found: 'ieraksti', share: 'Kopīgošanas saite', open: 'Ārējā saite', empty: 'Nekas netika atrasts.', pinned: 'Piesprausts', copy: 'Kopēt saiti', copied: 'Saite nokopēta', allYears: 'Visi gadi', byTime: 'Norises pa gadiem', perPage: 'Vienā lapā', previous: 'Iepriekšējā', next: 'Nākamā', page: 'Lapa', of: 'no', allMonths: 'Viss gads',
+} : {
+  search: 'Search the archive', found: 'items', share: 'Share link', open: 'External link', empty: 'No items found.', pinned: 'Pinned', copy: 'Copy link', copied: 'Link copied', allYears: 'All years', byTime: 'Events over time', perPage: 'Per page', previous: 'Previous', next: 'Next', page: 'Page', of: 'of', allMonths: 'Full year',
+};
+const years = [...new Set(items.map(item => new Date(item.published_at).getFullYear()))].sort((a, b) => b - a);
+const timeline = years.map(year => ({
+  year,
+  items: items
+    .filter(item => new Date(item.published_at).getFullYear() === year)
+    .sort((a, b) => b.published_at.localeCompare(a.published_at)),
+}));
+
+const escapeHtml = (value: string) => value
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+const safeUrl = (value: string) => /^(?:https?:\/\/|mailto:|\/|\.\.?\/)/i.test(value.trim()) ? value.trim() : '#';
+
+const renderInline = (source: string) => {
+  const links: string[] = [];
+  const withTokens = source.replace(/\[([\s\S]*?)\]\(([^)\s]+)\)/g, (_match, rawLabel, rawUrl) => {
+    const url = safeUrl(rawUrl);
+    const label = String(rawLabel).replace(/\s+/g, ' ').trim() || rawUrl;
+    const external = /^https?:\/\//i.test(url);
+    links.push(`<a href="${escapeHtml(url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeHtml(label)}${external ? '<span aria-hidden="true">↗</span>' : ''}</a>`);
+    return `@@ARCHIVE_LINK_${links.length - 1}@@`;
+  });
+  return escapeHtml(withTokens)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/@@ARCHIVE_LINK_(\d+)@@/g, (_match, index) => links[Number(index)] || '');
+};
+
+const renderMarkdown = (source: string) => {
+  const normalizedSource = source
+    .replace(/\r\n?/g, '\n')
+    .replace(/🔗\s*(?=\[[^\]]+\]\([^)]+\))/g, '')
+    .trim();
+  const withoutComments = normalizedSource.replace(
+    /\n\s*(?:Nav komentāru|Komentēt|Vārds\s*\*|E-pasts\s*\*|Tavs komentārs|No comments|Leave a comment|Your comment|Name\s*\*|E-mail\s*\*)\s*(?:\n|$)[\s\S]*$/i,
+    '',
+  );
+  const seenUrls = new Set<string>();
+  const cleanedSource = withoutComments.split('\n').filter((line) => {
+    const trimmed = line.trim();
+    if (/^(?:\[\]\s*)+$/.test(trimmed)) return false;
+    const standaloneLink = trimmed.match(/^\[([^\]]*)\]\(([^)]+)\)\s*$/);
+    if (standaloneLink && seenUrls.has(standaloneLink[2])) return false;
+    for (const match of line.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) seenUrls.add(match[1]);
+    return true;
+  }).join('\n').trim();
+  const blocks = cleanedSource.split(/\n\s*\n+/);
+  return blocks.map((block) => {
+    const lines = block.split('\n').map(line => line.trim()).filter(Boolean);
+    if (!lines.length) return '';
+    if (lines.every(line => /^(?:[-*•·])\s+/.test(line))) {
+      return `<ul>${lines.map(line => `<li>${renderInline(line.replace(/^(?:[-*•·])\s+/, ''))}</li>`).join('')}</ul>`;
+    }
+    const heading = lines.join(' ').match(/^(#{2,4})\s+(.+)$/);
+    if (heading) return `<h3>${renderInline(heading[2])}</h3>`;
+    if (lines.every(line => /^(?:--+|–+)$/.test(line))) return '<hr>';
+    return `<p>${renderInline(lines.join(' '))}</p>`;
+  }).join('');
+};
+---
+<BaseLayout title={`${title} — Digital Humanities LV`} description={description} lang={lang} alternateUrl={alternateUrl}>
+  <section class="page-heading shell archive-heading">
+    <HomeBackLink lang={lang} />
+    <h1>{title}</h1>
+    <p class="lead">{description}</p>
+  </section>
+  <section class="archive shell" data-archive data-alternate-base={alternateUrl} data-counter-label={labels.found} data-page-label={labels.page} data-of-label={labels.of}>
+    <div class="archive-insights" aria-label={labels.byTime}>
+      <div class="archive-insights-heading">
+        <h2>{labels.byTime}</h2>
+      </div>
+      <div class="archive-pixel-timeline" data-timeline>
+        {timeline.map(group => <div class="archive-year-group">
+          <div class="archive-year-caption">{group.year}</div>
+          <div class="archive-pixels">
+            {group.items.map(item => <button type="button" data-timeline-slug={item.slug} aria-label={`${dateFormatter.format(new Date(item.published_at))}: ${item.title}`} title={`${dateFormatter.format(new Date(item.published_at))} — ${item.title}`}><span class="sr-only">{item.title}</span></button>)}
+          </div>
+        </div>)}
+      </div>
+    </div>
+    <div class="archive-toolbar">
+      <label class="archive-search"><Search size={18} /><span class="sr-only">{labels.search}</span><input type="search" placeholder={labels.search} data-archive-search /></label>
+      <div class="archive-toolbar-meta">
+        <p><strong data-archive-count>{items.length}</strong> {labels.found}</p>
+        <label>{labels.perPage}<select data-page-size><option value="10">10</option><option value="50">50</option><option value="100">100</option></select></label>
+      </div>
+    </div>
+    <div class="archive-list">
+      {items.map((item, index) => {
+        const imageUrl = item.image_url || item.image_url_new || item.image_url_original;
+        const isPinned = Boolean(item.pinned || item.featured);
+        const showExternalAction = Boolean(item.external_url && !item.body_markdown.includes(item.external_url));
+        return (
+          <details class:list={['archive-item', { 'is-pinned': isPinned }]} id={item.slug} data-archive-item data-period={`${new Date(item.published_at).getFullYear()}-${new Date(item.published_at).getMonth() + 1}`} data-search={`${item.title} ${item.summary}`.toLowerCase()} data-counterpart-url={counterpartByTranslationId.get(item.translation_id) || counterpartBySlug.get(item.slug) || ''} open={index === 0}>
+            <summary>
+              <div class="archive-date"><CalendarDays size={17} /><time datetime={item.published_at}>{dateFormatter.format(new Date(item.published_at))}</time>{isPinned && <span class="archive-pinned"><Pin size={13} />{labels.pinned}</span>}</div>
+              <div class="archive-title-row"><h2>{item.title}</h2><button class="archive-copy-link" type="button" data-archive-copy={item.slug} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={17} aria-hidden="true" /><Check class="check-icon" size={17} aria-hidden="true" /></button></div>
+              <p>{item.summary}</p>
+            </summary>
+            <div class="archive-body">
+              {imageUrl && <img src={imageUrl} alt={item.image_alt || ''} loading="lazy" />}
+              <div class="archive-copy" set:html={renderMarkdown(item.body_markdown)}></div>
+              {showExternalAction && <div class="archive-actions"><a href={item.external_url} target="_blank" rel="noopener"><ExternalLink size={16} />{labels.open}</a></div>}
+            </div>
+          </details>
+        );
+      })}
+      <p class="archive-empty" data-archive-empty hidden>{labels.empty}</p>
+    </div>
+    <nav class="archive-pagination" data-archive-pagination aria-label={labels.page}>
+      <button type="button" data-page-prev>← <span>{labels.previous}</span></button>
+      <div data-page-numbers></div>
+      <p data-page-status></p>
+      <button type="button" data-page-next><span>{labels.next}</span> →</button>
+    </nav>
+  </section>
+  <script is:inline>
+    (() => {
+      const archive = document.querySelector('[data-archive]');
+      if (!archive) return;
+      const items = [...archive.querySelectorAll('[data-archive-item]')];
+      const input = archive.querySelector('[data-archive-search]');
+      const count = archive.querySelector('[data-archive-count]');
+      const empty = archive.querySelector('[data-archive-empty]');
+      const pageSizeSelect = archive.querySelector('[data-page-size]');
+      const pagination = archive.querySelector('[data-archive-pagination]');
+      const previous = archive.querySelector('[data-page-prev]');
+      const next = archive.querySelector('[data-page-next]');
+      const pageNumbers = archive.querySelector('[data-page-numbers]');
+      const pageStatus = archive.querySelector('[data-page-status]');
+      const timelineButtons = [...archive.querySelectorAll('[data-timeline-slug]')];
+      const languageLink = document.querySelector('.language');
+      const copyButtons = [...archive.querySelectorAll('[data-archive-copy]')];
+      let currentPage = 1;
+      let pageSize = Number(pageSizeSelect?.value || 10);
+      const render = () => {
+        const query = input?.value.trim().toLowerCase() || '';
+        const matches = items.filter(item => !query || item.dataset.search.includes(query));
+        const pageCount = Math.max(1, Math.ceil(matches.length / pageSize));
+        currentPage = Math.min(currentPage, pageCount);
+        const visibleItems = new Set(matches.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+        items.forEach(item => item.hidden = !visibleItems.has(item));
+        if (count) count.textContent = String(matches.length);
+        if (empty) empty.hidden = matches.length !== 0;
+        if (pagination) pagination.hidden = matches.length === 0;
+        if (previous) previous.disabled = currentPage <= 1;
+        if (next) next.disabled = currentPage >= pageCount;
+        if (pageStatus) pageStatus.textContent = `${archive.dataset.pageLabel} ${currentPage} ${archive.dataset.ofLabel} ${pageCount}`;
+        if (pageNumbers) {
+          pageNumbers.innerHTML = '';
+          const start = Math.max(1, currentPage - 2);
+          const end = Math.min(pageCount, start + 4);
+          for (let page = Math.max(1, end - 4); page <= end; page++) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = String(page);
+            button.classList.toggle('is-active', page === currentPage);
+            button.setAttribute('aria-current', page === currentPage ? 'page' : 'false');
+            button.addEventListener('click', () => { currentPage = page; render(); archive.scrollIntoView({ behavior: 'smooth' }); });
+            pageNumbers.append(button);
+          }
+        }
+      };
+      const openHash = () => {
+        const slug = decodeURIComponent(location.hash.slice(1));
+        if (!slug) return;
+        const target = items.find(item => item.id === slug);
+        if (target) {
+          if (input) input.value = '';
+          currentPage = Math.floor(items.indexOf(target) / pageSize) + 1;
+          render();
+          target.open = true;
+          requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+          if (languageLink && target.dataset.counterpartUrl) {
+            const counterpart = new URL(target.dataset.counterpartUrl, location.origin);
+            languageLink.href = counterpart.pathname + counterpart.hash;
+          }
+        }
+      };
+      input?.addEventListener('input', () => { currentPage = 1; render(); });
+      pageSizeSelect?.addEventListener('change', () => { pageSize = Number(pageSizeSelect.value); currentPage = 1; render(); });
+      previous?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); archive.scrollIntoView({ behavior: 'smooth' }); } });
+      next?.addEventListener('click', () => { currentPage++; render(); archive.scrollIntoView({ behavior: 'smooth' }); });
+      timelineButtons.forEach(button => button.addEventListener('click', () => {
+        const slug = button.dataset.timelineSlug;
+        if (!slug) return;
+        history.replaceState(null, '', `#${slug}`);
+        openHash();
+      }));
+      copyButtons.forEach(button => button.addEventListener('click', async event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const slug = button.dataset.archiveCopy;
+        if (!slug) return;
+        const url = `${location.origin}${location.pathname}#${slug}`;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          const helper = document.createElement('textarea');
+          helper.value = url;
+          document.body.append(helper);
+          helper.select();
+          document.execCommand('copy');
+          helper.remove();
+        }
+        history.replaceState(null, '', `#${slug}`);
+        button.classList.add('is-copied');
+        button.setAttribute('aria-label', button.dataset.labelCopied || '');
+        setTimeout(() => {
+          button.classList.remove('is-copied');
+          button.setAttribute('aria-label', button.dataset.labelCopy || '');
+        }, 1800);
+      }));
+      addEventListener('hashchange', openHash);
+      render();
+      openHash();
+    })();
+  </script>
+</BaseLayout>

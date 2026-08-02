@@ -1,0 +1,22 @@
+{
+  "name": "digitalhumanities-lv",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "predev": "node scripts/sync-google-sheets.mjs",
+    "dev": "astro dev",
+    "sync:data": "node scripts/sync-google-sheets.mjs",
+    "prebuild": "node scripts/sync-google-sheets.mjs",
+    "build": "astro build",
+    "postbuild": "node scripts/generate-redirect-pages.mjs && node scripts/apply-base-path.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@lucide/astro": "1.28.0",
+    "astro": "7.1.6"
+  }
+}

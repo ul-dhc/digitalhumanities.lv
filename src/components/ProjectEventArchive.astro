@@ -1,0 +1,292 @@
+---
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Images, Link, Search } from '@lucide/astro';
+import LegacyProjectBlock from './LegacyProjectBlock.astro';
+
+interface Link { text: string; url: string; }
+interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?: string; }
+interface Props { blocks: Block[]; lang: 'lv' | 'en'; slug: string; }
+const { blocks, lang, slug } = Astro.props;
+
+const dateStart = /^(?:\d{1,2}\.){1,2}(?:[–—-](?:\d{1,2}\.){1,2})?20\d{2}\.?/;
+const isStart = (block: Block, index: number) => {
+  const text = (block.text || '').trim();
+  if (!text) return false;
+  if (/^https?:\/\/\S+$/i.test(text)) return false;
+  if (/^20\d{2}\.\s*gada\b/i.test(text)) return false;
+  if (block.tag === 'h2' || block.tag === 'h3') return true;
+  if (dateStart.test(text)) return true;
+  return block.tag === 'p' && text.length < 140 && !/[.!?]$/.test(text) && blocks[index + 1]?.tag === 'img';
+};
+
+interface EventItem { heading: string; date: string; year: string; blocks: Block[]; images: Block[]; }
+const events: EventItem[] = [];
+let current: EventItem | null = null;
+let inheritedYear = '';
+for (let index = 0; index < blocks.length; index++) {
+  const block = blocks[index];
+  if (isStart(block, index)) {
+    const raw = (block.text || '').trim();
+    const startsWithDate = dateStart.test(raw);
+    const placeholder = lang === 'lv' ? 'Projekta norise' : 'Project update';
+    if (current && current.heading === placeholder && current.date && current.blocks.length === 0 && current.images.length === 0) {
+      const withoutRepeatedDate = startsWithDate ? raw.replace(dateStart, '').replace(/^[.\s–—-]+/, '').trim() : raw;
+      const firstSentence = withoutRepeatedDate.match(/^(.{25,180}?[.!?])(?:\s|$)/s)?.[1];
+      current.heading = firstSentence || `${withoutRepeatedDate.slice(0, 165).trim()}${withoutRepeatedDate.length > 165 ? '…' : ''}`;
+      if (withoutRepeatedDate.length > 180) current.blocks.push({ ...block, tag: 'p', text: withoutRepeatedDate });
+      continue;
+    }
+    const year = raw.match(/\b(20\d{2})\b/)?.[1] || inheritedYear;
+    if (year) inheritedYear = year;
+    const dateMatch = raw.match(/^(.*?\b20\d{2}\.?)(.*)$/s);
+    const date = dateMatch?.[1]?.trim() || '';
+    const afterDate = dateMatch?.[2]?.replace(/^[.\s–—-]+/, '').trim() || (date ? '' : raw);
+    const lines = afterDate.split('\n').map((line) => line.trim()).filter(Boolean);
+    let heading = lines.shift() || (date ? (lang === 'lv' ? 'Projekta norise' : 'Project update') : raw);
+    let remainder = lines.join('\n');
+    if (heading.length > 190) {
+      const sentence = heading.match(/^(.{35,190}?[.!?])(?:\s|$)(.*)$/s);
+      if (sentence) {
+        heading = sentence[1].trim();
+        remainder = [sentence[2].trim(), remainder].filter(Boolean).join('\n');
+      } else {
+        const cut = heading.lastIndexOf(' ', 170);
+        if (cut > 60) {
+          remainder = [heading.slice(cut + 1), remainder].filter(Boolean).join('\n');
+          heading = `${heading.slice(0, cut)}…`;
+        }
+      }
+    }
+    current = { heading, date, year: year || (lang === 'lv' ? 'Citi' : 'Other'), blocks: [], images: [] };
+    if (remainder) current.blocks.push({ ...block, tag: 'p', text: remainder });
+    events.push(current);
+    continue;
+  }
+  if (!current) {
+    current = { heading: lang === 'lv' ? 'Projekta norise' : 'Project update', date: '', year: inheritedYear || (lang === 'lv' ? 'Citi' : 'Other'), blocks: [], images: [] };
+    events.push(current);
+  }
+  if (block.tag === 'img') current.images.push(block);
+  else current.blocks.push(block);
+}
+
+const groups = new Map<string, EventItem[]>();
+for (const event of events) {
+  if (slug === 'digilate') {
+    const conciseTitles = lang === 'lv' ? {
+      '14.05.2026': 'DigiLATE dalība konferencē “Reģions: vēsture, kultūra, valoda”',
+      '11.05.2026': 'DigiLATE dalība CMLC-12 seminārā Maljorkā',
+      '20.02.2026': 'DigiLATE pētnieki Jāņa Endzelīna 153. gadadienas konferencē',
+      '28.01.2026': 'DigiLATE pētnieki konferencē “Gramatika un semantika”',
+      '22.12.2025': 'Parakstīts līgums par DigiLATE projekta īstenošanu',
+    } : {
+      '14.05.2026': 'DigiLATE at the conference “The Region: History, Culture, Language”',
+      '11.05.2026': 'DigiLATE at the CMLC-12 workshop in Mallorca',
+      '20.02.2026': 'DigiLATE researchers at the conference marking Jānis Endzelīns’s 153rd anniversary',
+      '28.01.2026': 'DigiLATE researchers at the “Grammar and Semantics” conference',
+      '22.12.2025': 'Agreement signed for the implementation of DigiLATE',
+    };
+    const normalizedDate = event.date.replace(/\.$/, '');
+    event.heading = conciseTitles[normalizedDate as keyof typeof conciseTitles] || event.heading;
+  }
+  if (lang === 'lv' && slug === 'dheli') {
+    if (event.date === '12.01.2024.') event.heading = 'LU Latviešu valodas institūta pētnieces piedalās seminārā “Latviešu raksti un raksti Baltijā 16.–19. gadsimtā”';
+    if (event.date === '15.12.2023') { event.date = '15.12.2022.'; event.year = '2022'; }
+    if (event.date === '12.08.2023.' && event.heading.startsWith('Aizvadīta konference')) event.date = '12.09.2023.';
+    if (event.date === '19.02.2025.') event.heading = event.heading.replace('veltīto starptautisko zinātnisko konferenci', 'veltītā starptautiskā zinātniskā konference');
+  }
+  const placeholder = lang === 'lv' ? 'Projekta norise' : 'Project update';
+  if (event.heading === placeholder && event.blocks[0]?.text) {
+    const source = event.blocks[0].text.trim();
+    const firstSentence = source.match(/^(.{30,180}?[.!?])(?:\s|$)/s)?.[1];
+    event.heading = firstSentence || `${source.slice(0, 165).trim()}${source.length > 165 ? '…' : ''}`;
+  }
+  if (!groups.has(event.year)) groups.set(event.year, []);
+  groups.get(event.year)!.push(event);
+}
+
+const anchorCounts = new Map<string, number>();
+const anchorFor = (event: EventItem) => {
+  const source = `${event.date}-${event.heading}`
+    .toLocaleLowerCase('lv')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 88) || `norise-${event.year}`;
+  const occurrence = (anchorCounts.get(source) || 0) + 1;
+  anchorCounts.set(source, occurrence);
+  return occurrence === 1 ? source : `${source}-${occurrence}`;
+};
+---
+<div class="project-event-archive">
+  <div class="project-event-toolbar">
+    <label class="project-event-search">
+      <Search size={18} aria-hidden="true" />
+      <span class="sr-only">{lang === 'lv' ? 'Meklēt projekta notikumos' : 'Search project updates'}</span>
+      <input type="search" data-event-search placeholder={lang === 'lv' ? 'Meklēt notikumos…' : 'Search updates…'} autocomplete="off" />
+    </label>
+    <label class="project-event-year-filter">
+      <span>{lang === 'lv' ? 'Gads' : 'Year'}</span>
+      <select data-event-year>
+        <option value="">{lang === 'lv' ? 'Visi gadi' : 'All years'}</option>
+        {[...groups.keys()].map((year) => <option value={year}>{year}</option>)}
+      </select>
+    </label>
+    <p class="project-event-result" aria-live="polite"><strong data-event-count>{events.length}</strong> {lang === 'lv' ? 'ieraksti' : 'updates'}</p>
+  </div>
+  {[...groups.entries()].map(([year, yearEvents]) => (
+    <section class="project-event-year" data-event-group data-year={year}>
+      <div class="project-event-year-label"><span>{year}</span><small>{yearEvents.length} {lang === 'lv' ? 'ieraksti' : 'updates'}</small></div>
+      <div class="project-event-list">
+        {yearEvents.map((event, index) => {
+          const anchor = anchorFor(event);
+          return (
+          <details id={anchor} class="project-event" data-event-item open={index === 0 && year === [...groups.keys()][0]}>
+            <summary>
+              <span class="project-event-date"><CalendarDays size={16} />{event.date || year}</span>
+              <span class="project-event-title">
+                <strong>{event.heading}</strong>
+                <button class="project-event-copy-link" type="button" data-event-link={anchor} aria-label={lang === 'lv' ? 'Kopēt saiti uz šo norisi' : 'Copy link to this update'} title={lang === 'lv' ? 'Kopēt saiti' : 'Copy link'}>
+                  <Link class="link-icon" size={17} aria-hidden="true" />
+                  <Check class="check-icon" size={17} aria-hidden="true" />
+                </button>
+              </span>
+              {event.images.length > 0 && <span class="project-event-image-count"><Images size={15} />{event.images.length}</span>}
+              <ChevronDown class="project-event-chevron" size={18} />
+            </summary>
+            <div class="project-event-body">
+              {event.blocks.length > 0 && <div class="project-event-copy">{event.blocks.map((block) => <LegacyProjectBlock block={block} />)}</div>}
+              {event.images.length > 0 && <div class="project-event-gallery">{event.images.map((image) => <LegacyProjectBlock block={image} />)}</div>}
+            </div>
+          </details>
+          );
+        })}
+      </div>
+    </section>
+  ))}
+  <p class="project-event-empty" data-event-empty hidden>{lang === 'lv' ? 'Notikumi ar šādiem nosacījumiem nav atrasti.' : 'No updates match these filters.'}</p>
+  <nav class="project-event-pagination" data-event-pagination aria-label={lang === 'lv' ? 'Notikumu arhīva lapas' : 'Project update pages'}>
+    <button type="button" data-page-previous><ChevronLeft size={17} aria-hidden="true" /><span>{lang === 'lv' ? 'Iepriekšējā' : 'Previous'}</span></button>
+    <div class="project-event-pages" data-event-pages></div>
+    <span class="project-event-page-status" data-page-status aria-live="polite"></span>
+    <button type="button" data-page-next><span>{lang === 'lv' ? 'Nākamā' : 'Next'}</span><ChevronRight size={17} aria-hidden="true" /></button>
+  </nav>
+</div>
+
+<script>
+  const normalise = (value: string) => value.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  document.querySelectorAll<HTMLElement>('.project-event-archive').forEach((archive) => {
+    const search = archive.querySelector<HTMLInputElement>('[data-event-search]');
+    const yearSelect = archive.querySelector<HTMLSelectElement>('[data-event-year]');
+    const count = archive.querySelector<HTMLElement>('[data-event-count]');
+    const empty = archive.querySelector<HTMLElement>('[data-event-empty]');
+    const groups = [...archive.querySelectorAll<HTMLElement>('[data-event-group]')];
+    const items = [...archive.querySelectorAll<HTMLElement>('[data-event-item]')];
+    const pagination = archive.querySelector<HTMLElement>('[data-event-pagination]');
+    const pages = archive.querySelector<HTMLElement>('[data-event-pages]');
+    const pageStatus = archive.querySelector<HTMLElement>('[data-page-status]');
+    const previous = archive.querySelector<HTMLButtonElement>('[data-page-previous]');
+    const next = archive.querySelector<HTMLButtonElement>('[data-page-next]');
+    const pageSize = 20;
+    let currentPage = 1;
+
+    const filterEvents = (target?: HTMLElement) => {
+      const query = normalise(search?.value.trim() || '');
+      const selectedYear = yearSelect?.value || '';
+      const matches = items.filter((event) => {
+        const matchesYear = !selectedYear || event.closest<HTMLElement>('[data-event-group]')?.dataset.year === selectedYear;
+        const matchesText = !query || normalise(event.textContent || '').includes(query);
+        return matchesYear && matchesText;
+      });
+      const totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
+      if (target) {
+        const targetIndex = matches.indexOf(target);
+        if (targetIndex >= 0) currentPage = Math.floor(targetIndex / pageSize) + 1;
+      }
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const pageItems = new Set(matches.slice((currentPage - 1) * pageSize, currentPage * pageSize));
+
+      items.forEach((event) => { event.hidden = !pageItems.has(event); });
+      groups.forEach((group) => { group.hidden = ![...group.querySelectorAll<HTMLElement>('[data-event-item]')].some((event) => !event.hidden); });
+
+      if (count) count.textContent = String(matches.length);
+      if (empty) empty.hidden = matches.length !== 0;
+      if (pagination) pagination.hidden = matches.length === 0 || totalPages === 1;
+      if (previous) previous.disabled = currentPage === 1;
+      if (next) next.disabled = currentPage === totalPages;
+      if (pageStatus) pageStatus.textContent = document.documentElement.lang === 'lv' ? `${currentPage}. no ${totalPages}` : `${currentPage} of ${totalPages}`;
+      if (pages) {
+        pages.replaceChildren();
+        for (let page = 1; page <= totalPages; page += 1) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = String(page);
+          button.dataset.page = String(page);
+          button.setAttribute('aria-label', document.documentElement.lang === 'lv' ? `Atvērt ${page}. lapu` : `Open page ${page}`);
+          if (page === currentPage) {
+            button.classList.add('is-current');
+            button.setAttribute('aria-current', 'page');
+          }
+          pages.append(button);
+        }
+      }
+    };
+
+    const showPage = (page: number) => {
+      currentPage = page;
+      filterEvents();
+      archive.querySelector('.project-event-toolbar')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    };
+    search?.addEventListener('input', () => { currentPage = 1; filterEvents(); });
+    yearSelect?.addEventListener('change', () => { currentPage = 1; filterEvents(); });
+    previous?.addEventListener('click', () => showPage(currentPage - 1));
+    next?.addEventListener('click', () => showPage(currentPage + 1));
+    pages?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-page]');
+      if (button) showPage(Number(button.dataset.page));
+    });
+
+    archive.querySelectorAll<HTMLButtonElement>('[data-event-link]').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const anchor = button.dataset.eventLink;
+        if (!anchor) return;
+        const url = `${window.location.origin}${window.location.pathname}#${anchor}`;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          const helper = document.createElement('textarea');
+          helper.value = url;
+          document.body.append(helper);
+          helper.select();
+          document.execCommand('copy');
+          helper.remove();
+        }
+        history.replaceState(null, '', `#${anchor}`);
+        button.classList.add('is-copied');
+        button.setAttribute('aria-label', document.documentElement.lang === 'lv' ? 'Saite nokopēta' : 'Link copied');
+        window.setTimeout(() => {
+          button.classList.remove('is-copied');
+          button.setAttribute('aria-label', document.documentElement.lang === 'lv' ? 'Kopēt saiti uz šo norisi' : 'Copy link to this update');
+        }, 1800);
+      });
+    });
+
+    const revealHashEvent = () => {
+      const anchor = decodeURIComponent(window.location.hash.slice(1));
+      if (!anchor) return;
+      const target = document.getElementById(anchor);
+      if (!(target instanceof HTMLDetailsElement) || !archive.contains(target)) return;
+      search && (search.value = '');
+      yearSelect && (yearSelect.value = '');
+      filterEvents(target);
+      target.open = true;
+      window.requestAnimationFrame(() => target.scrollIntoView({ block: 'center' }));
+    };
+    filterEvents();
+    revealHashEvent();
+    window.addEventListener('hashchange', revealHashEvent);
+  });
+</script>
