@@ -2,10 +2,11 @@ name: Deploy Digitalhumanities.lv
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: "17 */6 * * *"
 
 permissions:
   contents: read
@@ -19,15 +20,16 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
 
       - name: Sync Google Sheets and build Astro site
         uses: withastro/action@v6
-       env:
-  SITE_URL: https://digitalhumanities.lv
-  BASE_PATH: /digitalhumanities.lv
+        env:
+          SITE_URL: https://digitalhumanities.lv
+          BASE_PATH: /digitalhumanities.lv
         with:
           node-version: 22
           package-manager: pnpm@11.9.0
@@ -35,9 +37,11 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Publish to GitHub Pages
         id: deployment
