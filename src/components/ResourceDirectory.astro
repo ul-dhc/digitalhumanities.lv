@@ -79,7 +79,7 @@ const copy = lv ? {
   title: 'Resursi un rīki', lead: 'Digitālo humanitāro zinātņu resursi pētniecībai, mācībām un kultūras mantojuma izzināšanai.',
   search: 'Meklēt pēc nosaukuma, institūcijas vai apraksta…', filters: 'Filtri', close: 'Aizvērt filtrus', type: 'Resursa tips', topic: 'Temats',
   access: 'Piekļuve', allAccess: 'Jebkāda piekļuve', open: 'Brīva piekļuve', registration: 'Ar reģistrēšanos', restricted: 'Ierobežota', unknown: 'Nav norādīts',
-  results: 'resursi', cards: 'Kartītes', list: 'Saraksts', explore: 'Izpētīt', carousel: 'Karuselis', view: 'Mainīt skatu', sort: 'Kārtot', recommended: 'Nejauša secība', az: 'A–Z', za: 'Z–A',
+  results: 'resursi', cards: 'Režģis', list: 'Saraksts', explore: 'Izpētīt', carousel: 'Karuselis', view: 'Mainīt skatu', sort: 'Kārtot', recommended: 'Nejauša secība', az: 'A–Z', za: 'Z–A',
   clear: 'Notīrīt', activeFilters: 'Aktīvie filtri', noResults: 'Neviens resurss neatbilst izvēlētajiem filtriem.', reset: 'Atiestatīt filtrus', openResource: 'Atvērt resursu',
   creator: 'Izstrādājis', creatorFilter: 'Institūcija', creatorSearch: 'Meklēt institūciju…', more: 'Rādīt vairāk', page: 'Lapa', previous: 'Iepriekšējā', next: 'Nākamā', of: 'no', database: 'Resursu datubāze', filterHint: 'Izvēlies vienu vai vairākus filtrus', perPage: 'Rādīt', itemsPerPage: 'vienā lapā', all: 'Visus', details: 'Atvērt pilnu aprakstu', copyLink: 'Kopēt saiti', copied: 'Saite nokopēta', networkTitle: 'Resursu saikņu tīkls', networkHint: 'Velc fonu, lai pārvietotos. Ritini vai izmanto pogas, lai tuvinātu. Klikšķini uz mezgla, lai izgaismotu tā saiknes.', networkHelp: 'Izvēlies resursa mezglu, lai apskatītu tā aprakstu un saiknes. Priekšskatījuma kartītē resursu vari piespraust. Piespraustie resursi tiek saglabāti Tavā pārlūkā, un visu atlasi vari atvērt kopā jaunā cilnē. Tīklu vari pārvietot, tuvināt un filtrēt pēc mezglu veida.', carouselTitle: 'Resursu karuselis', carouselHint: 'Katrs pikselis attēlo vienu resursu. Velc karuseli, lai mainītu griešanās virzienu, un izvēlies pikseli, lai atvērtu resursa informāciju.', carouselHelp: 'Katrs vienāda izmēra pikselis ir viens resurss. Velc karuseli horizontāli vai vertikāli, lai mainītu tā kustību. Izvēlies pikseli, lai apskatītu resursa informāciju un to piespraustu.', zoomIn: 'Tuvināt', zoomOut: 'Tālināt', resetView: 'Centrēt tīklu', networkPause: 'Apturēt kustību', networkResume: 'Turpināt kustību', resourceNode: 'Resurss', typeNode: 'Resursa tips', topicNode: 'Temats', institutionNode: 'Institūcija', networkLayers: 'Rādīt tīklā', networkExpand: 'Izvērst', networkViewAll: 'Aplūkot visus jaunā cilnē', networkRelated: 'saistīti resursi', networkClose: 'Aizvērt priekšskatījumu', networkPin: 'Piespraust', networkUnpin: 'Atspraust', pinnedTitle: 'Piespraustie resursi', pinnedOpen: 'Aplūkot atlasi jaunā cilnē', pinnedClear: 'Notīrīt atlasi', cardPinsClear: 'Noņemt visas piespraudes', previewDrag: 'Velc, lai pārvietotu kartīti',
 } : {
@@ -1364,7 +1364,8 @@ const accessLabel = (value = '') => {
     new MutationObserver(drawCarousel).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     carouselReducedMotion.addEventListener('change', startCarousel);
 
-    const viewFragments = { cards: 'kartites', list: 'saraksts', network: 'resursu-tikls', carousel: 'resursu-karuselis' } as const;
+    const viewFragments = { cards: 'rezgis', list: 'saraksts', network: 'resursu-tikls', carousel: 'resursu-karuselis' } as const;
+    const legacyCardsFragment = 'kartites';
     const currentViewFragment = () => root.dataset.view === 'explore' ? viewFragments[explorerMode] : root.dataset.view === 'list' ? viewFragments.list : viewFragments.cards;
     const updateViewFragment = () => history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${currentViewFragment()}`);
     const setExplorerMode = (mode: 'network' | 'carousel', updateHash = true) => {
@@ -1396,7 +1397,7 @@ const accessLabel = (value = '') => {
     const requestedView = urlParameters.get('view');
     const savedView = localStorage.getItem('dh-resource-view');
     const initialFragment = decodeURIComponent(window.location.hash.slice(1));
-    const fragmentView = initialFragment === viewFragments.cards ? 'cards' : initialFragment === viewFragments.list ? 'list' : initialFragment === viewFragments.network || initialFragment === viewFragments.carousel ? 'explore' : undefined;
+    const fragmentView = initialFragment === viewFragments.cards || initialFragment === legacyCardsFragment ? 'cards' : initialFragment === viewFragments.list ? 'list' : initialFragment === viewFragments.network || initialFragment === viewFragments.carousel ? 'explore' : undefined;
     const fragmentExplorerMode = initialFragment === viewFragments.carousel ? 'carousel' : initialFragment === viewFragments.network ? 'network' : undefined;
     setExplorerMode(fragmentExplorerMode || (localStorage.getItem('dh-resource-explorer-mode') === 'carousel' ? 'carousel' : 'network'), false);
     setView(fragmentView || (requestedView === 'cards' || requestedView === 'list' || requestedView === 'explore' ? requestedView : savedView === 'list' || savedView === 'explore' ? savedView : 'cards'), false);
@@ -1450,7 +1451,7 @@ const accessLabel = (value = '') => {
     };
     window.addEventListener('hashchange', () => {
       const fragment = decodeURIComponent(window.location.hash.slice(1));
-      if (fragment === viewFragments.cards) setView('cards', false);
+      if (fragment === viewFragments.cards || fragment === legacyCardsFragment) setView('cards', false);
       else if (fragment === viewFragments.list) setView('list', false);
       else if (fragment === viewFragments.network) { setExplorerMode('network', false); setView('explore', false); }
       else if (fragment === viewFragments.carousel) { setExplorerMode('carousel', false); setView('explore', false); }
