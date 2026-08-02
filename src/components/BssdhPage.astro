@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+import { bssdhYears } from '../data/bssdh';
+interface Props { lang:'lv'|'en'; }
+const { lang } = Astro.props;
+const lv = lang === 'lv';
+const current = bssdhYears[0];
+---
+<BaseLayout title="BSSDH — Baltic Summer School of Digital Humanities" description={lv ? 'Baltijas digitālo humanitāro zinātņu vasaras skola.' : 'Baltic Summer School of Digital Humanities.'} lang={lang} alternateUrl={lv ? '/en/bssdh/' : '/lv/bssdh/'}>
+  <div class="bssdh-page">
+    <div class="shell"><HomeBackLink lang={lang} /></div>
+    <header class="bssdh-hero shell">
+      <div class="bssdh-hero-copy"><p class="event-kicker">BSSDH · SINCE 2018</p><h1>Baltic Summer School of Digital Humanities</h1><p class="lead">{lv ? 'Starptautiska intensīva vasaras skola digitālo pētniecības metožu apguvei humanitāro un sociālo zinātņu pētniekiem, studentiem un kultūras mantojuma profesionāļiem.' : 'An international intensive summer school for researchers and students in the humanities and social sciences, and for cultural heritage professionals learning digital research methods.'}</p><a class="button primary" href={`/${lang}/bssdh/2026/`}>{lv ? 'BSSDH 2026 informācija' : 'Explore BSSDH 2026'} →</a></div>
+      <a class="bssdh-current-card" href={`/${lang}/bssdh/2026/`}><img src={current.image} alt="BSSDH 2026" /><div><span>{current.dates}</span><h2>{current.theme}</h2><strong>{lv ? '8. vasaras skola' : '8th summer school'} →</strong></div></a>
+    </header>
+    <section class="shell bssdh-about"><h2>{lv ? 'Par BSSDH' : 'About BSSDH'}</h2><div><p>{lv ? 'Baltijas digitālo humanitāro zinātņu vasaras skola kopš 2018. gada Rīgā veido mācību un sadarbības vidi, kurā digitālās humanitārās zinātnes tiek apgūtas lekcijās, praktiskās darbnīcās un kopīgā pieredzes apmaiņā.' : 'Since 2018, the Baltic Summer School of Digital Humanities has created a learning and collaboration environment in Riga where digital humanities are explored through lectures, practical workshops and peer exchange.'}</p><p>{lv ? 'Programmā nav nepieciešamas priekšzināšanas programmēšanā. Tās tēmas katru gadu mainās — no teksta ieguves, programmēšanas un datu vizualizācijas līdz vēsturiskajiem tīkliem, lielajiem valodu modeļiem un kultūras datu analītikai.' : 'No prior programming experience is required. The annual themes range from text mining, coding and data visualisation to historical networks, large language models and cultural data analytics.'}</p></div></section>
+    <section class="shell bssdh-archive">
+      <header><h2>{lv ? 'Arhīvs' : 'Archive'}</h2></header>
+      <div class="bssdh-archive-list">
+        {bssdhYears.map((item) =>
+          <a href={`/${lang}/bssdh/${item.year}/`} class="bssdh-archive-row">
+            <span class="bssdh-archive-year">{item.year}</span>
+            <h3>{item.theme}</h3>
+            <span class="bssdh-archive-dates">{item.dates}</span>
+            <strong>{lv ? 'Skatīt arhīvu' : 'View archive'} <span aria-hidden="true">→</span></strong>
+          </a>
+        )}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

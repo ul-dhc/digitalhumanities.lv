@@ -1,0 +1,6 @@
+---
+import { ArrowLeft } from '@lucide/astro';
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+---
+<a class="back-link page-home-link" href={lang === 'lv' ? '/lv/' : '/en/'}><ArrowLeft size={17} />{lang === 'lv' ? 'Uz sākumlapu' : 'Back to home'}</a>
