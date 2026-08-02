@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1419" height="640" viewBox="0 0 1419 640">
+  <defs>
+    <filter id="white" color-interpolation-filters="sRGB">
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+    </filter>
+    <filter id="flag-marks" color-interpolation-filters="sRGB">
+      <feColorMatrix type="luminanceToAlpha" />
+      <feComponentTransfer>
+        <feFuncA type="discrete" tableValues="0 0 0 0 1" />
+      </feComponentTransfer>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+    </filter>
+    <mask id="without-flag">
+      <rect width="1419" height="640" fill="white" />
+      <rect x="0" y="0" width="655" height="450" fill="black" />
+    </mask>
+    <clipPath id="flag-area"><rect x="0" y="0" width="655" height="450" /></clipPath>
+  </defs>
+  <image href="eu-recovery-nap.png" width="1419" height="640" filter="url(#white)" mask="url(#without-flag)" />
+  <image href="eu-recovery-nap.png" width="1419" height="640" filter="url(#flag-marks)" clip-path="url(#flag-area)" />
+</svg>

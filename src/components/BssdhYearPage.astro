@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+import { Check, ChevronDown, Link2 } from '@lucide/astro';
+import { bssdhYears } from '../data/bssdh';
+import legacyContent from '../data/bssdh-legacy.json';
+interface Props { lang:'lv'|'en'; year:string; }
+const { lang, year } = Astro.props;
+const lv = lang === 'lv';
+const item = bssdhYears.find(entry => entry.year === year)!;
+const current = year === '2026';
+const legacy = legacyContent[year as keyof typeof legacyContent];
+const overview = current ? legacy.overview.split(/<p><b>ORGANIZERS<\/b>/i)[0] : legacy.overview;
+const programme = legacy.programme
+  .replace(/<tr><td>((?:August|July)[\s\S]*?)<\/td><td><\/td><\/tr>/gi, '<tr class="bssdh-programme-day"><td colspan="2">$1</td></tr>')
+  .replace(/(Open lecture\s*\d*\s*<br>)(?!<b>)([\s\S]*?)(<br><i>)/gi, '$1<strong>$2</strong>$3');
+const institutions = [
+  ['National Library of Latvia','https://lnb.gov.lv/','/assets/bssdh/2026-logos/lnb.png','/assets/bssdh/2026-logos/lnb.png'],
+  ['Faculty of Humanities of the University of Latvia','https://www.hzf.lu.lv/en/','/assets/support/lu-en-light.png','/assets/support/lu-en-dark.png'],
+  ['Institute of Literature, Folklore and Art, University of Latvia','https://lulfmi.lv/en/','/assets/bssdh/2026-logos/ilfa.png','/assets/bssdh/2026-logos/ilfa.png']
+];
+const organizers = [
+  ['Anda Baklāne',0],['Viktorija Piščikova',0],['Signe Ābola',0],
+  ['Sanita Reinsone',1],
+  ['Ieva Vīvere',2],['Eva Eglāja-Kristsone',2],['Ilze Ļaksa-Timinska',2]
+];
+const tabs = lv ? [['Pārskats','#par'],['Programma','#programma'],['Lekcijas un darbnīcas','#lekcijas'],['Norises vieta','#praktiski'],['Reģistrācija','#registracija']] : [['About','#about'],['Programme','#programme'],['Lectures and workshops','#lectures'],['Venue','#practical'],['Registration','#registration']];
+if (legacy.gallery) tabs.push(lv ? ['Galerija','#galerija'] : ['Gallery','#gallery']);
+---
+<BaseLayout title={`BSSDH ${year} — ${item.theme}`} description={`${item.dates}. ${item.theme}.`} lang={lang} alternateUrl={`/${lv ? 'en':'lv'}/bssdh/${year}/`}>
+  <article class="bssdh-edition">
+    <div class="shell"><HomeBackLink lang={lang} /></div>
+    <header class="bssdh-edition-hero shell"><div><p class="event-kicker">{item.edition} BALTIC SUMMER SCHOOL OF DIGITAL HUMANITIES</p><h1>BSSDH {year}</h1><p class="bssdh-theme">{item.theme}</p><div class="event-facts"><span>{item.dates}</span><span>{item.place}</span><span>{lv ? 'Darba valoda: angļu' : 'Working language: English'}</span></div></div><img src={item.image} alt={`BSSDH ${year}`} /></header>
+    <nav class="event-index shell bssdh-index" aria-label={lv ? 'Lapas saturs' : 'Page contents'}>{tabs.map(([label,href]) => <a href={href}>{label}<span>↓</span></a>)}</nav>
+    <div class="shell event-sections bssdh-sections">
+      <section id={lv ? 'par':'about'}><div class="bssdh-section-title"><h2>{lv ? 'Pārskats':'About'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'} title={lv ? 'Kopēt saiti':'Copy link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div>{lv && <p class="archive-language-note">Pilnais vēsturiskais saturs saglabāts tā oriģinālajā darba valodā — angļu valodā.</p>}<details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno pārskatu':'Expand full overview'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={overview} /></details>{current && <div class="legacy-bssdh-content bssdh-organization"><div class="bssdh-info-group"><h3>Institutions and organizers</h3><div class="bssdh-affiliation-list">{institutions.map(([name,url], index) => <article><h4><a href={url} target="_blank" rel="noopener">{name}</a></h4><ul>{organizers.filter(([,institution]) => institution === index).map(([name]) => <li>{name}</li>)}</ul></article>)}</div></div><div class="bssdh-info-group"><h3>Supporters</h3><div class="bssdh-supporter-list"><div class="bssdh-supporter-entry"><a href="https://www.kkf.lv/index/english.html" target="_blank" rel="noopener">State Culture Capital Foundation</a></div><div class="bssdh-supporter-entry bssdh-supporter-project"><a href="https://lulfmi.lv/en/research/projects/university-of-latvia-and-institutes-in-the-european-research-area-excellence-in-research-and-collaboration" target="_blank" rel="noopener">University of Latvia and Institutes in the European Research Area – Excellence in Research and Collaboration</a><small>Project No. 1.1.1.5/3/25/I/011</small></div><div class="bssdh-supporter-entry bssdh-supporter-project"><span>State Research Programme project “Latvian History of the 20th–21st Century: Social Morphogenesis, Legacy and Challenges”</span><small>VPP-IZM-Vēsture-2023/1-0003</small></div></div></div><div class="bssdh-info-group"><h3>Contact</h3><p>Coordinator Anda Baklāne<br/><a href="mailto:dh@lnb.lv">dh@lnb.lv</a></p></div><div class="bssdh-logo-collection" aria-label="Organizers and supporters"><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/lnb.png" alt="National Library of Latvia" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/support/lu-en-dark.png"/><img src="/assets/support/lu-en-light.png" alt="University of Latvia" loading="lazy"/></picture><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/ilfa.png" alt="Institute of Literature, Folklore and Art, University of Latvia" loading="lazy"/><img class="bssdh-vkkf-logo" src="/assets/bssdh/2026-logos/vkkf.jpg" alt="State Culture Capital Foundation" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/bssdh/2026-logos/eu-nap-en-dark.png"/><img src="/assets/bssdh/2026-logos/eu-nap-en-light.png" alt="European Union and National Development Plan" loading="lazy"/></picture></div></div>}</div></section>
+      <section id={lv ? 'programma':'programme'}><div class="bssdh-section-title"><h2>{lv ? 'Programma':'Programme'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno programmu':'Expand full programme'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content bssdh-programme" set:html={programme || `<p>Programme information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
+      <section id={lv ? 'lekcijas':'lectures'}><div class="bssdh-section-title"><h2>{lv ? 'Lekcijas un darbnīcas':'Lectures and workshops'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt visus aprakstus':'Expand all descriptions'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={legacy.lectures || `<p>Lecture and workshop information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
+      <section id={lv ? 'praktiski':'practical'}><div class="bssdh-section-title"><h2>{lv ? 'Norises vieta':'Venue'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt praktisko informāciju':'Expand practical information'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={legacy.venue || `<p>${item.place}</p>`} /></details></section>
+      <section id={lv ? 'registracija':'registration'}><div class="bssdh-section-title"><h2>{lv ? 'Reģistrācija':'Registration'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content" set:html={legacy.registration || `<p>Registration for BSSDH ${year} is closed.</p>`} /></section>
+      {legacy.gallery && <section id={lv ? 'galerija':'gallery'}><div class="bssdh-section-title"><h2>{lv ? 'Galerija':'Gallery'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content"><div set:html={legacy.gallery} /></div></section>}
+    </div>
+  </article>
+</BaseLayout>
+<script>
+  const copyText = async (value: string) => {
+    try { await navigator.clipboard.writeText(value); } catch {
+      const helper = document.createElement('textarea');
+      helper.value = value; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove();
+    }
+  };
+  document.querySelectorAll<HTMLTableRowElement>('.bssdh-programme-day').forEach(dayRow => {
+    const cell = dayRow.cells[0];
+    if (!cell) return;
+    const heading = (cell.innerText || cell.textContent || '').trim().replace(/\n{2,}/g,'\n');
+    const latvian = document.documentElement.lang === 'lv';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bssdh-day-copy';
+    button.dataset.label = latvian ? 'Kopēt programmu' : 'Copy programme';
+    button.setAttribute('aria-label', button.dataset.label);
+    button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+    button.addEventListener('click', async () => {
+      const lines = [`BSSDH ${location.pathname.match(/bssdh\/(\d{4})/)?.[1] || ''}`, heading];
+      let row = dayRow.nextElementSibling as HTMLTableRowElement | null;
+      while (row && !row.classList.contains('bssdh-programme-day')) {
+        const cells = Array.from(row.cells).map(item => item.innerText.trim().replace(/\n+/g,' — ')).filter(Boolean);
+        if (cells.length) lines.push(cells.join(' — '));
+        row = row.nextElementSibling as HTMLTableRowElement | null;
+      }
+      lines.push(`${location.origin}${location.pathname}#${document.documentElement.lang === 'lv' ? 'programma' : 'programme'}`);
+      await copyText(lines.join('\n'));
+      button.dataset.label = latvian ? 'Nokopēts' : 'Copied';
+      button.classList.add('is-copied');
+      setTimeout(() => { button.dataset.label = latvian ? 'Kopēt programmu' : 'Copy programme'; button.classList.remove('is-copied'); }, 1600);
+    });
+    cell.append(button);
+  });
+  document.querySelectorAll<HTMLElement>('.bssdh-expander > summary').forEach(summary => {
+    const latvian = document.documentElement.lang === 'lv';
+    summary.dataset.expandLabel = latvian ? 'Izvērst' : 'Expand';
+    summary.dataset.collapseLabel = latvian ? 'Sakļaut' : 'Collapse';
+  });
+  document.querySelectorAll<HTMLElement>('.bssdh-edition').forEach(page => {
+    const about = page.querySelector<HTMLDetailsElement>('.bssdh-sections > section:first-child details');
+    const organization = page.querySelector<HTMLElement>('.bssdh-organization');
+    if (about) {
+      if (organization) about.append(organization);
+      about.open = true;
+    }
+  });
+  document.querySelectorAll<HTMLElement>('.bssdh-edition').forEach(page => {
+    const logos = page.querySelector<HTMLElement>('.bssdh-logo-collection');
+    if (logos) {
+      logos.classList.add('shell');
+      page.append(logos);
+      const themed = Array.from(logos.querySelectorAll<HTMLPictureElement>('picture'));
+      themed.forEach(picture => picture.querySelectorAll('source').forEach(source => source.remove()));
+      const syncLogoTheme = () => {
+        const dark = document.documentElement.dataset.theme === 'dark';
+        const lu = themed[0]?.querySelector('img');
+        const support = themed[1]?.querySelector('img');
+        const vkkf = logos.querySelector<HTMLImageElement>('.bssdh-vkkf-logo');
+        const ilfa = logos.querySelector<HTMLImageElement>('img[alt^="Institute of Literature"]');
+        if (lu) lu.src = dark ? '/assets/support/lu-en-dark.png' : '/assets/support/lu-en-light.png';
+        if (ilfa) ilfa.src = dark ? '/assets/bssdh/2026-logos/ilfa-white.png' : '/assets/bssdh/2026-logos/ilfa.png';
+        if (vkkf) vkkf.src = dark ? '/assets/bssdh/2026-logos/vkkf-white.png' : '/assets/bssdh/2026-logos/vkkf.jpg';
+        if (support) support.src = dark ? '/assets/bssdh/2026-logos/eu-nap-en-dark.png' : '/assets/bssdh/2026-logos/eu-nap-en-light.png';
+      };
+      syncLogoTheme();
+      new MutationObserver(syncLogoTheme).observe(document.documentElement,{ attributes:true, attributeFilter:['data-theme'] });
+    }
+  });
+  const openHashSection = () => {
+    if (!location.hash) return;
+    const section = document.querySelector(location.hash);
+    section?.querySelector('details')?.setAttribute('open','');
+  };
+  openHashSection();
+  window.addEventListener('hashchange', openHashSection);
+  document.querySelectorAll<HTMLButtonElement>('[data-section-copy]').forEach(button => button.addEventListener('click', async () => {
+    const section = button.closest('section');
+    if (!section?.id) return;
+    const url = `${location.origin}${location.pathname}#${section.id}`;
+    try { await navigator.clipboard.writeText(url); } catch {
+      const helper = document.createElement('textarea');
+      helper.value = url; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove();
+    }
+    history.replaceState(null,'',`#${section.id}`);
+    button.classList.add('is-copied');
+    setTimeout(() => button.classList.remove('is-copied'), 1500);
+  }));
+</script>

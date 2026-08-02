@@ -1,0 +1,117 @@
+---
+import { ArrowDown, ArrowUpRight, BookOpen, Boxes } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+
+interface Props { lang: 'lv' | 'en'; }
+const { lang } = Astro.props;
+const isLv = lang === 'lv';
+const alternateUrl = isLv ? '/en/infrastructures/' : '/lv/infrastrukturas/';
+
+const copy = isLv ? {
+  title: 'Infrastruktūras',
+  description: 'Latvijas iesaiste Eiropas pētniecības infrastruktūrās valodas resursu un digitālo humanitāro zinātņu attīstībai.',
+  intro: 'Pētniecības infrastruktūras savieno cilvēkus, zināšanas, digitālos resursus un pakalpojumus. Latvija ir CLARIN ERIC dalībvalsts un attīsta DARIAH-LV nacionālo konsorciju.',
+  choose: 'Izvēlēties infrastruktūru',
+  explore: 'Uzzināt vairāk',
+  europe: 'Eiropas pētniecības infrastruktūra',
+  clarin: {
+    summary: 'Valodas resursi, rīki un pakalpojumi humanitāro un sociālo zinātņu pētniecībai.',
+    body: 'CLARIN padara digitālos valodas resursus un tehnoloģijas pieejamas pētniekiem vienotā Eiropas infrastruktūrā. CLARIN-LV nodrošina Latvijas valodas resursu iekļaušanu šajā tīklā un atbalsta to ilgtspējīgu izmantošanu.',
+    services: 'Ko tā nodrošina',
+    items: ['Piekļuvi valodas resursiem un digitāliem rīkiem', 'Resursu saglabāšanu, aprakstīšanu un atkārtotu izmantošanu', 'Atbalstu pētniekiem un sadarbību Eiropas mērogā'],
+    link: 'Apmeklēt CLARIN-LV',
+  },
+  dariah: {
+    summary: 'Eiropas digitālā pētniecības infrastruktūra mākslas un humanitārajām zinātnēm.',
+    body: 'DARIAH ERIC ir izkliedēta Eiropas infrastruktūra, kas atbalsta digitāli iespējotu pētniecību un izglītību, savienojot pētniekus, institūcijas, kompetences, datus, rīkus, pakalpojumus un mācību resursus. DARIAH-LV top kā nacionāls sadarbības tīkls, lai Latvijas digitālo humanitāro zinātņu ekosistēmu pilnvērtīgi integrētu Eiropas pētniecības telpā.',
+    services: 'DARIAH-LV virzieni',
+    items: ['Digitālo metožu, resursu un mācību materiālu attīstība', 'Starpinstitucionāla sadarbība un zināšanu apmaiņa', 'Atvērtās zinātnes un ilgtspējīgas digitālās infrastruktūras'],
+    link: 'Atvērt DARIAH-LV sadaļu',
+  },
+} : {
+  title: 'Infrastructures',
+  description: 'Latvia’s participation in European research infrastructures for language resources and digital humanities.',
+  intro: 'Research infrastructures connect people, knowledge, digital resources and services. Latvia is a member of CLARIN ERIC and is developing the national DARIAH-LV consortium.',
+  choose: 'Choose an infrastructure',
+  explore: 'Learn more',
+  europe: 'European research infrastructure',
+  clarin: {
+    summary: 'Language resources, tools and services for research in the humanities and social sciences.',
+    body: 'CLARIN makes digital language resources and technologies accessible to researchers through a shared European infrastructure. CLARIN-LV connects Latvia’s language resources to this network and supports their sustainable use.',
+    services: 'What it provides',
+    items: ['Access to language resources and digital tools', 'Preservation, documentation and reuse of resources', 'Researcher support and European cooperation'],
+    link: 'Visit CLARIN-LV',
+  },
+  dariah: {
+    summary: 'A European digital research infrastructure for the arts and humanities.',
+    body: 'DARIAH ERIC is a distributed European infrastructure supporting digitally enabled research and education by connecting researchers, institutions, expertise, data, tools, services and learning resources. DARIAH-LV is being developed as a national cooperation network integrating Latvia’s digital humanities ecosystem into the European Research Area.',
+    services: 'DARIAH-LV priorities',
+    items: ['Development of digital methods, resources and learning materials', 'Inter-institutional cooperation and knowledge exchange', 'Open science and sustainable digital infrastructure'],
+    link: 'Open the DARIAH-LV section',
+  },
+};
+---
+<BaseLayout title={`${copy.title} — Digital Humanities LV`} description={copy.description} lang={lang} alternateUrl={alternateUrl}>
+  <div class="infrastructures-page" data-alternate-base={alternateUrl}>
+    <section class="infrastructure-hero shell">
+      <HomeBackLink lang={lang} />
+      <h1>{copy.title}</h1>
+      <p class="lead">{copy.intro}</p>
+    </section>
+
+    <nav class="infrastructure-index shell" aria-label={copy.choose}>
+      <span>{copy.choose}</span>
+      <a href="#clarin-lv"><strong>CLARIN-LV</strong><ArrowDown size={17} /></a>
+      <a href="#dariah-lv"><strong>DARIAH-LV</strong><ArrowDown size={17} /></a>
+    </nav>
+
+    <div class="infrastructure-sections shell">
+      <article id="clarin-lv" class="infrastructure-entry">
+        <div class="infrastructure-name">
+          <div class="infrastructure-logo clarin-logo"><img src="/assets/infrastructures/clarin-lv.jpg" alt="CLARIN-LV" /></div>
+          <p class="section-label">{copy.europe}</p>
+          <h2 class="sr-only">CLARIN-LV</h2>
+          <p>{copy.clarin.summary}</p>
+        </div>
+        <div class="infrastructure-content">
+          <p class="infrastructure-body">{copy.clarin.body}</p>
+          <div class="infrastructure-services">
+            <h3><BookOpen size={19} />{copy.clarin.services}</h3>
+            <ul>{copy.clarin.items.map((item) => <li>{item}</li>)}</ul>
+          </div>
+          <a class="text-link" href="https://clarin.lv/en-us/" target="_blank" rel="noreferrer">{copy.clarin.link}<ArrowUpRight size={17} /></a>
+        </div>
+      </article>
+
+      <article id="dariah-lv" class="infrastructure-entry">
+        <div class="infrastructure-name">
+          <div class="infrastructure-logo dariah-logo"><span class="dariah-logo-mark" role="img" aria-label="DARIAH-LV"></span></div>
+          <p class="section-label">{copy.europe}</p>
+          <h2 class="sr-only">DARIAH-LV</h2>
+          <p>{copy.dariah.summary}</p>
+        </div>
+        <div class="infrastructure-content">
+          <p class="infrastructure-body">{copy.dariah.body}</p>
+          <div class="infrastructure-services">
+            <h3><Boxes size={19} />{copy.dariah.services}</h3>
+            <ul>{copy.dariah.items.map((item) => <li>{item}</li>)}</ul>
+          </div>
+          <a class="text-link" href={`/${lang}/dariah-lv/`}>{copy.dariah.link}<ArrowUpRight size={17} /></a>
+        </div>
+      </article>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const page = document.querySelector<HTMLElement>('[data-alternate-base]');
+  const languageLink = document.querySelector<HTMLAnchorElement>('.language');
+  const validHashes = new Set(['#clarin-lv', '#dariah-lv']);
+  const updateLanguageLink = () => {
+    if (!page || !languageLink) return;
+    languageLink.href = `${page.dataset.alternateBase}${validHashes.has(location.hash) ? location.hash : ''}`;
+  };
+  updateLanguageLink();
+  addEventListener('hashchange', updateLanguageLink);
+</script>

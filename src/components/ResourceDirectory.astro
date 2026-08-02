@@ -1,0 +1,1463 @@
+---
+import { Check, ChevronDown, Database, ExternalLink, Filter, Focus, Grid2X2, Link2, List, Network, Orbit, Pause, Pin, Play, Plus, RotateCcw, Search, SlidersHorizontal, X, ZoomIn, ZoomOut } from '@lucide/astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeBackLink from './HomeBackLink.astro';
+import resourceData from '../data/resources.json';
+import institutionData from '../data/institutions.json';
+
+interface Props { lang: 'lv' | 'en'; }
+interface ResourceRecord {
+  translation_id: string;
+  language: 'lv' | 'en';
+  slug: string;
+  title: string;
+  long_title?: string;
+  summary?: string;
+  description?: string;
+  website_url?: string;
+  image_url?: string;
+  image_alt?: string;
+  creator?: string;
+  institutions?: string;
+  creator_people?: string;
+  creator_codes?: string;
+  type_repository?: boolean;
+  type_dataset?: boolean;
+  type_tool?: boolean;
+  type_participation?: boolean;
+  topic_history?: boolean;
+  topic_literature?: boolean;
+  topic_language?: boolean;
+  topic_folklore?: boolean;
+  topic_visual_arts?: boolean;
+  topic_performing_arts?: boolean;
+  access_model?: string;
+  content_languages?: string;
+  license?: string;
+  last_checked?: string;
+  research_readiness?: string;
+  reuse_readiness?: string;
+}
+
+const { lang } = Astro.props;
+const lv = lang === 'lv';
+const resources = (resourceData as ResourceRecord[]).filter((item) => item.language === lang);
+const institutionLabels = institutionData
+  .map((item) => lang === 'lv' ? item.lv : item.en)
+  .sort((a, b) => b.length - a.length);
+const splitInstitutions = (value = '') => {
+  let remaining = value.trim();
+  const matches: string[] = [];
+  for (const label of institutionLabels) {
+    const index = remaining.toLocaleLowerCase(lang).indexOf(label.toLocaleLowerCase(lang));
+    if (index < 0) continue;
+    matches.push(label);
+    remaining = `${remaining.slice(0, index)} ${remaining.slice(index + label.length)}`;
+  }
+  return matches.length
+    ? matches
+    : value.split(/\s*;\s*/).map((item) => item.trim()).filter(Boolean);
+};
+const universityLabel = lv ? 'Latvijas Universitāte' : 'University of Latvia';
+const creatorDefs = [...new Set([universityLabel, ...resources.flatMap((item) => splitInstitutions(item.institutions))])].sort((a, b) => a.localeCompare(b, lang));
+const institutionCodeByLabel = new Map(institutionData.map((item) => [lang === 'lv' ? item.lv : item.en, item.code]));
+const typeDefs = [
+  ['repository', 'type_repository', lv ? 'Repozitoriji un digitālas publikācijas' : 'Repositories and digital publications'],
+  ['dataset', 'type_dataset', lv ? 'Datu kopas' : 'Datasets'],
+  ['tool', 'type_tool', lv ? 'Rīki un pakalpojumi' : 'Tools and services'],
+  ['participation', 'type_participation', lv ? 'Virtuālā līdzdalība' : 'Virtual participation'],
+] as const;
+const topicDefs = [
+  ['history', 'topic_history', lv ? 'Vēsture' : 'History'],
+  ['literature', 'topic_literature', lv ? 'Literatūra' : 'Literature'],
+  ['language', 'topic_language', lv ? 'Valoda' : 'Language'],
+  ['folklore', 'topic_folklore', lv ? 'Folklora' : 'Folklore'],
+  ['visual-arts', 'topic_visual_arts', lv ? 'Vizuālā māksla' : 'Visual arts'],
+  ['performing-arts', 'topic_performing_arts', lv ? 'Skatuves māksla' : 'Performing arts'],
+] as const;
+const copy = lv ? {
+  title: 'Resursi un rīki', lead: 'Digitālo humanitāro zinātņu resursi pētniecībai, mācībām un kultūras mantojuma izzināšanai.',
+  search: 'Meklēt pēc nosaukuma, institūcijas vai apraksta…', filters: 'Filtri', close: 'Aizvērt filtrus', type: 'Resursa tips', topic: 'Temats',
+  access: 'Piekļuve', allAccess: 'Jebkāda piekļuve', open: 'Brīva piekļuve', registration: 'Ar reģistrēšanos', restricted: 'Ierobežota', unknown: 'Nav norādīts',
+  results: 'resursi', cards: 'Kartītes', list: 'Saraksts', explore: 'Izpētīt', carousel: 'Karuselis', view: 'Mainīt skatu', sort: 'Kārtot', recommended: 'Nejauša secība', az: 'A–Z', za: 'Z–A',
+  clear: 'Notīrīt', activeFilters: 'Aktīvie filtri', noResults: 'Neviens resurss neatbilst izvēlētajiem filtriem.', reset: 'Atiestatīt filtrus', openResource: 'Atvērt resursu',
+  creator: 'Izstrādājis', creatorFilter: 'Institūcija', creatorSearch: 'Meklēt institūciju…', more: 'Rādīt vairāk', page: 'Lapa', previous: 'Iepriekšējā', next: 'Nākamā', of: 'no', database: 'Resursu datubāze', filterHint: 'Izvēlies vienu vai vairākus filtrus', perPage: 'Rādīt', itemsPerPage: 'vienā lapā', all: 'Visus', details: 'Atvērt pilnu aprakstu', copyLink: 'Kopēt saiti', copied: 'Saite nokopēta', networkTitle: 'Resursu saikņu tīkls', networkHint: 'Velc fonu, lai pārvietotos. Ritini vai izmanto pogas, lai tuvinātu. Klikšķini uz mezgla, lai izgaismotu tā saiknes.', networkHelp: 'Izvēlies resursa mezglu, lai apskatītu tā aprakstu un saiknes. Priekšskatījuma kartītē resursu vari piespraust. Piespraustie resursi tiek saglabāti Tavā pārlūkā, un visu atlasi vari atvērt kopā jaunā cilnē. Tīklu vari pārvietot, tuvināt un filtrēt pēc mezglu veida.', carouselTitle: 'Resursu karuselis', carouselHint: 'Katrs pikselis attēlo vienu resursu. Velc karuseli, lai mainītu griešanās virzienu, un izvēlies pikseli, lai atvērtu resursa informāciju.', carouselHelp: 'Katrs vienāda izmēra pikselis ir viens resurss. Velc karuseli horizontāli vai vertikāli, lai mainītu tā kustību. Izvēlies pikseli, lai apskatītu resursa informāciju un to piespraustu.', zoomIn: 'Tuvināt', zoomOut: 'Tālināt', resetView: 'Centrēt tīklu', networkPause: 'Apturēt kustību', networkResume: 'Turpināt kustību', resourceNode: 'Resurss', typeNode: 'Resursa tips', topicNode: 'Temats', institutionNode: 'Institūcija', networkLayers: 'Rādīt tīklā', networkExpand: 'Izvērst', networkViewAll: 'Aplūkot visus jaunā cilnē', networkRelated: 'saistīti resursi', networkClose: 'Aizvērt priekšskatījumu', networkPin: 'Piespraust', networkUnpin: 'Atspraust', pinnedTitle: 'Piespraustie resursi', pinnedOpen: 'Aplūkot atlasi jaunā cilnē', pinnedClear: 'Notīrīt atlasi', cardPinsClear: 'Noņemt visas piespraudes', previewDrag: 'Velc, lai pārvietotu kartīti',
+} : {
+  title: 'Resources and tools', lead: 'Digital humanities resources for research, teaching and exploring cultural heritage.',
+  search: 'Search by title, institution or description…', filters: 'Filters', close: 'Close filters', type: 'Resource type', topic: 'Topic',
+  access: 'Access', allAccess: 'Any access', open: 'Open access', registration: 'Registration required', restricted: 'Restricted', unknown: 'Not specified',
+  results: 'resources', cards: 'Cards', list: 'List', explore: 'Explore', carousel: 'Carousel', view: 'Change view', sort: 'Sort', recommended: 'Random order', az: 'A–Z', za: 'Z–A',
+  clear: 'Clear', activeFilters: 'Active filters', noResults: 'No resources match the selected filters.', reset: 'Reset filters', openResource: 'Open resource',
+  creator: 'Developed by', creatorFilter: 'Institution', creatorSearch: 'Search institutions…', more: 'Show more', page: 'Page', previous: 'Previous', next: 'Next', of: 'of', database: 'Resource database', filterHint: 'Choose one or more filters', perPage: 'Show', itemsPerPage: 'per page', all: 'All', details: 'Open full description', copyLink: 'Copy link', copied: 'Link copied', networkTitle: 'Resource connections', networkHint: 'Drag the background to move. Scroll or use the controls to zoom. Select a node to illuminate its connections.', networkHelp: 'Select a resource node to view its description and connections. You can pin a resource from its preview card. Pinned resources are saved in your browser, and you can open the full selection together in a new tab. The network can be moved, zoomed and filtered by node type.', carouselTitle: 'Resource carousel', carouselHint: 'Each pixel represents one resource. Drag the carousel to change its direction, and select a pixel to open the resource information.', carouselHelp: 'Each equally sized pixel represents one resource. Drag the carousel horizontally or vertically to change its motion. Select a pixel to view the resource information and pin it.', zoomIn: 'Zoom in', zoomOut: 'Zoom out', resetView: 'Centre network', networkPause: 'Pause motion', networkResume: 'Resume motion', resourceNode: 'Resource', typeNode: 'Resource type', topicNode: 'Topic', institutionNode: 'Institution', networkLayers: 'Show in network', networkExpand: 'Expand', networkViewAll: 'View all in a new tab', networkRelated: 'related resources', networkClose: 'Close preview', networkPin: 'Pin', networkUnpin: 'Unpin', pinnedTitle: 'Pinned resources', pinnedOpen: 'View selection in a new tab', pinnedClear: 'Clear selection', cardPinsClear: 'Remove all pins', previewDrag: 'Drag to move this card',
+};
+const normalize = (value = '') => value.toLocaleLowerCase(lang).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const accessLabel = (value = '') => {
+  const key = normalize(value);
+  if (!key) return '';
+  if (key.includes('open') || key.includes('briv')) return copy.open;
+  if (key.includes('regist')) return copy.registration;
+  if (key.includes('restrict') || key.includes('ierob')) return copy.restricted;
+  return value;
+};
+---
+<BaseLayout title={`${copy.title} — Digital Humanities LV`} description={copy.lead} lang={lang} alternateUrl={lv ? '/en/resources-and-tools/' : '/lv/resursi-un-riki/'}>
+  <div class="resources-page" data-resource-directory data-view="cards" data-page-size="24">
+    <section class="page-heading resources-heading shell">
+      <HomeBackLink lang={lang} />
+      <div class="resources-heading-grid"><div><p class="section-label">{copy.database}</p><h1>{copy.title}</h1></div><p class="lead">{copy.lead}</p></div>
+    </section>
+
+    <section class="resources-directory shell">
+      <div class="resources-topbar">
+        <label class="resource-search"><Search size={20} /><span class="sr-only">{copy.search}</span><input type="search" placeholder={copy.search} data-resource-search /></label>
+        <button class="resource-filter-toggle" type="button" aria-expanded="false" data-filter-toggle><Filter size={18} /><span>{copy.filters}</span><span class="resource-filter-count" data-filter-count hidden>0</span></button>
+        <label class="resource-sort"><span>{copy.sort}</span><select data-resource-sort><option value="random">{copy.recommended}</option><option value="az">{copy.az}</option><option value="za">{copy.za}</option></select><ChevronDown size={15} /></label>
+        <div class="resource-view-toggle" aria-label={copy.view}>
+          <button type="button" data-resource-view="cards" aria-pressed="true" title={copy.cards}><Grid2X2 size={17} /><span>{copy.cards}</span></button>
+          <button type="button" data-resource-view="list" aria-pressed="false" title={copy.list}><List size={18} /><span>{copy.list}</span></button>
+          <button type="button" data-resource-view="explore" aria-pressed="false" title={copy.explore}><Network size={18} /><span>{copy.explore}</span></button>
+        </div>
+      </div>
+
+      <div class="resource-workspace">
+        <aside class="resource-filters" data-resource-filters>
+          <div class="resource-filter-heading"><div><SlidersHorizontal size={17} /><strong>{copy.filters}</strong><small>{copy.filterHint}</small></div><button type="button" data-filter-close aria-label={copy.close}><X size={20} /></button></div>
+          <fieldset><legend>{copy.type}</legend><div class="resource-filter-options">{typeDefs.map(([value,, label]) => <label><input type="checkbox" value={value} data-resource-type /><span><Check size={13} />{label}</span></label>)}</div></fieldset>
+          <fieldset><legend>{copy.topic}</legend><div class="resource-filter-options">{topicDefs.map(([value,, label]) => <label><input type="checkbox" value={value} data-resource-topic /><span><Check size={13} />{label}</span></label>)}</div></fieldset>
+          <fieldset><legend>{copy.creatorFilter}</legend>
+            <label class="resource-creator-search"><Search size={15} /><span class="sr-only">{copy.creatorSearch}</span><input type="search" placeholder={copy.creatorSearch} data-creator-search /></label>
+            <div class="resource-filter-options resource-creator-options" data-creator-options>{creatorDefs.map((label) => <label data-creator-option><input type="checkbox" value={normalize(label)} data-institution-code={institutionCodeByLabel.get(label) || ''} data-resource-creator /><span><Check size={13} />{label}</span></label>)}</div>
+          </fieldset>
+          <fieldset><legend>{copy.access}</legend>
+            <div class="resource-access-select" data-access-menu>
+              <select data-resource-access hidden aria-hidden="true"><option value="all">{copy.allAccess}</option><option value="open">{copy.open}</option><option value="registration">{copy.registration}</option><option value="restricted">{copy.restricted}</option><option value="unknown">{copy.unknown}</option></select>
+              <button class="resource-access-trigger" type="button" aria-expanded="false" data-access-trigger><span data-access-label>{copy.allAccess}</span><ChevronDown size={15} /></button>
+              <div class="resource-access-options" data-access-options hidden>
+                {[
+                  ['all', copy.allAccess], ['open', copy.open], ['registration', copy.registration], ['restricted', copy.restricted], ['unknown', copy.unknown],
+                ].map(([value, label]) => <button type="button" data-access-option data-value={value} aria-pressed={value === 'all' ? 'true' : 'false'}><span class="resource-access-option-mark"></span><span>{label}</span><Check size={14} /></button>)}
+              </div>
+            </div>
+          </fieldset>
+          <button class="resource-clear" type="button" data-resource-clear><RotateCcw size={15} />{copy.clear}</button>
+        </aside>
+
+        <div class="resource-results">
+          <div class="resource-results-head">
+            <div class="resource-results-meta">
+              <p><strong data-resource-count>{resources.length}</strong> {copy.results}</p>
+              <label class="resource-page-size"><span>{copy.perPage}</span><select data-page-size-select><option value="12">12</option><option value="24" selected>24</option><option value="48">48</option><option value="all">{copy.all}</option></select><ChevronDown size={14} /><span>{copy.itemsPerPage}</span></label>
+              <button class="resource-clear-pins" type="button" data-resource-pins-clear hidden><Pin size={14} aria-hidden="true" />{copy.cardPinsClear}</button>
+            </div>
+            <div class="resource-active-filters" aria-label={copy.activeFilters} data-active-filters></div>
+          </div>
+          <div class="resource-list" data-resource-list>
+            {resources.map((resource, index) => {
+              const types = typeDefs.filter(([, key]) => resource[key]).map(([value,, label]) => ({ value, label }));
+              const topics = topicDefs.filter(([, key]) => resource[key]).map(([value,, label]) => ({ value, label }));
+              const access = accessLabel(resource.access_model);
+              const accessKey = access === copy.open ? 'open' : access === copy.registration ? 'registration' : access === copy.restricted ? 'restricted' : 'unknown';
+  const creator = (resource.creator || '')
+    .trim()
+    .replace(/^["'“”„«»]+\s*|\s*["'“”„«»]+$/g, '')
+    .trim();
+              const institutions = splitInstitutions(resource.institutions);
+              const searchText = normalize([resource.title, resource.long_title, resource.summary, resource.description, creator, ...types.map((item) => item.label), ...topics.map((item) => item.label)].join(' '));
+              const creators = institutions.map((institution) => normalize(institution));
+              return <article class="resource-card" data-resource data-slug={resource.slug} data-title={resource.title} data-index={index} data-search={searchText} data-types={types.map((item) => item.value).join(' ')} data-topics={topics.map((item) => item.value).join(' ')} data-creators={JSON.stringify(creators)} data-creator-codes={resource.creator_codes || ''} data-access={accessKey}>
+                {resource.image_url && <div class="resource-card-visual" aria-hidden="true"><img src={resource.image_url} alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></div>}
+                <button class="resource-card-pin" type="button" data-resource-pin data-pin-label={copy.networkPin} data-unpin-label={copy.networkUnpin} aria-label={`${copy.networkPin}: ${resource.title}`} title={copy.networkPin} aria-pressed="false"><Pin size={16} aria-hidden="true" /></button>
+                <button class="resource-card-main" type="button" data-open-resource-detail aria-label={`${copy.details}: ${resource.title}`}>
+                  <div class="resource-card-body">
+                    {access && <div class="resource-card-meta"><span class="resource-access"><i></i>{access}</span></div>}
+                    <h2>{resource.title}</h2>
+                    <p class="resource-summary">{resource.summary || resource.description}</p>
+                    <div class="resource-taxonomy">
+                      <div class="resource-type-tags">{types.map(({ value, label }) => <span data-kind={value}>{label}</span>)}</div>
+                      <div class="resource-topic-tags">{topics.map(({ value, label }) => <span data-kind={value}>{label}</span>)}</div>
+                    </div>
+                  </div>
+                  <span class="resource-open" aria-hidden="true"><Plus size={18} /></span>
+                </button>
+                <template data-resource-detail>
+                  <div class="resource-detail-layout">
+                    {resource.image_url && <figure class="resource-detail-image">
+                      <img class="resource-detail-image-backdrop" src={resource.image_url} alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                      <img class="resource-detail-image-main" src={resource.image_url} alt={resource.image_alt || ''} loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                    </figure>}
+                    <div class="resource-detail-copy">
+                      {access && <p class="resource-access"><i></i>{access}</p>}
+                      <h2>{resource.title}</h2>
+                      {resource.long_title && resource.long_title !== resource.title && <p class="resource-detail-long-title">{resource.long_title}</p>}
+          {creator && <p class="resource-detail-creator"><span>{copy.creator}</span>{creator}</p>}
+                      <div class="resource-detail-description"><p>{resource.description || resource.summary}</p></div>
+                      <div class="resource-taxonomy"><div class="resource-type-tags">{types.map(({ value, label }) => <span data-kind={value}>{label}</span>)}</div><div class="resource-topic-tags">{topics.map(({ value, label }) => <span data-kind={value}>{label}</span>)}</div></div>
+                      <div class="resource-detail-actions">
+                        {resource.website_url && <a class="button primary" href={resource.website_url} target="_blank" rel="noreferrer">{copy.openResource}<ExternalLink size={16} /></a>}
+                        <button class="button secondary" type="button" data-copy-resource-link data-default-label={copy.copyLink} data-copied-label={copy.copied}><Link2 size={16} /><span>{copy.copyLink}</span></button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </article>;
+            })}
+          </div>
+          <section class="resource-explorer" data-resource-explorer hidden aria-label={copy.networkTitle}>
+            <div class="resource-explorer-switch" aria-label={copy.explore}>
+              <button type="button" data-explorer-mode="network" aria-pressed="true"><Network size={17} />{copy.networkTitle}</button>
+              <button type="button" data-explorer-mode="carousel" aria-pressed="false"><Orbit size={17} />{copy.carouselTitle}</button>
+            </div>
+            <div data-resource-network-panel>
+            <div class="resource-explorer-head">
+              <div class="resource-network-heading"><strong>{copy.networkTitle}</strong><span><b data-network-count>{resources.length}</b> {copy.results}</span></div>
+              <fieldset class="resource-network-layers" data-network-layers>
+                <legend>{copy.networkLayers}</legend>
+                <label><input type="checkbox" value="resource" checked /><span data-kind="resource"><i></i>{copy.resourceNode}</span></label>
+                <label><input type="checkbox" value="type" checked /><span data-kind="type"><i></i>{copy.typeNode}</span></label>
+                <label><input type="checkbox" value="topic" checked /><span data-kind="topic"><i></i>{copy.topicNode}</span></label>
+                <label><input type="checkbox" value="institution" checked /><span data-kind="institution"><i></i>{copy.institutionNode}</span></label>
+              </fieldset>
+              <div class="resource-network-controls">
+                <button type="button" data-network-motion data-pause-label={copy.networkPause} data-resume-label={copy.networkResume} aria-label={copy.networkPause} title={copy.networkPause} aria-pressed="false"><span data-motion-pause><Pause size={18} /></span><span data-motion-play hidden><Play size={18} /></span></button>
+                <button type="button" data-network-zoom-out aria-label={copy.zoomOut} title={copy.zoomOut}><ZoomOut size={18} /></button>
+                <button type="button" data-network-reset aria-label={copy.resetView} title={copy.resetView}><Focus size={18} /></button>
+                <button type="button" data-network-zoom-in aria-label={copy.zoomIn} title={copy.zoomIn}><ZoomIn size={18} /></button>
+              </div>
+            </div>
+            <div class="resource-network-stage" data-network-stage>
+              <svg data-resource-network role="img" aria-label={copy.networkHint}></svg>
+              <div class="resource-network-tooltip" data-network-tooltip hidden></div>
+              <article class="resource-network-preview" data-network-preview hidden>
+                <button type="button" data-network-preview-pin data-pin-label={copy.networkPin} data-unpin-label={copy.networkUnpin} hidden aria-label={copy.networkPin} title={copy.networkPin} aria-pressed="false"><Pin size={17} aria-hidden="true" /></button>
+                <div class="resource-network-preview-head" data-network-preview-drag title={copy.previewDrag}>
+                  <p data-network-preview-kind></p>
+                  <span aria-hidden="true">⠿</span>
+                </div>
+                <button type="button" data-network-preview-close aria-label={copy.networkClose}>×</button>
+                <h3 data-network-preview-title></h3>
+                <p data-network-preview-summary></p>
+                <div class="resource-network-preview-actions">
+                  <button type="button" data-network-preview-expand><span data-network-preview-action-label>{copy.networkExpand}</span><span aria-hidden="true">↗</span></button>
+                </div>
+              </article>
+              <aside class="resource-network-pins" data-network-pins hidden>
+                <div class="resource-network-pins-head"><strong>{copy.pinnedTitle}</strong><span data-network-pin-count></span></div>
+                <div class="resource-network-pin-list" data-network-pin-list></div>
+                <div class="resource-network-pin-actions">
+                  <button type="button" data-network-pins-open>{copy.pinnedOpen}<span aria-hidden="true">↗</span></button>
+                  <button type="button" data-network-pins-clear>{copy.pinnedClear}</button>
+                </div>
+              </aside>
+            </div>
+            <div class="resource-network-help"><Pin size={18} aria-hidden="true" /><p>{copy.networkHelp}</p></div>
+            </div>
+            <div class="resource-carousel" data-resource-carousel-panel hidden>
+              <div class="resource-carousel-heading"><strong>{copy.carouselTitle}</strong><span><b data-carousel-count>{resources.length}</b> {copy.results}</span></div>
+              <div class="resource-carousel-stage" data-carousel-stage>
+                <canvas data-resource-carousel role="img" aria-label={copy.carouselHint}></canvas>
+                <div class="resource-network-tooltip resource-carousel-tooltip" data-carousel-tooltip hidden></div>
+                <article class="resource-network-preview resource-carousel-preview" data-carousel-preview hidden>
+                  <button type="button" data-carousel-preview-pin data-network-preview-pin data-pin-label={copy.networkPin} data-unpin-label={copy.networkUnpin} aria-label={copy.networkPin} title={copy.networkPin} aria-pressed="false"><Pin size={17} aria-hidden="true" /></button>
+                  <div class="resource-network-preview-head"><p>{copy.resourceNode}</p><span aria-hidden="true">⠿</span></div>
+                  <button type="button" data-carousel-preview-close data-network-preview-close aria-label={copy.networkClose}>×</button>
+                  <h3 data-carousel-preview-title></h3>
+                  <p data-carousel-preview-summary></p>
+                  <div class="resource-network-preview-actions"><button type="button" data-carousel-preview-expand><span>{copy.networkExpand}</span><span aria-hidden="true">↗</span></button></div>
+                </article>
+                <aside class="resource-network-pins" data-carousel-pins hidden>
+                  <div class="resource-network-pins-head"><strong>{copy.pinnedTitle}</strong><span data-carousel-pin-count></span></div>
+                  <div class="resource-network-pin-list" data-carousel-pin-list></div>
+                  <div class="resource-network-pin-actions">
+                    <button type="button" data-carousel-pins-open>{copy.pinnedOpen}<span aria-hidden="true">↗</span></button>
+                    <button type="button" data-carousel-pins-clear>{copy.pinnedClear}</button>
+                  </div>
+                </aside>
+                <div class="sr-only" data-carousel-accessible-list></div>
+              </div>
+              <div class="resource-network-help"><Orbit size={18} aria-hidden="true" /><p>{copy.carouselHelp}</p></div>
+            </div>
+          </section>
+          <div class="resource-empty" data-resource-empty hidden><Database size={34} /><h2>{copy.noResults}</h2><button class="button secondary" type="button" data-resource-reset>{copy.reset}</button></div>
+          <nav class="resource-pagination" aria-label={copy.page} data-resource-pagination><button type="button" data-page-previous>{copy.previous}</button><p><span>{copy.page}</span> <strong data-page-current>1</strong> {copy.of} <strong data-page-total>1</strong></p><button type="button" data-page-next>{copy.next}</button></nav>
+        </div>
+      </div>
+      <div class="resource-filter-scrim" data-filter-scrim></div>
+    </section>
+    <dialog class="resource-detail-dialog" data-resource-dialog aria-labelledby="resource-detail-title"><button class="resource-detail-close" type="button" data-resource-dialog-close aria-label={copy.close}><X size={22} /></button><div data-resource-dialog-content></div></dialog>
+  </div>
+</BaseLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-resource-directory]');
+  if (root) {
+    const search = root.querySelector<HTMLInputElement>('[data-resource-search]');
+    const sort = root.querySelector<HTMLSelectElement>('[data-resource-sort]');
+    const access = root.querySelector<HTMLSelectElement>('[data-resource-access]');
+    const typeInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-type]')];
+    const topicInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-topic]')];
+    const creatorInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-creator]')];
+    const creatorSearch = root.querySelector<HTMLInputElement>('[data-creator-search]');
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-resource]')];
+    const randomOrder = new WeakMap<HTMLElement, number>();
+    cards.forEach((card) => randomOrder.set(card, Math.random()));
+    const list = root.querySelector<HTMLElement>('[data-resource-list]');
+    const count = root.querySelector<HTMLElement>('[data-resource-count]');
+    const empty = root.querySelector<HTMLElement>('[data-resource-empty]');
+    const activeFilters = root.querySelector<HTMLElement>('[data-active-filters]');
+    const filterCount = root.querySelector<HTMLElement>('[data-filter-count]');
+    const currentPageLabel = root.querySelector<HTMLElement>('[data-page-current]');
+    const totalPageLabel = root.querySelector<HTMLElement>('[data-page-total]');
+    const pagination = root.querySelector<HTMLElement>('[data-resource-pagination]');
+    const previous = root.querySelector<HTMLButtonElement>('[data-page-previous]');
+    const next = root.querySelector<HTMLButtonElement>('[data-page-next]');
+    const pageSizeSelect = root.querySelector<HTMLSelectElement>('[data-page-size-select]');
+    const detailDialog = root.querySelector<HTMLDialogElement>('[data-resource-dialog]');
+    const detailContent = root.querySelector<HTMLElement>('[data-resource-dialog-content]');
+    const filterToggle = root.querySelector<HTMLButtonElement>('[data-filter-toggle]');
+    const filterPanel = root.querySelector<HTMLElement>('[data-resource-filters]');
+    const accessMenu = root.querySelector<HTMLElement>('[data-access-menu]');
+    const accessTrigger = root.querySelector<HTMLButtonElement>('[data-access-trigger]');
+    const accessOptions = root.querySelector<HTMLElement>('[data-access-options]');
+    const accessLabel = root.querySelector<HTMLElement>('[data-access-label]');
+    const accessOptionButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-access-option]')];
+    const explorer = root.querySelector<HTMLElement>('[data-resource-explorer]');
+    const networkStage = root.querySelector<HTMLElement>('[data-network-stage]');
+    const networkSvg = root.querySelector<SVGSVGElement>('[data-resource-network]');
+    const networkTooltip = root.querySelector<HTMLElement>('[data-network-tooltip]');
+    const networkPreview = root.querySelector<HTMLElement>('[data-network-preview]');
+    const networkPreviewKind = root.querySelector<HTMLElement>('[data-network-preview-kind]');
+    const networkPreviewTitle = root.querySelector<HTMLElement>('[data-network-preview-title]');
+    const networkPreviewSummary = root.querySelector<HTMLElement>('[data-network-preview-summary]');
+    const networkPreviewExpand = root.querySelector<HTMLButtonElement>('[data-network-preview-expand]');
+    const networkPreviewActionLabel = root.querySelector<HTMLElement>('[data-network-preview-action-label]');
+    const networkPreviewDrag = root.querySelector<HTMLElement>('[data-network-preview-drag]');
+    const networkPreviewPin = root.querySelector<HTMLButtonElement>('[data-network-preview-pin]');
+    const networkPreviewPinLabel = root.querySelector<HTMLElement>('[data-network-preview-pin-label]');
+    const networkPins = root.querySelector<HTMLElement>('[data-network-pins]');
+    const networkPinList = root.querySelector<HTMLElement>('[data-network-pin-list]');
+    const networkPinCount = root.querySelector<HTMLElement>('[data-network-pin-count]');
+    const networkPinsOpen = root.querySelector<HTMLButtonElement>('[data-network-pins-open]');
+    const networkPinsClear = root.querySelector<HTMLButtonElement>('[data-network-pins-clear]');
+    const resourcePinsClear = root.querySelector<HTMLButtonElement>('[data-resource-pins-clear]');
+    const networkCount = root.querySelector<HTMLElement>('[data-network-count]');
+    const networkLayerInputs = [...root.querySelectorAll<HTMLInputElement>('[data-network-layers] input')];
+    const networkPanel = root.querySelector<HTMLElement>('[data-resource-network-panel]');
+    const carouselPanel = root.querySelector<HTMLElement>('[data-resource-carousel-panel]');
+    const explorerModeButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-explorer-mode]')];
+    const carouselStage = root.querySelector<HTMLElement>('[data-carousel-stage]');
+    const carouselCanvas = root.querySelector<HTMLCanvasElement>('[data-resource-carousel]');
+    const carouselContext = carouselCanvas?.getContext('2d') || null;
+    const carouselTooltip = root.querySelector<HTMLElement>('[data-carousel-tooltip]');
+    const carouselPreview = root.querySelector<HTMLElement>('[data-carousel-preview]');
+    const carouselPreviewTitle = root.querySelector<HTMLElement>('[data-carousel-preview-title]');
+    const carouselPreviewSummary = root.querySelector<HTMLElement>('[data-carousel-preview-summary]');
+    const carouselPreviewExpand = root.querySelector<HTMLButtonElement>('[data-carousel-preview-expand]');
+    const carouselPreviewPin = root.querySelector<HTMLButtonElement>('[data-carousel-preview-pin]');
+    const carouselPins = root.querySelector<HTMLElement>('[data-carousel-pins]');
+    const carouselPinList = root.querySelector<HTMLElement>('[data-carousel-pin-list]');
+    const carouselPinCount = root.querySelector<HTMLElement>('[data-carousel-pin-count]');
+    const carouselPinsOpen = root.querySelector<HTMLButtonElement>('[data-carousel-pins-open]');
+    const carouselPinsClear = root.querySelector<HTMLButtonElement>('[data-carousel-pins-clear]');
+    const carouselCount = root.querySelector<HTMLElement>('[data-carousel-count]');
+    const carouselAccessibleList = root.querySelector<HTMLElement>('[data-carousel-accessible-list]');
+    let pageSize = Number(root.dataset.pageSize) || 24;
+    let currentPage = 1;
+    let currentMatching = [...cards];
+    const initialUrlParameters = new URLSearchParams(window.location.search);
+    const requestedResourceSlugs = new Set((initialUrlParameters.get('resources') || '').split(',').map((value) => value.trim()).filter(Boolean));
+    const pinStorageKey = 'dh-resource-pins';
+    const previewStorageKey = 'dh-resource-preview-position';
+    const knownSlugs = new Set(cards.map((card) => card.dataset.slug || '').filter(Boolean));
+    const readPins = () => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(pinStorageKey) || '[]');
+        return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string' && knownSlugs.has(value)) : [];
+      } catch { return []; }
+    };
+    const pinnedSlugs = new Set(readPins());
+    let selectedPreviewCard: HTMLElement | undefined;
+    let selectedCarouselCard: HTMLElement | undefined;
+    let explorerMode: 'network' | 'carousel' = 'network';
+
+    const selectedValues = (inputs: HTMLInputElement[]) => inputs.filter((input) => input.checked).map((input) => input.value);
+    const labelFor = (input: HTMLInputElement) => input.closest('label')?.textContent?.trim() || input.value;
+    type InstitutionFilter = { value: string; code: string };
+    const selectedInstitutionFilters = (): InstitutionFilter[] => creatorInputs
+      .filter((input) => input.checked)
+      .map((input) => ({ value: input.value, code: input.dataset.institutionCode || '' }));
+    const cardMatchesInstitution = (card: HTMLElement, filter: InstitutionFilter) => {
+      const cardCreators = JSON.parse(card.dataset.creators || '[]') as string[];
+      const cardCreatorCodes = (card.dataset.creatorCodes || '').split(/[|;,]/).map((value) => value.trim().toLowerCase()).filter(Boolean);
+      if (filter.code === 'lu') {
+        return cardCreatorCodes.some((item) => item === 'lu' || item.startsWith('lu-'))
+          || cardCreators.some((item) => item === filter.value || item.startsWith('lu ') || item.startsWith('university of latvia '));
+      }
+      return cardCreators.includes(filter.value) || Boolean(filter.code && cardCreatorCodes.includes(filter.code));
+    };
+    const closeFilters = () => { root.classList.remove('filters-open'); filterToggle?.setAttribute('aria-expanded', 'false'); };
+    const renderActiveFilters = () => {
+      if (!activeFilters) return;
+      activeFilters.replaceChildren();
+      const selected = [...typeInputs, ...topicInputs, ...creatorInputs].filter((input) => input.checked);
+      selected.forEach((input) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = `<span>${labelFor(input)}</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></svg>`;
+        button.addEventListener('click', () => { input.checked = false; applyFilters(true); });
+        activeFilters.append(button);
+      });
+      const filterTotal = selected.length + (access?.value && access.value !== 'all' ? 1 : 0);
+      if (filterCount) { filterCount.textContent = String(filterTotal); filterCount.hidden = filterTotal === 0; }
+    };
+    const applyFilters = (resetPage = false) => {
+      if (resetPage) currentPage = 1;
+      const query = (search?.value || '').trim().toLocaleLowerCase(document.documentElement.lang).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const types = selectedValues(typeInputs);
+      const topics = selectedValues(topicInputs);
+      const creators = creatorInputs.filter((input) => input.checked).map((input) => ({ value: input.value, code: input.dataset.institutionCode || '' }));
+      const accessValue = access?.value || 'all';
+      const matching = cards.filter((card) => {
+        const cardTypes = (card.dataset.types || '').split(' ');
+        const cardTopics = (card.dataset.topics || '').split(' ');
+        const creatorMatch = !creators.length || creators.some((creator) => cardMatchesInstitution(card, creator));
+        return (!requestedResourceSlugs.size || requestedResourceSlugs.has(card.dataset.slug || '')) && (!query || card.dataset.search?.includes(query)) && (!types.length || types.some((value) => cardTypes.includes(value))) && (!topics.length || topics.some((value) => cardTopics.includes(value))) && creatorMatch && (accessValue === 'all' || card.dataset.access === accessValue);
+      });
+      currentMatching = matching;
+      const direction = sort?.value || 'random';
+      matching.sort((a, b) => {
+        const pinDifference = Number(pinnedSlugs.has(b.dataset.slug || '')) - Number(pinnedSlugs.has(a.dataset.slug || ''));
+        if (pinDifference) return pinDifference;
+        return direction === 'az' ? (a.dataset.title || '').localeCompare(b.dataset.title || '', document.documentElement.lang) : direction === 'za' ? (b.dataset.title || '').localeCompare(a.dataset.title || '', document.documentElement.lang) : (randomOrder.get(a) || 0) - (randomOrder.get(b) || 0);
+      });
+      matching.forEach((card) => list?.append(card));
+      const showAll = pageSize === Infinity;
+      const totalPages = showAll ? 1 : Math.max(1, Math.ceil(matching.length / pageSize));
+      currentPage = Math.min(currentPage, totalPages);
+      cards.forEach((card) => card.hidden = true);
+      const visibleCards = showAll ? matching : matching.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+      visibleCards.forEach((card) => card.hidden = false);
+      if (count) count.textContent = String(matching.length);
+      if (empty) empty.hidden = matching.length !== 0;
+      if (pagination) pagination.hidden = root.dataset.view === 'explore' || matching.length === 0 || totalPages === 1;
+      if (networkCount) networkCount.textContent = String(matching.length);
+      if (currentPageLabel) currentPageLabel.textContent = String(currentPage);
+      if (totalPageLabel) totalPageLabel.textContent = String(totalPages);
+      if (previous) previous.disabled = currentPage <= 1;
+      if (next) next.disabled = currentPage >= totalPages;
+      renderActiveFilters();
+      if (root.dataset.view === 'explore') explorerMode === 'carousel' ? renderCarousel(matching) : renderNetwork(matching);
+      if (resetPage) {
+        requestAnimationFrame(() => {
+          const resultsBounds = list?.getBoundingClientRect();
+          if (resultsBounds && (resultsBounds.bottom < 120 || resultsBounds.top > window.innerHeight - 120)) {
+            root.querySelector('.resources-topbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      }
+    };
+    const setAccess = (value: string) => {
+      if (!access) return;
+      access.value = value;
+      const selected = accessOptionButtons.find((button) => button.dataset.value === value);
+      if (accessLabel) accessLabel.textContent = selected?.querySelector('span:nth-child(2)')?.textContent || '';
+      accessOptionButtons.forEach((button) => button.setAttribute('aria-pressed', String(button === selected)));
+    };
+    const closeAccessMenu = () => { if (accessOptions) accessOptions.hidden = true; accessTrigger?.setAttribute('aria-expanded', 'false'); };
+    const resetFilters = () => { if (search) search.value = ''; if (creatorSearch) creatorSearch.value = ''; setAccess('all'); [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => input.checked = false); root.querySelectorAll<HTMLElement>('[data-creator-option]').forEach((option) => option.hidden = false); applyFilters(true); };
+    search?.addEventListener('input', () => applyFilters(true));
+    sort?.addEventListener('change', () => applyFilters(true));
+    pageSizeSelect?.addEventListener('change', () => {
+      pageSize = pageSizeSelect.value === 'all' ? Infinity : Number(pageSizeSelect.value) || 24;
+      localStorage.setItem('dh-resource-page-size', pageSizeSelect.value);
+      applyFilters(true);
+    });
+    access?.addEventListener('change', () => applyFilters(true));
+    accessTrigger?.addEventListener('click', () => { const open = accessOptions?.hidden ?? true; if (accessOptions) accessOptions.hidden = !open; accessTrigger.setAttribute('aria-expanded', String(open)); });
+    accessOptionButtons.forEach((button) => button.addEventListener('click', () => { setAccess(button.dataset.value || 'all'); closeAccessMenu(); applyFilters(true); }));
+    document.addEventListener('click', (event) => { if (accessMenu && !accessMenu.contains(event.target as Node)) closeAccessMenu(); });
+    [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => input.addEventListener('change', () => applyFilters(true)));
+    networkLayerInputs.forEach((input) => input.addEventListener('change', () => {
+      clearGraphSelection();
+      renderNetwork(currentMatching);
+    }));
+    creatorSearch?.addEventListener('input', () => {
+      const query = creatorSearch.value.trim().toLocaleLowerCase(document.documentElement.lang).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      root.querySelectorAll<HTMLElement>('[data-creator-option]').forEach((option) => { option.hidden = Boolean(query) && !option.textContent?.toLocaleLowerCase(document.documentElement.lang).normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(query); });
+    });
+    root.querySelector('[data-resource-clear]')?.addEventListener('click', resetFilters);
+    root.querySelector('[data-resource-reset]')?.addEventListener('click', resetFilters);
+    previous?.addEventListener('click', () => { currentPage--; applyFilters(); root.querySelector('.resources-topbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    next?.addEventListener('click', () => { currentPage++; applyFilters(); root.querySelector('.resources-topbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    filterToggle?.addEventListener('click', () => { const open = root.classList.toggle('filters-open'); filterToggle.setAttribute('aria-expanded', String(open)); });
+    root.querySelector('[data-filter-close]')?.addEventListener('click', closeFilters);
+    root.querySelector('[data-filter-scrim]')?.addEventListener('click', closeFilters);
+
+    type GraphNode = { id: string; label: string; kind: 'resource' | 'type' | 'topic' | 'institution'; x: number; y: number; anchorX: number; anchorY: number; vx: number; vy: number; phase: number; depth: number; motion: number; pinned: boolean; card?: HTMLElement; radius: number; };
+    type GraphLink = { source: GraphNode; target: GraphNode; rest: number; weight: number; projected?: boolean; };
+    let graphNodes: GraphNode[] = [];
+    let graphLinks: GraphLink[] = [];
+    let graphTransform = { x: 0, y: 0, scale: 1 };
+    let networkResizeFrame = 0;
+    let graphAnimationFrame = 0;
+    let graphMotionPaused = false;
+    let graphDraggedNode: GraphNode | undefined;
+    let graphWidth = 0;
+    let graphHeight = 0;
+    let graphFlowAngle = 0;
+    let graphRotationFactor = 1;
+    let graphTargetRotation = 1;
+    let graphVerticalDrift = 0;
+    let graphTargetVerticalDrift = 0;
+    let graphVerticalOffset = 0;
+    let graphPreviousDragAngle = 0;
+    let graphPreviousDragY = 0;
+    const graphPins = new Map<string, { x: number; y: number }>();
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const nodeHash = (value: string) => [...value].reduce((total, character) => ((total << 5) - total + character.charCodeAt(0)) | 0, 0);
+    const graphPoint = (event: PointerEvent | WheelEvent) => {
+      const bounds = networkSvg?.getBoundingClientRect();
+      if (!bounds) return { x: 0, y: 0 };
+      return { x: (event.clientX - bounds.left - graphTransform.x) / graphTransform.scale, y: (event.clientY - bounds.top - graphTransform.y) / graphTransform.scale };
+    };
+    const graphLabels = new Map<string, string>();
+    [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => graphLabels.set(input.value, labelFor(input)));
+    const visibleNetworkLayers = () => new Set(networkLayerInputs.filter((input) => input.checked).map((input) => input.value));
+
+    const persistPins = () => localStorage.setItem(pinStorageKey, JSON.stringify([...pinnedSlugs]));
+    const updatePreviewPin = () => {
+      const slug = selectedPreviewCard?.dataset.slug || '';
+      const isPinned = Boolean(slug && pinnedSlugs.has(slug));
+      if (networkPreviewPin) {
+        networkPreviewPin.hidden = !slug;
+        networkPreviewPin.setAttribute('aria-pressed', String(isPinned));
+        const label = isPinned ? (networkPreviewPin.dataset.unpinLabel || '') : (networkPreviewPin.dataset.pinLabel || '');
+        networkPreviewPin.setAttribute('aria-label', label);
+        networkPreviewPin.title = label;
+      }
+      if (networkPreviewPinLabel && networkPreviewPin) networkPreviewPinLabel.textContent = isPinned ? (networkPreviewPin.dataset.unpinLabel || '') : (networkPreviewPin.dataset.pinLabel || '');
+    };
+    const renderPinnedResources = () => {
+      if (resourcePinsClear) resourcePinsClear.hidden = pinnedSlugs.size === 0;
+      const selectedCards = [...pinnedSlugs].map((slug) => cards.find((card) => card.dataset.slug === slug)).filter((card): card is HTMLElement => Boolean(card));
+      const fillPinPanel = (panel: HTMLElement | null, list: HTMLElement | null, count: HTMLElement | null) => {
+        if (!panel || !list || !count) return;
+        list.replaceChildren();
+        panel.hidden = selectedCards.length === 0;
+        count.textContent = String(selectedCards.length);
+        selectedCards.forEach((card) => {
+          const button = document.createElement('button');
+          button.type = 'button'; button.className = 'resource-network-pin-card';
+          button.setAttribute('aria-label', networkPreviewPin?.dataset.unpinLabel || '');
+          button.title = networkPreviewPin?.dataset.unpinLabel || '';
+          const pin = document.createElementNS(svgNs, 'svg');
+          pin.setAttribute('viewBox', '0 0 24 24');
+          pin.setAttribute('aria-hidden', 'true');
+          pin.classList.add('resource-network-pin-card-icon');
+          pin.innerHTML = '<path d="M12 17v5"/><path d="M5 17h14"/><path d="M6 3h12l-2 7 3 3v1H5v-1l3-3-2-7z"/>';
+          const content = document.createElement('span'); content.className = 'resource-network-pin-card-content';
+          const kind = document.createElement('small'); kind.textContent = networkPreviewKind?.textContent || '';
+          const label = document.createElement('strong'); label.textContent = card.dataset.title || card.dataset.slug || '';
+          content.append(kind, label);
+          button.append(pin, content);
+          button.addEventListener('click', () => { pinnedSlugs.delete(card.dataset.slug || ''); persistPins(); renderPinnedResources(); applyFilters(true); });
+          list.append(button);
+        });
+      };
+      fillPinPanel(networkPins, networkPinList, networkPinCount);
+      fillPinPanel(carouselPins, carouselPinList, carouselPinCount);
+      cards.forEach((card) => {
+        const isPinned = pinnedSlugs.has(card.dataset.slug || '');
+        card.classList.toggle('is-pinned-resource', isPinned);
+        const button = card.querySelector<HTMLButtonElement>('[data-resource-pin]');
+        if (!button) return;
+        const label = isPinned ? (button.dataset.unpinLabel || '') : (button.dataset.pinLabel || '');
+        button.setAttribute('aria-pressed', String(isPinned));
+        button.setAttribute('aria-label', `${label}: ${card.dataset.title || ''}`);
+        button.title = label;
+      });
+      networkSvg?.querySelectorAll<SVGGElement>('.resource-network-node').forEach((element) => {
+        const node = graphNodes.find((candidate) => candidate.id === element.dataset.nodeId);
+        element.classList.toggle('is-pinned-resource', Boolean(node?.card && pinnedSlugs.has(node.card.dataset.slug || '')));
+      });
+      updatePreviewPin();
+      updateCarouselPreviewPin();
+      drawCarousel();
+    };
+    const togglePinnedResource = (card: HTMLElement) => {
+      const slug = card.dataset.slug || '';
+      if (!slug) return;
+      if (pinnedSlugs.has(slug)) pinnedSlugs.delete(slug); else pinnedSlugs.add(slug);
+      persistPins(); renderPinnedResources(); applyFilters(true);
+    };
+
+    type CarouselParticle = { card: HTMLElement; x: number; y: number; previousX: number; previousY: number; angle: number; radius: number; vertical: number; speed: number; phase: number; depth: number; };
+    let carouselParticles: CarouselParticle[] = [];
+    let carouselWidth = 0;
+    let carouselHeight = 0;
+    let carouselFrame = 0;
+    let carouselAnimationFrame = 0;
+    let carouselRotation = 1;
+    let carouselTargetRotation = 1;
+    let carouselVerticalDrift = 0;
+    let carouselTargetVerticalDrift = 0;
+    let carouselVerticalOffset = 0;
+    let carouselDragStart = { x: 0, y: 0 };
+    let carouselPreviousAngle = 0;
+    let carouselPreviousY = 0;
+    let carouselDragged = false;
+    let carouselPointerActive = false;
+    let carouselHovered: CarouselParticle | undefined;
+    const carouselReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function carouselPosition(particle: CarouselParticle, initial = false) {
+      if (!initial) { particle.previousX = particle.x; particle.previousY = particle.y; }
+      const centreX = carouselWidth * .5;
+      const centreY = carouselHeight * .5;
+      const horizontalRadius = carouselWidth * (.08 + particle.radius * .38);
+      const verticalRadius = carouselHeight * (.045 + particle.radius * .3);
+      const breathing = Math.sin(carouselFrame * .0012 + particle.phase) * carouselWidth * .016 * particle.depth;
+      particle.x = centreX + Math.cos(particle.angle) * (horizontalRadius + breathing);
+      const baseY = centreY + Math.sin(particle.angle) * verticalRadius + particle.vertical * carouselHeight * (.07 + particle.radius * .16) + Math.cos(carouselFrame * .001 + particle.phase) * 6 + carouselVerticalOffset * (.3 + particle.depth * .7);
+      const span = carouselHeight + 100;
+      particle.y = ((baseY + 50) % span + span) % span - 50;
+      if (initial) { particle.previousX = particle.x; particle.previousY = particle.y; }
+    }
+
+    function drawCarousel() {
+      if (!carouselContext || !carouselCanvas || !carouselWidth || !carouselHeight) return;
+      carouselContext.clearRect(0, 0, carouselWidth, carouselHeight);
+      const dark = document.documentElement.dataset.theme === 'dark';
+      const pixel = dark ? '183,132,255' : '98,64,232';
+      const line = dark ? '166,112,245' : '112,83,220';
+      const accents = dark
+        ? ['#ff79c6', '#8fb8ff', '#d49cff', '#a78bfa', '#75d7f0', '#ef8cff']
+        : ['#c13e9a', '#4169d8', '#8b4bd8', '#6547c7', '#168fb5', '#ad4fc9'];
+      const centreX = carouselWidth * .5, centreY = carouselHeight * .5;
+      carouselContext.lineWidth = .65;
+      for (let ring = 1; ring <= 5; ring += 1) {
+        carouselContext.strokeStyle = `rgba(${line},${.025 + ring * .007})`;
+        carouselContext.beginPath();
+        carouselContext.ellipse(centreX, centreY, carouselWidth * (.075 * ring), carouselHeight * (.055 * ring), 0, 0, Math.PI * 2);
+        carouselContext.stroke();
+      }
+      carouselParticles.forEach((particle) => {
+        const slug = particle.card.dataset.slug || '';
+        const pinned = pinnedSlugs.has(slug);
+        const selected = particle.card === selectedCarouselCard;
+        const hovered = particle === carouselHovered;
+        const accentIndex = Math.abs(nodeHash(slug)) % accents.length;
+        carouselContext.fillStyle = pinned ? accents[accentIndex] : `rgba(${pixel},${.48 + particle.depth * .42})`;
+        carouselContext.fillRect(particle.x - 5, particle.y - 5, 10, 10);
+        if (selected || hovered) {
+          carouselContext.strokeStyle = selected ? (dark ? '#fff' : '#211840') : `rgba(${pixel},.9)`;
+          carouselContext.lineWidth = selected ? 1.5 : 1;
+          carouselContext.strokeRect(particle.x - 8, particle.y - 8, 16, 16);
+        }
+      });
+    }
+
+    function stopCarousel() {
+      window.cancelAnimationFrame(carouselAnimationFrame);
+      carouselAnimationFrame = 0;
+    }
+
+    function animateCarousel() {
+      carouselAnimationFrame = 0;
+      if (root.dataset.view !== 'explore' || explorerMode !== 'carousel') return;
+      carouselFrame += 1;
+      carouselRotation += (carouselTargetRotation - carouselRotation) * .018;
+      carouselTargetRotation += (1 - carouselTargetRotation) * .00065;
+      carouselVerticalDrift += (carouselTargetVerticalDrift - carouselVerticalDrift) * .024;
+      carouselTargetVerticalDrift *= .9989;
+      carouselVerticalOffset += carouselVerticalDrift;
+      carouselParticles.forEach((particle) => { particle.angle += particle.speed * carouselRotation; carouselPosition(particle); });
+      drawCarousel();
+      if (!carouselReducedMotion.matches) carouselAnimationFrame = window.requestAnimationFrame(animateCarousel);
+    }
+
+    function startCarousel() {
+      stopCarousel();
+      drawCarousel();
+      if (!carouselReducedMotion.matches && root.dataset.view === 'explore' && explorerMode === 'carousel') carouselAnimationFrame = window.requestAnimationFrame(animateCarousel);
+    }
+
+    function updateCarouselPreviewPin() {
+      if (!carouselPreviewPin) return;
+      const pinned = Boolean(selectedCarouselCard && pinnedSlugs.has(selectedCarouselCard.dataset.slug || ''));
+      const label = pinned ? (carouselPreviewPin.dataset.unpinLabel || '') : (carouselPreviewPin.dataset.pinLabel || '');
+      carouselPreviewPin.setAttribute('aria-pressed', String(pinned));
+      carouselPreviewPin.setAttribute('aria-label', label);
+      carouselPreviewPin.title = label;
+    }
+
+    function selectCarouselCard(card: HTMLElement) {
+      selectedCarouselCard = card;
+      if (carouselPreviewTitle) carouselPreviewTitle.textContent = card.dataset.title || '';
+      if (carouselPreviewSummary) carouselPreviewSummary.textContent = card.querySelector('.resource-summary')?.textContent?.trim() || '';
+      if (carouselPreviewExpand) carouselPreviewExpand.onclick = () => openResourceDetail(card);
+      if (carouselPreview) carouselPreview.hidden = false;
+      updateCarouselPreviewPin();
+      drawCarousel();
+    }
+
+    function clearCarouselSelection() {
+      selectedCarouselCard = undefined;
+      if (carouselPreview) carouselPreview.hidden = true;
+      updateCarouselPreviewPin();
+      drawCarousel();
+    }
+
+    function renderCarousel(matching: HTMLElement[]) {
+      if (!carouselCanvas || !carouselContext || !carouselStage || root.dataset.view !== 'explore' || explorerMode !== 'carousel') return;
+      const bounds = carouselStage.getBoundingClientRect();
+      carouselWidth = Math.max(320, Math.round(bounds.width));
+      carouselHeight = Math.max(420, Math.round(bounds.height));
+      const density = Math.min(window.devicePixelRatio || 1, 2);
+      carouselCanvas.width = Math.round(carouselWidth * density);
+      carouselCanvas.height = Math.round(carouselHeight * density);
+      carouselCanvas.dataset.particleCount = String(matching.length);
+      carouselContext.setTransform(density, 0, 0, density, 0, 0);
+      carouselParticles = matching.map((card, index) => {
+        const pseudo = ((index * 9301 + 49297) % 233280) / 233280;
+        const depth = .35 + (((index * 53) % 100) / 100) * .65;
+        const particle: CarouselParticle = { card, x: 0, y: 0, previousX: 0, previousY: 0, angle: pseudo * Math.PI * 2, radius: .12 + Math.pow(((index * 79 + 17) % 101) / 100, 1.25) * .88, vertical: ((((index * 41 + 11) % 101) / 100) - .5) * 1.6, speed: (.00012 + ((index * 29) % 100) / 100 * .0003) * (index % 7 === 0 ? -1 : 1), phase: ((index * 67) % 100) / 100 * Math.PI * 2, depth };
+        carouselPosition(particle, true);
+        return particle;
+      });
+      if (carouselCount) carouselCount.textContent = String(matching.length);
+      if (carouselAccessibleList) {
+        carouselAccessibleList.replaceChildren();
+        matching.forEach((card) => { const button = document.createElement('button'); button.type = 'button'; button.textContent = card.dataset.title || ''; button.addEventListener('click', () => selectCarouselCard(card)); carouselAccessibleList.append(button); });
+      }
+      if (selectedCarouselCard && !matching.includes(selectedCarouselCard)) clearCarouselSelection();
+      startCarousel();
+    }
+
+    function renderNetwork(matching: HTMLElement[]) {
+      if (!networkSvg || !networkStage || root.dataset.view !== 'explore' || explorerMode !== 'network') return;
+      const width = Math.max(620, Math.round(networkStage.clientWidth));
+      const height = Math.max(500, Math.round(networkStage.clientHeight));
+      const safeTop = Math.min(132, height * .18);
+      const centreY = safeTop + (height - safeTop) * .5;
+      graphWidth = width;
+      graphHeight = height;
+      networkSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      networkSvg.replaceChildren();
+      const categories = new Map<string, GraphNode>();
+      const linksToCreate: Array<[GraphNode, string, GraphNode['kind']]> = [];
+      const visibleLayers = visibleNetworkLayers();
+      const showResources = visibleLayers.has('resource');
+      const institutionFilters = selectedInstitutionFilters();
+      const resourceNodes = matching.map((card, index) => {
+        const seed = Math.abs(nodeHash(card.dataset.slug || String(index)));
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+        const angle = index * goldenAngle + (seed % 31) * .018;
+        const spread = Math.sqrt((index + .65) / Math.max(1, matching.length));
+        const distanceX = 92 + spread * Math.min(width * .43, 780);
+        const distanceY = 76 + spread * Math.min((height - safeTop) * .46, 470);
+        // Resources are peers in this view: node size must not imply a
+        // hierarchy or weight that the dataset does not contain.
+        const radius = 5.7;
+        const x = width * .52 + Math.cos(angle) * distanceX;
+        const y = centreY + Math.sin(angle) * distanceY;
+        const node: GraphNode = { id: `resource:${card.dataset.slug}`, label: card.querySelector('h2')?.textContent?.trim() || '', kind: 'resource', x, y, anchorX: x, anchorY: y, vx: 0, vy: 0, phase: (seed % 360) * Math.PI / 180, depth: .55 + (seed % 37) / 100, motion: .62 + (seed % 71) / 100, pinned: false, card, radius };
+        const types = (card.dataset.types || '').split(' ').filter(Boolean);
+        const topics = (card.dataset.topics || '').split(' ').filter(Boolean);
+        const institutions = institutionFilters.length
+          ? institutionFilters.filter((filter) => cardMatchesInstitution(card, filter)).map((filter) => filter.value)
+          : JSON.parse(card.dataset.creators || '[]') as string[];
+        if (visibleLayers.has('type')) types.forEach((value) => linksToCreate.push([node, `type:${value}`, 'type']));
+        if (visibleLayers.has('topic')) topics.forEach((value) => linksToCreate.push([node, `topic:${value}`, 'topic']));
+        if (visibleLayers.has('institution')) institutions.forEach((value) => linksToCreate.push([node, `institution:${value}`, 'institution']));
+        return node;
+      });
+      const institutionResourceCounts = new Map<string, number>();
+      linksToCreate.forEach(([, id, kind]) => {
+        if (kind !== 'institution') return;
+        institutionResourceCounts.set(id, (institutionResourceCounts.get(id) || 0) + 1);
+      });
+      const largestInstitutionCount = Math.max(1, ...institutionResourceCounts.values());
+      linksToCreate.forEach(([, id, kind]) => {
+        if (categories.has(id)) return;
+        const value = id.slice(id.indexOf(':') + 1);
+        const label = graphLabels.get(value) || creatorInputs.find((input) => input.value === value)?.closest('label')?.textContent?.trim() || value;
+        const institutionCount = institutionResourceCounts.get(id) || 1;
+        const institutionScale = Math.sqrt(institutionCount / largestInstitutionCount);
+        const radius = kind === 'institution' ? (institutionCount === 1 ? 5.25 : 7 + institutionScale * 10) : kind === 'type' ? 9.5 : 7.5;
+        const seed = Math.abs(nodeHash(id));
+        categories.set(id, { id, label, kind, x: width / 2, y: centreY, anchorX: width / 2, anchorY: centreY, vx: 0, vy: 0, phase: (seed % 360) * Math.PI / 180, depth: .62 + (seed % 31) / 100, motion: .55 + (seed % 53) / 100, pinned: false, radius });
+      });
+      const categoryNodes = [...categories.values()];
+      categoryNodes.forEach((node, index) => {
+        const angle = (index / Math.max(1, categoryNodes.length)) * Math.PI * 2 - Math.PI / 2;
+        const orbitScale = node.kind === 'institution' ? 1 : .78;
+        const orbitX = Math.min(width * .42, 760) * orbitScale;
+        const orbitY = Math.min((height - safeTop) * .43, 440) * orbitScale;
+        node.x = width * .52 + Math.cos(angle) * orbitX;
+        node.y = centreY + Math.sin(angle) * orbitY;
+        node.anchorX = node.x;
+        node.anchorY = node.y;
+      });
+      graphNodes = [...categoryNodes, ...resourceNodes];
+      graphNodes.forEach((node) => {
+        const pin = graphPins.get(node.id);
+        if (!pin) return;
+        node.x = pin.x * width;
+        node.y = Math.max(safeTop + 18, pin.y * height);
+        node.anchorX = node.x;
+        node.anchorY = node.y;
+        node.pinned = true;
+      });
+      if (showResources) {
+        graphLinks = linksToCreate.map(([source, id]) => ({ source, target: categories.get(id)!, rest: 0, weight: 1 })).filter((link) => link.target);
+      } else {
+        const categoriesByResource = new Map<GraphNode, Array<{ id: string; kind: GraphNode['kind'] }>>();
+        linksToCreate.forEach(([resource, id, kind]) => {
+          const values = categoriesByResource.get(resource) || [];
+          values.push({ id, kind });
+          categoriesByResource.set(resource, values);
+        });
+        const projectedLinks = new Map<string, GraphLink>();
+        categoriesByResource.forEach((values) => {
+          for (let firstIndex = 0; firstIndex < values.length; firstIndex += 1) {
+            for (let secondIndex = firstIndex + 1; secondIndex < values.length; secondIndex += 1) {
+              const first = values[firstIndex];
+              const second = values[secondIndex];
+              if (first.kind === second.kind) continue;
+              const source = categories.get(first.id);
+              const target = categories.get(second.id);
+              if (!source || !target) continue;
+              const key = [first.id, second.id].sort().join('|');
+              const existing = projectedLinks.get(key);
+              if (existing) existing.weight += 1;
+              else projectedLinks.set(key, { source, target, rest: 0, weight: 1, projected: true });
+            }
+          }
+        });
+        graphLinks = [...projectedLinks.values()];
+      }
+
+      for (let iteration = 0; iteration < 22; iteration++) {
+        resourceNodes.forEach((node, index) => {
+          for (let otherIndex = index + 1; otherIndex < resourceNodes.length; otherIndex++) {
+            const other = resourceNodes[otherIndex];
+            const dx = node.x - other.x;
+            const dy = node.y - other.y;
+            const distanceSquared = Math.max(70, dx * dx + dy * dy);
+            const force = 46 / distanceSquared;
+            node.vx += dx * force;
+            node.vy += dy * force;
+            other.vx -= dx * force;
+            other.vy -= dy * force;
+          }
+          node.vx += (width / 2 - node.x) * .00012;
+          node.vy += (centreY - node.y) * .00012;
+        });
+        graphLinks.forEach(({ source, target }) => {
+          const dx = target.x - source.x;
+          const dy = target.y - source.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          const desired = target.kind === 'institution' ? 170 : 135;
+          const force = (distance - desired) * .00012;
+          source.vx += dx * force;
+          source.vy += dy * force;
+        });
+        resourceNodes.forEach((node) => {
+          if (node.pinned) { node.vx = 0; node.vy = 0; node.x = node.anchorX; node.y = node.anchorY; return; }
+          node.vx *= .72;
+          node.vy *= .72;
+          node.x = Math.max(24, Math.min(width - 24, node.x + node.vx));
+          node.y = Math.max(24, Math.min(height - 24, node.y + node.vy));
+        });
+      }
+      graphNodes.forEach((node) => {
+        if (node.pinned) { node.vx = 0; node.vy = 0; return; }
+        const speed = node.kind === 'resource' ? .13 : .075;
+        node.vx = Math.cos(node.phase) * speed;
+        node.vy = Math.sin(node.phase * 1.37) * speed * .72;
+        node.anchorX = node.x;
+        node.anchorY = node.y;
+      });
+      graphLinks.forEach((link) => { link.rest = Math.hypot(link.target.x - link.source.x, link.target.y - link.source.y); });
+
+      const viewport = document.createElementNS(svgNs, 'g');
+      viewport.classList.add('resource-network-viewport');
+      const linkLayer = document.createElementNS(svgNs, 'g');
+      linkLayer.classList.add('resource-network-links');
+      graphLinks.forEach((link) => {
+        const line = document.createElementNS(svgNs, 'line');
+        line.classList.add(`to-${link.target.kind}`);
+        if (link.projected) {
+          line.classList.add('is-projected');
+          line.style.strokeWidth = String(Math.min(2.4, .62 + Math.sqrt(link.weight) * .23));
+          line.style.setProperty('--projected-opacity', String(Math.min(.68, .16 + Math.sqrt(link.weight) * .08)));
+        }
+        line.setAttribute('x1', String(link.source.x)); line.setAttribute('y1', String(link.source.y)); line.setAttribute('x2', String(link.target.x)); line.setAttribute('y2', String(link.target.y));
+        linkLayer.append(line);
+      });
+      const nodeLayer = document.createElementNS(svgNs, 'g');
+      nodeLayer.classList.add('resource-network-nodes');
+      graphNodes.forEach((node) => {
+        if (node.kind === 'resource' && !showResources) return;
+        const group = document.createElementNS(svgNs, 'g');
+        group.classList.add('resource-network-node', `is-${node.kind}`);
+        group.dataset.nodeId = node.id;
+        group.setAttribute('transform', `translate(${node.x} ${node.y})`);
+        group.setAttribute('tabindex', '0');
+        group.setAttribute('role', 'button');
+        group.setAttribute('aria-label', node.label);
+        const haloSize = node.radius + (node.kind === 'resource' ? 6 : 10);
+        const halo = document.createElementNS(svgNs, 'circle'); halo.classList.add('node-halo'); halo.setAttribute('r', String(haloSize));
+        let core: SVGElement;
+        if (node.kind === 'resource') {
+          const square = document.createElementNS(svgNs, 'rect'); square.setAttribute('x', String(-node.radius)); square.setAttribute('y', String(-node.radius)); square.setAttribute('width', String(node.radius * 2)); square.setAttribute('height', String(node.radius * 2)); square.setAttribute('rx', String(Math.min(1.8, node.radius * .28))); core = square;
+        } else if (node.kind === 'topic') {
+          const circle = document.createElementNS(svgNs, 'circle'); circle.setAttribute('r', String(node.radius)); core = circle;
+        } else {
+          const sides = node.kind === 'institution' ? 6 : 4;
+          const offset = node.kind === 'type' ? Math.PI / 4 : -Math.PI / 2;
+          const points = Array.from({ length: sides }, (_, pointIndex) => `${Math.cos(offset + pointIndex * Math.PI * 2 / sides) * node.radius},${Math.sin(offset + pointIndex * Math.PI * 2 / sides) * node.radius}`).join(' ');
+          const polygon = document.createElementNS(svgNs, 'polygon'); polygon.setAttribute('points', points); core = polygon;
+        }
+        core.classList.add('node-core');
+        const shortLabel = node.label.length > 34 ? `${node.label.slice(0, 32).trim()}…` : node.label;
+        const labelWidth = Math.min(198, Math.max(48, shortLabel.length * 6.15 + 18));
+        const labelOnLeft = node.x > width * .68;
+        const labelX = labelOnLeft ? -(node.radius + 9 + labelWidth) : node.radius + 9;
+        const relatedLabel = document.createElementNS(svgNs, 'g');
+        relatedLabel.classList.add('node-related-label');
+        relatedLabel.setAttribute('transform', `translate(${labelX} -12)`);
+        relatedLabel.setAttribute('aria-hidden', 'true');
+        const labelBackground = document.createElementNS(svgNs, 'rect');
+        labelBackground.setAttribute('width', String(labelWidth));
+        labelBackground.setAttribute('height', '24');
+        labelBackground.setAttribute('rx', '6');
+        const labelText = document.createElementNS(svgNs, 'text');
+        labelText.setAttribute('x', '9');
+        labelText.setAttribute('y', '16');
+        labelText.textContent = shortLabel;
+        relatedLabel.append(labelBackground, labelText);
+        group.append(halo, core, relatedLabel);
+        nodeLayer.append(group);
+      });
+      viewport.append(linkLayer, nodeLayer);
+      networkSvg.append(viewport);
+      if (institutionFilters.length === 1 && visibleLayers.has('institution')) {
+        const anchorId = `institution:${institutionFilters[0].value}`;
+        const anchorNode = graphNodes.find((node) => node.id === anchorId);
+        if (anchorNode) {
+          const connected = new Set<GraphNode>([anchorNode]);
+          graphLinks.forEach((link) => {
+            if (link.source === anchorNode) connected.add(link.target);
+            if (link.target === anchorNode) connected.add(link.source);
+          });
+          nodeLayer.querySelectorAll<SVGGElement>('.resource-network-node').forEach((element) => {
+            const item = graphNodes.find((node) => node.id === element.dataset.nodeId);
+            element.classList.toggle('is-filter-anchor', item === anchorNode);
+            element.classList.toggle('is-connected', Boolean(item && item !== anchorNode && connected.has(item)));
+            element.classList.toggle('is-dimmed', Boolean(item && !connected.has(item)));
+          });
+          graphLinks.forEach((link, index) => {
+            const active = link.source === anchorNode || link.target === anchorNode;
+            linkLayer.children[index]?.classList.toggle('is-active', active);
+            linkLayer.children[index]?.classList.toggle('is-dimmed', !active);
+          });
+        }
+      }
+      updateGraphTransform();
+      attachGraphInteractions();
+      renderPinnedResources();
+      startGraphDrift(width, height);
+    }
+
+    function updateGraphElements() {
+      if (!networkSvg) return;
+      const elements = networkSvg.querySelectorAll<SVGGElement>('.resource-network-node');
+      elements.forEach((element) => {
+        const node = graphNodes.find((item) => item.id === element.dataset.nodeId);
+        if (node) {
+          const depthScale = .8 + node.depth * .34;
+          element.setAttribute('transform', `translate(${node.x} ${node.y}) scale(${depthScale})`);
+          element.style.setProperty('--node-depth-opacity', String(.56 + node.depth * .44));
+        }
+      });
+      const lines = networkSvg.querySelectorAll<SVGLineElement>('.resource-network-links line');
+      graphLinks.forEach((link, index) => {
+        const line = lines[index];
+        if (!line) return;
+        line.setAttribute('x1', String(link.source.x)); line.setAttribute('y1', String(link.source.y));
+        line.setAttribute('x2', String(link.target.x)); line.setAttribute('y2', String(link.target.y));
+        line.style.setProperty('--link-depth-opacity', link.projected ? `var(--projected-opacity)` : String(.16 + ((link.source.depth + link.target.depth) / 2) * .24));
+      });
+    }
+
+    function startGraphDrift(width: number, height: number) {
+      window.cancelAnimationFrame(graphAnimationFrame);
+      if (graphMotionPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const safeTop = Math.min(132, height * .18);
+      let previous = performance.now();
+      const animate = (now: number) => {
+        if (root.dataset.view !== 'explore' || explorerMode !== 'network' || !networkSvg?.isConnected) return;
+        const step = Math.min(2, Math.max(.4, (now - previous) / 16.67));
+        previous = now;
+        graphRotationFactor += (graphTargetRotation - graphRotationFactor) * .014 * step;
+        graphTargetRotation += (1 - graphTargetRotation) * .00042 * step;
+        graphVerticalDrift += (graphTargetVerticalDrift - graphVerticalDrift) * .018 * step;
+        graphTargetVerticalDrift += (0 - graphTargetVerticalDrift) * .00072 * step;
+        graphVerticalOffset += graphVerticalDrift * .08 * step;
+        graphVerticalOffset += (0 - graphVerticalOffset) * .003 * step;
+        graphFlowAngle += .00028 * graphRotationFactor * step;
+        const time = now * .00012;
+        graphNodes.forEach((node) => {
+          const depthTarget = .5 + Math.sin(time * (.42 + node.motion * .16) + node.phase * 1.7) * .28;
+          node.depth += (depthTarget - node.depth) * .0045 * step;
+          node.depth = Math.max(.18, Math.min(.96, node.depth));
+          if (node === graphDraggedNode || node.pinned) return;
+          const speed = (node.kind === 'resource' ? .18 : .105) * node.motion * (.72 + node.depth * .42);
+          const individualAngle = graphFlowAngle * .38 + node.phase + Math.sin(time * (.62 + node.motion * .28) + node.phase * 1.9) * .82;
+          const targetVx = Math.cos(individualAngle) * speed + Math.sin(time * (1.12 + node.motion * .2) + node.phase * 2.3) * .06;
+          const targetVy = Math.sin(individualAngle) * speed * .82 + graphVerticalDrift * .1 + Math.cos(time * (.83 + node.motion * .22) + node.phase * 1.4) * .058;
+          node.vx += (targetVx - node.vx) * .013 * step;
+          node.vy += (targetVy - node.vy) * .013 * step;
+        });
+        graphLinks.forEach((link) => {
+          const dx = link.target.x - link.source.x;
+          const dy = link.target.y - link.source.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          const spring = (distance - link.rest) * (link.source.pinned || link.target.pinned ? .000072 : .00002) * step;
+          if (!link.source.pinned && link.source !== graphDraggedNode) {
+            link.source.vx += dx / distance * spring * (link.target.pinned ? 1.45 : 1);
+            link.source.vy += dy / distance * spring * (link.target.pinned ? 1.45 : 1);
+          }
+          if (!link.target.pinned && link.target !== graphDraggedNode) {
+            link.target.vx -= dx / distance * spring * (link.source.pinned ? 1.2 : .55);
+            link.target.vy -= dy / distance * spring * (link.source.pinned ? 1.2 : .55);
+          }
+        });
+        graphNodes.forEach((node) => {
+          if (node === graphDraggedNode) return;
+          if (node.pinned) { node.x = node.anchorX; node.y = node.anchorY; node.vx = 0; node.vy = 0; return; }
+          node.x += node.vx * step;
+          node.y += node.vy * step;
+          const margin = node.kind === 'resource' ? 18 : 26;
+          if (node.x < margin || node.x > width - margin) { node.vx *= -.82; node.x = Math.max(margin, Math.min(width - margin, node.x)); }
+          if (node.y < safeTop + margin || node.y > height - margin) { node.vy *= -.82; node.y = Math.max(safeTop + margin, Math.min(height - margin, node.y)); }
+        });
+        updateGraphElements();
+        graphAnimationFrame = window.requestAnimationFrame(animate);
+      };
+      graphAnimationFrame = window.requestAnimationFrame(animate);
+    }
+
+    function updateGraphTransform() {
+      const viewport = networkSvg?.querySelector<SVGGElement>('.resource-network-viewport');
+      viewport?.setAttribute('transform', `translate(${graphTransform.x} ${graphTransform.y}) scale(${graphTransform.scale})`);
+    }
+
+    function storeGraphAnchor(node: GraphNode) {
+      node.anchorX = node.x;
+      node.anchorY = node.y;
+      node.vx = 0;
+      node.vy = 0;
+      node.pinned = true;
+      graphPins.set(node.id, { x: node.x / Math.max(1, graphWidth), y: node.y / Math.max(1, graphHeight) });
+    }
+
+    function clearGraphSelection() {
+      networkSvg?.querySelectorAll('.resource-network-node,.resource-network-links line').forEach((element) => element.classList.remove('is-selected', 'is-connected', 'is-active', 'is-dimmed'));
+      selectedPreviewCard = undefined;
+      updatePreviewPin();
+      if (networkPreview) networkPreview.hidden = true;
+    }
+
+    function selectGraphNode(node: GraphNode) {
+      if (!networkSvg) return;
+      const connected = new Set<GraphNode>([node]);
+      graphLinks.forEach((link) => { if (link.source === node) connected.add(link.target); if (link.target === node) connected.add(link.source); });
+      networkSvg.querySelectorAll<SVGGElement>('.resource-network-node').forEach((element) => {
+        const item = graphNodes.find((candidate) => candidate.id === element.dataset.nodeId);
+        element.classList.toggle('is-selected', item === node);
+        element.classList.toggle('is-connected', Boolean(item && item !== node && connected.has(item)));
+        element.classList.toggle('is-dimmed', Boolean(item && !connected.has(item)));
+      });
+      const lines = networkSvg.querySelectorAll<SVGLineElement>('.resource-network-links line');
+      graphLinks.forEach((link, index) => {
+        const active = link.source === node || link.target === node;
+        lines[index]?.classList.toggle('is-active', active);
+        lines[index]?.classList.toggle('is-dimmed', !active);
+      });
+      if (!networkPreview || !networkPreviewTitle || !networkPreviewKind || !networkPreviewSummary || !networkPreviewExpand || !networkPreviewActionLabel) return;
+      const nodeValue = node.id.slice(node.id.indexOf(':') + 1);
+      const relatedResources = node.kind === 'resource' ? 1 : currentMatching.filter((card) => {
+        if (node.kind === 'topic') return (card.dataset.topics || '').split(' ').includes(nodeValue);
+        if (node.kind === 'type') return (card.dataset.types || '').split(' ').includes(nodeValue);
+        if (node.kind === 'institution') {
+          const filter = selectedInstitutionFilters().find((item) => item.value === nodeValue);
+          return filter ? cardMatchesInstitution(card, filter) : (JSON.parse(card.dataset.creators || '[]') as string[]).includes(nodeValue);
+        }
+        return false;
+      }).length;
+      networkPreviewKind.textContent = node.kind === 'resource' ? (document.documentElement.lang === 'lv' ? 'Resurss' : 'Resource') : node.kind === 'topic' ? (document.documentElement.lang === 'lv' ? 'Temats' : 'Topic') : node.kind === 'type' ? (document.documentElement.lang === 'lv' ? 'Resursa tips' : 'Resource type') : (document.documentElement.lang === 'lv' ? 'Institūcija' : 'Institution');
+      networkPreviewTitle.textContent = node.label;
+      networkPreviewSummary.textContent = node.card?.querySelector('.resource-summary')?.textContent?.trim() || `${relatedResources} ${document.documentElement.lang === 'lv' ? 'saistīti resursi' : 'related resources'}`;
+      networkPreviewExpand.hidden = false;
+      selectedPreviewCard = node.card;
+      updatePreviewPin();
+      if (node.card) {
+        networkPreviewActionLabel.textContent = document.documentElement.lang === 'lv' ? 'Izvērst' : 'Expand';
+        networkPreviewExpand.onclick = () => openResourceDetail(node.card!);
+      } else {
+        networkPreviewActionLabel.textContent = document.documentElement.lang === 'lv' ? 'Aplūkot visus jaunā cilnē' : 'View all in a new tab';
+        networkPreviewExpand.onclick = () => {
+          const url = new URL(window.location.href);
+          url.hash = '';
+          url.searchParams.set('view', 'cards');
+          url.searchParams.set('pageSize', 'all');
+          ['topic', 'type', 'institution'].forEach((key) => url.searchParams.delete(key));
+          const value = node.id.slice(node.id.indexOf(':') + 1);
+          if (node.kind === 'topic') url.searchParams.set('topic', value);
+          if (node.kind === 'type') url.searchParams.set('type', value);
+          if (node.kind === 'institution') url.searchParams.set('institution', value);
+          window.open(url.toString(), '_blank', 'noopener,noreferrer');
+        };
+      }
+      networkPreview.hidden = false;
+      requestAnimationFrame(restorePreviewPosition);
+    }
+
+    const restorePreviewPosition = () => {
+      if (!networkPreview || !networkStage) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem(previewStorageKey) || 'null');
+        if (!saved || typeof saved.x !== 'number' || typeof saved.y !== 'number') return;
+        const stage = networkStage.getBoundingClientRect();
+        const preview = networkPreview.getBoundingClientRect();
+        const maxX = Math.max(8, stage.width - preview.width - 8);
+        const maxY = Math.max(8, stage.height - preview.height - 8);
+        networkPreview.style.left = `${Math.max(8, Math.min(maxX, saved.x * maxX))}px`;
+        networkPreview.style.top = `${Math.max(8, Math.min(maxY, saved.y * maxY))}px`;
+        networkPreview.style.right = 'auto'; networkPreview.style.bottom = 'auto';
+      } catch { /* Ignore invalid locally stored coordinates. */ }
+    };
+
+    function zoomNetwork(factor: number, clientX?: number, clientY?: number) {
+      if (!networkSvg) return;
+      const bounds = networkSvg.getBoundingClientRect();
+      const screenX = clientX === undefined ? bounds.width / 2 : clientX - bounds.left;
+      const screenY = clientY === undefined ? bounds.height / 2 : clientY - bounds.top;
+      const previousScale = graphTransform.scale;
+      const nextScale = Math.max(.45, Math.min(3.2, previousScale * factor));
+      graphTransform.x = screenX - ((screenX - graphTransform.x) / previousScale) * nextScale;
+      graphTransform.y = screenY - ((screenY - graphTransform.y) / previousScale) * nextScale;
+      graphTransform.scale = nextScale;
+      updateGraphTransform();
+    }
+
+    function attachGraphInteractions() {
+      if (!networkSvg || !networkStage) return;
+      let panStart: { x: number; y: number; tx: number; ty: number } | undefined;
+      let moved = false;
+      const positionTooltip = (event: PointerEvent) => {
+        if (!networkTooltip || !networkStage) return;
+        const bounds = networkStage.getBoundingClientRect();
+        const gap = 14;
+        const edge = 10;
+        const pointerX = event.clientX - bounds.left;
+        const pointerY = event.clientY - bounds.top;
+        const tooltipWidth = networkTooltip.offsetWidth;
+        const tooltipHeight = networkTooltip.offsetHeight;
+        let left = pointerX + gap;
+        let top = pointerY - tooltipHeight - gap;
+        if (left + tooltipWidth > bounds.width - edge) left = pointerX - tooltipWidth - gap;
+        if (left < edge) left = edge;
+        if (top < edge) top = pointerY + gap;
+        if (top + tooltipHeight > bounds.height - edge) top = bounds.height - tooltipHeight - edge;
+        networkTooltip.style.left = `${left}px`;
+        networkTooltip.style.top = `${top}px`;
+      };
+      const updateNode = (node: GraphNode) => {
+        networkSvg?.querySelector<SVGGElement>(`[data-node-id="${CSS.escape(node.id)}"]`)?.setAttribute('transform', `translate(${node.x} ${node.y})`);
+        graphLinks.forEach((link, index) => {
+          if (link.source !== node && link.target !== node) return;
+          const line = networkSvg?.querySelectorAll<SVGLineElement>('.resource-network-links line')[index];
+          if (!line) return;
+          line.setAttribute('x1', String(link.source.x)); line.setAttribute('y1', String(link.source.y)); line.setAttribute('x2', String(link.target.x)); line.setAttribute('y2', String(link.target.y));
+        });
+      };
+      networkSvg.querySelectorAll<SVGGElement>('.resource-network-node').forEach((element) => {
+        const node = graphNodes.find((item) => item.id === element.dataset.nodeId);
+        if (!node) return;
+        element.addEventListener('pointerenter', (event) => {
+          if (!networkTooltip) return;
+          networkTooltip.textContent = node.label;
+          networkTooltip.hidden = false;
+          positionTooltip(event as PointerEvent);
+        });
+        element.addEventListener('pointermove', (event) => {
+          if (networkTooltip && !networkTooltip.hidden) {
+            positionTooltip(event);
+          }
+          if (graphDraggedNode !== node) return;
+          moved = true;
+          const point = graphPoint(event);
+          const centreX = graphWidth * .52;
+          const centreY = Math.min(132, graphHeight * .18) + (graphHeight - Math.min(132, graphHeight * .18)) * .5;
+          const normalizedX = (point.x - centreX) / Math.max(1, graphWidth * .42);
+          const normalizedY = (point.y - centreY) / Math.max(1, graphHeight * .43);
+          const nextAngle = Math.atan2(normalizedY, normalizedX);
+          let angleDelta = nextAngle - graphPreviousDragAngle;
+          if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+          if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+          if (Math.abs(angleDelta) > .0015) graphTargetRotation = Math.max(-3, Math.min(3, angleDelta * 72));
+          const verticalDelta = point.y - graphPreviousDragY;
+          if (Math.abs(verticalDelta) > .12) graphTargetVerticalDrift = Math.max(-2.1, Math.min(2.1, verticalDelta * .075));
+          graphPreviousDragAngle = nextAngle;
+          graphPreviousDragY = point.y;
+          node.x = point.x; node.y = Math.max(Math.min(132, graphHeight * .18) + 18, point.y); node.vx = 0; node.vy = 0; updateNode(node);
+        });
+        element.addEventListener('pointerleave', () => { if (networkTooltip) networkTooltip.hidden = true; });
+        element.addEventListener('pointerdown', (event) => {
+          event.stopPropagation(); moved = false; graphDraggedNode = node;
+          const point = graphPoint(event);
+          const safeTop = Math.min(132, graphHeight * .18);
+          const centreY = safeTop + (graphHeight - safeTop) * .5;
+          graphPreviousDragAngle = Math.atan2((point.y - centreY) / Math.max(1, (graphHeight - safeTop) * .48), (point.x - graphWidth * .54) / Math.max(1, graphWidth * .35));
+          graphPreviousDragY = point.y;
+          element.setPointerCapture(event.pointerId);
+        });
+        element.addEventListener('pointerup', () => { if (!moved) selectGraphNode(node); else storeGraphAnchor(node); graphDraggedNode = undefined; });
+        element.addEventListener('pointercancel', () => { if (graphDraggedNode === node) storeGraphAnchor(node); graphDraggedNode = undefined; });
+        element.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectGraphNode(node); } });
+      });
+      networkSvg.onpointerdown = (event) => { if ((event.target as Element).closest('.resource-network-node')) return; clearGraphSelection(); moved = false; panStart = { x: event.clientX, y: event.clientY, tx: graphTransform.x, ty: graphTransform.y }; networkSvg.setPointerCapture(event.pointerId); };
+      networkSvg.onpointermove = (event) => { if (!panStart) return; moved = true; graphTransform.x = panStart.tx + event.clientX - panStart.x; graphTransform.y = panStart.ty + event.clientY - panStart.y; updateGraphTransform(); };
+      networkSvg.onpointerup = () => { panStart = undefined; };
+      networkSvg.onwheel = (event) => { event.preventDefault(); zoomNetwork(event.deltaY < 0 ? 1.12 : .89, event.clientX, event.clientY); };
+    }
+
+    root.querySelector('[data-network-zoom-in]')?.addEventListener('click', () => zoomNetwork(1.2));
+    root.querySelector('[data-network-zoom-out]')?.addEventListener('click', () => zoomNetwork(.82));
+    root.querySelector('[data-network-reset]')?.addEventListener('click', () => { graphTransform = { x: 0, y: 0, scale: 1 }; updateGraphTransform(); });
+    const networkMotion = root.querySelector<HTMLButtonElement>('[data-network-motion]');
+    const updateNetworkMotionControl = () => {
+      if (!networkMotion) return;
+      const label = graphMotionPaused ? networkMotion.dataset.resumeLabel : networkMotion.dataset.pauseLabel;
+      networkMotion.setAttribute('aria-pressed', String(graphMotionPaused));
+      if (label) { networkMotion.setAttribute('aria-label', label); networkMotion.title = label; }
+      networkMotion.querySelector<HTMLElement>('[data-motion-pause]')?.toggleAttribute('hidden', graphMotionPaused);
+      networkMotion.querySelector<HTMLElement>('[data-motion-play]')?.toggleAttribute('hidden', !graphMotionPaused);
+    };
+    networkMotion?.addEventListener('click', () => {
+      graphMotionPaused = !graphMotionPaused;
+      if (graphMotionPaused) window.cancelAnimationFrame(graphAnimationFrame);
+      else if (root.dataset.view === 'explore' && explorerMode === 'network') startGraphDrift(graphWidth, graphHeight);
+      updateNetworkMotionControl();
+    });
+    updateNetworkMotionControl();
+    root.querySelector('[data-network-preview-close]')?.addEventListener('click', clearGraphSelection);
+    networkPreviewPin?.addEventListener('click', () => { if (selectedPreviewCard) togglePinnedResource(selectedPreviewCard); });
+    networkPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
+    carouselPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
+    resourcePinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
+    const openPinnedResources = () => {
+      if (!pinnedSlugs.size) return;
+      const url = new URL(window.location.href);
+      url.hash = '';
+      url.searchParams.set('view', 'cards');
+      url.searchParams.set('pageSize', 'all');
+      url.searchParams.set('resources', [...pinnedSlugs].join(','));
+      ['topic', 'type', 'institution'].forEach((key) => url.searchParams.delete(key));
+      window.open(url.toString(), '_blank', 'noopener,noreferrer');
+    };
+    networkPinsOpen?.addEventListener('click', openPinnedResources);
+    carouselPinsOpen?.addEventListener('click', openPinnedResources);
+    if (networkPreviewDrag && networkPreview && networkStage) {
+      let drag: { pointerId: number; offsetX: number; offsetY: number } | undefined;
+      networkPreviewDrag.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        event.stopPropagation();
+        const preview = networkPreview.getBoundingClientRect();
+        const stage = networkStage.getBoundingClientRect();
+        drag = { pointerId: event.pointerId, offsetX: event.clientX - preview.left, offsetY: event.clientY - preview.top };
+        networkPreview.style.left = `${preview.left - stage.left}px`; networkPreview.style.top = `${preview.top - stage.top}px`;
+        networkPreview.style.right = 'auto'; networkPreview.style.bottom = 'auto';
+        networkPreview.classList.add('is-dragging');
+        networkPreviewDrag.setPointerCapture(event.pointerId);
+      });
+      networkPreviewDrag.addEventListener('pointermove', (event) => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const stage = networkStage.getBoundingClientRect();
+        const preview = networkPreview.getBoundingClientRect();
+        const x = Math.max(8, Math.min(stage.width - preview.width - 8, event.clientX - stage.left - drag.offsetX));
+        const y = Math.max(8, Math.min(stage.height - preview.height - 8, event.clientY - stage.top - drag.offsetY));
+        networkPreview.style.left = `${x}px`; networkPreview.style.top = `${y}px`;
+      });
+      const finishPreviewDrag = (event: PointerEvent) => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const stage = networkStage.getBoundingClientRect();
+        const preview = networkPreview.getBoundingClientRect();
+        const maxX = Math.max(8, stage.width - preview.width - 8), maxY = Math.max(8, stage.height - preview.height - 8);
+        const x = parseFloat(networkPreview.style.left) || 8, y = parseFloat(networkPreview.style.top) || 8;
+        localStorage.setItem(previewStorageKey, JSON.stringify({ x: x / maxX, y: y / maxY }));
+        networkPreview.classList.remove('is-dragging'); drag = undefined;
+      };
+      networkPreviewDrag.addEventListener('pointerup', finishPreviewDrag);
+      networkPreviewDrag.addEventListener('pointercancel', finishPreviewDrag);
+    }
+    if (networkStage) new ResizeObserver(() => { window.cancelAnimationFrame(networkResizeFrame); networkResizeFrame = window.requestAnimationFrame(() => { if (explorerMode === 'network') renderNetwork(currentMatching); }); }).observe(networkStage);
+
+    const carouselPointer = (event: PointerEvent) => {
+      const bounds = carouselCanvas?.getBoundingClientRect();
+      return bounds ? { x: event.clientX - bounds.left, y: event.clientY - bounds.top } : { x: 0, y: 0 };
+    };
+    const nearestCarouselParticle = (x: number, y: number, maximum = 28) => {
+      let nearest: CarouselParticle | undefined;
+      let distance = maximum;
+      carouselParticles.forEach((particle) => { const next = Math.hypot(particle.x - x, particle.y - y); if (next < distance) { nearest = particle; distance = next; } });
+      return nearest;
+    };
+    carouselCanvas?.addEventListener('pointermove', (event) => {
+      const point = carouselPointer(event);
+      if (!carouselPointerActive) {
+        carouselHovered = nearestCarouselParticle(point.x, point.y, 24);
+        if (carouselTooltip) {
+          carouselTooltip.hidden = !carouselHovered;
+          if (carouselHovered) { carouselTooltip.textContent = carouselHovered.card.dataset.title || ''; carouselTooltip.style.left = `${Math.min(carouselWidth - 250, point.x + 13)}px`; carouselTooltip.style.top = `${Math.max(8, point.y - 38)}px`; }
+        }
+        drawCarousel();
+        return;
+      }
+      if (Math.hypot(point.x - carouselDragStart.x, point.y - carouselDragStart.y) > 7) carouselDragged = true;
+      const normalizedX = (point.x - carouselWidth * .5) / Math.max(1, carouselWidth * .38);
+      const normalizedY = (point.y - carouselHeight * .5) / Math.max(1, carouselHeight * .3);
+      const nextAngle = Math.atan2(normalizedY, normalizedX);
+      let angleDelta = nextAngle - carouselPreviousAngle;
+      if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+      if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+      if (Math.abs(angleDelta) > .002) carouselTargetRotation = Math.max(-3, Math.min(3, angleDelta * 80));
+      const verticalDelta = point.y - carouselPreviousY;
+      if (Math.abs(verticalDelta) > .15) carouselTargetVerticalDrift = Math.max(-2.2, Math.min(2.2, verticalDelta * .09));
+      carouselPreviousAngle = nextAngle;
+      carouselPreviousY = point.y;
+    });
+    carouselCanvas?.addEventListener('pointerdown', (event) => {
+      const point = carouselPointer(event);
+      carouselPointerActive = true; carouselDragged = false; carouselDragStart = point;
+      carouselPreviousAngle = Math.atan2((point.y - carouselHeight * .5) / Math.max(1, carouselHeight * .3), (point.x - carouselWidth * .5) / Math.max(1, carouselWidth * .38));
+      carouselPreviousY = point.y;
+      carouselCanvas.setPointerCapture(event.pointerId); carouselCanvas.classList.add('is-dragging');
+      event.preventDefault();
+    });
+    const finishCarouselPointer = (event: PointerEvent) => {
+      if (!carouselCanvas || !carouselPointerActive) return;
+      const point = carouselPointer(event);
+      if (!carouselDragged) { const particle = nearestCarouselParticle(point.x, point.y, 30); if (particle) selectCarouselCard(particle.card); }
+      carouselPointerActive = false; carouselCanvas.classList.remove('is-dragging');
+      if (carouselCanvas.hasPointerCapture(event.pointerId)) carouselCanvas.releasePointerCapture(event.pointerId);
+    };
+    carouselCanvas?.addEventListener('pointerup', finishCarouselPointer);
+    carouselCanvas?.addEventListener('pointercancel', finishCarouselPointer);
+    carouselCanvas?.addEventListener('pointerleave', () => { if (!carouselPointerActive) { carouselHovered = undefined; if (carouselTooltip) carouselTooltip.hidden = true; drawCarousel(); } });
+    carouselPreviewPin?.addEventListener('click', () => { if (selectedCarouselCard) togglePinnedResource(selectedCarouselCard); });
+    root.querySelector('[data-carousel-preview-close]')?.addEventListener('click', clearCarouselSelection);
+    if (carouselStage) new ResizeObserver(() => { if (root.dataset.view === 'explore' && explorerMode === 'carousel') renderCarousel(currentMatching); }).observe(carouselStage);
+    new MutationObserver(drawCarousel).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    carouselReducedMotion.addEventListener('change', startCarousel);
+
+    const viewFragments = { cards: 'kartites', list: 'saraksts', network: 'resursu-tikls', carousel: 'resursu-karuselis' } as const;
+    const currentViewFragment = () => root.dataset.view === 'explore' ? viewFragments[explorerMode] : root.dataset.view === 'list' ? viewFragments.list : viewFragments.cards;
+    const updateViewFragment = () => history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${currentViewFragment()}`);
+    const setExplorerMode = (mode: 'network' | 'carousel', updateHash = true) => {
+      explorerMode = mode;
+      explorerModeButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.explorerMode === mode)));
+      if (networkPanel) networkPanel.hidden = mode !== 'network';
+      if (carouselPanel) carouselPanel.hidden = mode !== 'carousel';
+      if (mode === 'network') { stopCarousel(); requestAnimationFrame(() => renderNetwork(currentMatching)); }
+      else { window.cancelAnimationFrame(graphAnimationFrame); requestAnimationFrame(() => renderCarousel(currentMatching)); }
+      localStorage.setItem('dh-resource-explorer-mode', mode);
+      if (updateHash && root.dataset.view === 'explore') updateViewFragment();
+    };
+    explorerModeButtons.forEach((button) => button.addEventListener('click', () => setExplorerMode(button.dataset.explorerMode === 'carousel' ? 'carousel' : 'network')));
+
+    const viewButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-resource-view]')];
+    const setView = (view: 'cards' | 'list' | 'explore', updateHash = true) => {
+      root.dataset.view = view;
+      viewButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.resourceView === view)));
+      if (explorer) explorer.hidden = view !== 'explore';
+      if (view !== 'explore') { window.cancelAnimationFrame(graphAnimationFrame); stopCarousel(); }
+      if (pagination) pagination.hidden = view === 'explore';
+      if (pageSizeSelect?.closest('label')) (pageSizeSelect.closest('label') as HTMLElement).hidden = view === 'explore';
+      if (view === 'explore') requestAnimationFrame(() => explorerMode === 'carousel' ? renderCarousel(currentMatching) : renderNetwork(currentMatching));
+      localStorage.setItem('dh-resource-view', view);
+      if (updateHash) updateViewFragment();
+    };
+    viewButtons.forEach((button) => button.addEventListener('click', () => setView(button.dataset.resourceView === 'list' ? 'list' : button.dataset.resourceView === 'explore' ? 'explore' : 'cards')));
+    const urlParameters = initialUrlParameters;
+    const requestedView = urlParameters.get('view');
+    const savedView = localStorage.getItem('dh-resource-view');
+    const initialFragment = decodeURIComponent(window.location.hash.slice(1));
+    const fragmentView = initialFragment === viewFragments.cards ? 'cards' : initialFragment === viewFragments.list ? 'list' : initialFragment === viewFragments.network || initialFragment === viewFragments.carousel ? 'explore' : undefined;
+    const fragmentExplorerMode = initialFragment === viewFragments.carousel ? 'carousel' : initialFragment === viewFragments.network ? 'network' : undefined;
+    setExplorerMode(fragmentExplorerMode || (localStorage.getItem('dh-resource-explorer-mode') === 'carousel' ? 'carousel' : 'network'), false);
+    setView(fragmentView || (requestedView === 'cards' || requestedView === 'list' || requestedView === 'explore' ? requestedView : savedView === 'list' || savedView === 'explore' ? savedView : 'cards'), false);
+    if (fragmentView) updateViewFragment();
+    const savedPageSize = localStorage.getItem('dh-resource-page-size');
+    const requestedPageSize = urlParameters.get('pageSize');
+    const initialPageSize = requestedPageSize && ['12', '24', '48', 'all'].includes(requestedPageSize) ? requestedPageSize : savedPageSize;
+    if (pageSizeSelect && initialPageSize && ['12', '24', '48', 'all'].includes(initialPageSize)) {
+      pageSizeSelect.value = initialPageSize;
+      pageSize = initialPageSize === 'all' ? Infinity : Number(initialPageSize);
+    }
+    const requestedTopic = urlParameters.get('topic');
+    const requestedType = urlParameters.get('type');
+    const requestedInstitution = urlParameters.get('institution');
+    if (requestedTopic) topicInputs.forEach((input) => input.checked = input.value === requestedTopic);
+    if (requestedType) typeInputs.forEach((input) => input.checked = input.value === requestedType);
+    if (requestedInstitution) creatorInputs.forEach((input) => input.checked = input.value === requestedInstitution);
+    cards.forEach((card) => card.addEventListener('pointermove', (event) => { const rect = card.getBoundingClientRect(); card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`); card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`); }));
+    const openResourceDetail = (card: HTMLElement, updateHash = true) => {
+      const template = card.querySelector<HTMLTemplateElement>('[data-resource-detail]');
+      if (!template || !detailContent || !detailDialog) return;
+      detailContent.replaceChildren(template.content.cloneNode(true));
+      detailContent.querySelector('h2')?.setAttribute('id', 'resource-detail-title');
+      const slug = card.dataset.slug || '';
+      detailContent.querySelector<HTMLButtonElement>('[data-copy-resource-link]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        await navigator.clipboard.writeText(window.location.href);
+        const label = button.querySelector('span');
+        if (label) label.textContent = button.dataset.copiedLabel || '';
+        window.setTimeout(() => { if (label) label.textContent = button.dataset.defaultLabel || ''; }, 1800);
+      });
+      if (updateHash && slug) history.replaceState(null, '', `#${encodeURIComponent(slug)}`);
+      detailDialog.showModal();
+    };
+    const closeResourceDetail = (clearHash = true) => {
+      if (detailDialog?.open) detailDialog.close();
+      if (clearHash) updateViewFragment();
+    };
+    cards.forEach((card) => {
+      card.querySelector('[data-open-resource-detail]')?.addEventListener('click', () => openResourceDetail(card));
+      card.querySelector('[data-resource-pin]')?.addEventListener('click', () => togglePinnedResource(card));
+    });
+    root.querySelector('[data-resource-dialog-close]')?.addEventListener('click', () => closeResourceDetail());
+    detailDialog?.addEventListener('click', (event) => { if (event.target === detailDialog) closeResourceDetail(); });
+    detailDialog?.addEventListener('close', updateViewFragment);
+    const openHashResource = () => {
+      const slug = decodeURIComponent(window.location.hash.slice(1));
+      if (!slug) return;
+      const card = cards.find((item) => item.dataset.slug === slug);
+      if (card) openResourceDetail(card, false);
+    };
+    window.addEventListener('hashchange', () => {
+      const fragment = decodeURIComponent(window.location.hash.slice(1));
+      if (fragment === viewFragments.cards) setView('cards', false);
+      else if (fragment === viewFragments.list) setView('list', false);
+      else if (fragment === viewFragments.network) { setExplorerMode('network', false); setView('explore', false); }
+      else if (fragment === viewFragments.carousel) { setExplorerMode('carousel', false); setView('explore', false); }
+      else openHashResource();
+    });
+    renderPinnedResources();
+    applyFilters();
+    openHashResource();
+  }
+</script>

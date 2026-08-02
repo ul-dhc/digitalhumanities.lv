@@ -1,0 +1,51 @@
+---
+import archiveData from '../../../../data/archive.json';
+import newData from '../../../../data/new-entries.json';
+
+interface ShareRecord {
+  language: string;
+  title: string;
+  summary: string;
+  slug: string;
+  archive_url: string;
+  share_url: string;
+  image_url?: string;
+  image_url_new?: string;
+  image_url_original?: string;
+  status: string;
+}
+
+export function getStaticPaths() {
+  const records = [...(archiveData as ShareRecord[]), ...(newData as ShareRecord[])];
+  return records.filter(record => record.status === 'published').map(record => {
+    const url = new URL(record.share_url);
+    const parts = url.pathname.split('/').filter(Boolean);
+    return {
+      params: { lang: parts[0], section: parts[1], item: parts[2] },
+      props: { record },
+    };
+  });
+}
+
+const { record } = Astro.props as { record: ShareRecord };
+const target = new URL(record.archive_url).pathname + new URL(record.archive_url).hash;
+const image = record.image_url || record.image_url_new || record.image_url_original;
+---
+<!doctype html>
+<html lang={record.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <title>{record.title} — Digital Humanities LV</title>
+    <meta name="description" content={record.summary} />
+    <meta property="og:title" content={record.title} />
+    <meta property="og:description" content={record.summary} />
+    <meta property="og:type" content="article" />
+    {image && <meta property="og:image" content={image} />}
+    <link rel="canonical" href={target} />
+  </head>
+  <body>
+    <p><a href={target}>{record.title}</a></p>
+  </body>
+</html>
