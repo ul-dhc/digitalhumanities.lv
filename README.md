@@ -1,1 +1,1 @@
-(Website)[https://digitalhumanities.lv]
+[Website](https://digitalhumanities.lv)
