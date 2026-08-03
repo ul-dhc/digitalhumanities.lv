@@ -11,9 +11,49 @@ const item = bssdhYears.find(entry => entry.year === year)!;
 const current = year === '2026';
 const legacy = legacyContent[year as keyof typeof legacyContent];
 const overview = current ? legacy.overview.split(/<p><b>ORGANIZERS<\/b>/i)[0] : legacy.overview;
-const programme = legacy.programme
+let programme = legacy.programme
   .replace(/<tr><td>((?:August|July)[\s\S]*?)<\/td><td><\/td><\/tr>/gi, '<tr class="bssdh-programme-day"><td colspan="2">$1</td></tr>')
   .replace(/(Open lecture\s*\d*\s*<br>)(?!<b>)([\s\S]*?)(<br><i>)/gi, '$1<strong>$2</strong>$3');
+let lectures = legacy.lectures;
+if (current) {
+  const sessions = [
+    ['Beyond the Canvas: Multimodal Interpretation of Art Masterpieces via Google Nano Banana 2', 'aldis-erglis'],
+    ['Structured Data Approaches to Historical Collections: Methods and Insights', 'sonja-dorfbauer-simon-mayer'],
+    ['Decoding 18th-century British Masonic Print Culture: Press Trends, Publication Networks, and Constitutional Authorship Attribution', 'robert-peter'],
+    ['Computer as Archive, Computer as Agent: Tracing the Evolution of the Digital Humanities from the 1960s to an Uncertain Future', 'tessa-gengnagel'],
+    ['Data cleaning with Open Refine', 'lars-kjaer'],
+    ['Analysis and Visualization with Orange Data Mining', 'lars-kjaer'],
+    ['Network Analysis for Humanists', 'giovanni-pietro-vitali'],
+    ['Using LLMs in Humanities Research via API', 'valdis-saulespurens'],
+    ['Data Visualization for Public-Facing Research', 'anda-baklane'],
+  ];
+  const descriptions = [
+    ['Beyond the Canvas: Multimodal Interpretation of Art Masterpieces via Google Nano Banana 2', 'aldis-erglis'],
+    ['Structured Data Approaches to Historical Collections: Methods and Insights', 'sonja-dorfbauer-simon-mayer'],
+    ['Decoding 18th-century British Masonic Print Culture: Press Trends, Publication Networks, and Constitutional Authorship Attribution', 'robert-peter'],
+    ['Computer as Archive, Computer as Agent: Tracing the Evolution of the Digital Humanities from the 1960s to an Uncertain Future', 'tessa-gengnagel'],
+    ['Data Cleaning, Analysis, and Visualization with OpenRefine and Orange', 'lars-kjaer'],
+    ['Network Analysis for Humanists', 'giovanni-pietro-vitali'],
+    ['Using LLMs in Humanities Research via API', 'valdis-saulespurens'],
+    ['Data Visualization for Public-Facing Research', 'anda-baklane'],
+  ];
+  const speakers = [
+    ['Aldis Ērglis', 'aldis-erglis'], ['Sonja Dorfbauer, Simon Mayer', 'sonja-dorfbauer-simon-mayer'],
+    ['Róbert Péter', 'robert-peter'], ['Tessa Gengnagel', 'tessa-gengnagel'],
+    ['Lars Kjaer', 'lars-kjaer'], ['Giovanni Pietro Vitali', 'giovanni-pietro-vitali'],
+    ['Valdis Saulespurēns', 'valdis-saulespurens'], ['Anda Baklāne', 'anda-baklane'],
+  ];
+  for (const [title, id] of sessions) programme = programme.replaceAll(title, `<a href="#${id}">${title}</a>`);
+  for (const [name, id] of speakers) programme = programme.replaceAll(name, `<a href="#${id}">${name}</a>`);
+  for (const [title, id] of descriptions) lectures = lectures.replace(title, `<span id="${id}">${title}</span>`);
+  const streams = [
+    ['Open lecture 1', 'https://youtube.com/live/aX9BK13p7ok?feature=share'],
+    ['Open lecture 2', 'https://youtube.com/live/dHpnbmdrb4A?feature=share'],
+    ['Open lecture 3', 'https://youtube.com/live/D1sKyNMTqLA?feature=share'],
+    ['Open lecture 4', 'https://youtube.com/live/SXfm8pgJeW0?feature=share'],
+  ];
+  for (const [label, url] of streams) programme = programme.replace(new RegExp(label, 'i'), match => `${match} <a href="${url}" target="_blank" rel="noopener">[live streaming]</a>`);
+}
 const institutions = [
   ['National Library of Latvia','https://lnb.gov.lv/','/assets/bssdh/2026-logos/lnb.png','/assets/bssdh/2026-logos/lnb.png'],
   ['Faculty of Humanities of the University of Latvia','https://www.hzf.lu.lv/en/','/assets/support/lu-en-light.png','/assets/support/lu-en-dark.png'],
@@ -35,7 +75,7 @@ if (legacy.gallery) tabs.push(lv ? ['Galerija','#galerija'] : ['Gallery','#galle
     <div class="shell event-sections bssdh-sections">
       <section id={lv ? 'par':'about'}><div class="bssdh-section-title"><h2>{lv ? 'Pārskats':'About'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'} title={lv ? 'Kopēt saiti':'Copy link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div>{lv && <p class="archive-language-note">Pilnais vēsturiskais saturs saglabāts tā oriģinālajā darba valodā — angļu valodā.</p>}<details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno pārskatu':'Expand full overview'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={overview} /></details>{current && <div class="legacy-bssdh-content bssdh-organization"><div class="bssdh-info-group"><h3>Institutions and organizers</h3><div class="bssdh-affiliation-list">{institutions.map(([name,url], index) => <article><h4><a href={url} target="_blank" rel="noopener">{name}</a></h4><ul>{organizers.filter(([,institution]) => institution === index).map(([name]) => <li>{name}</li>)}</ul></article>)}</div></div><div class="bssdh-info-group"><h3>Supporters</h3><div class="bssdh-supporter-list"><div class="bssdh-supporter-entry"><a href="https://www.kkf.lv/index/english.html" target="_blank" rel="noopener">State Culture Capital Foundation</a></div><div class="bssdh-supporter-entry bssdh-supporter-project"><a href="https://lulfmi.lv/en/research/projects/university-of-latvia-and-institutes-in-the-european-research-area-excellence-in-research-and-collaboration" target="_blank" rel="noopener">University of Latvia and Institutes in the European Research Area – Excellence in Research and Collaboration</a><small>Project No. 1.1.1.5/3/25/I/011</small></div><div class="bssdh-supporter-entry bssdh-supporter-project"><span>State Research Programme project “Latvian History of the 20th–21st Century: Social Morphogenesis, Legacy and Challenges”</span><small>VPP-IZM-Vēsture-2023/1-0003</small></div></div></div><div class="bssdh-info-group"><h3>Contact</h3><p>Coordinator Anda Baklāne<br/><a href="mailto:dh@lnb.lv">dh@lnb.lv</a></p></div><div class="bssdh-logo-collection" aria-label="Organizers and supporters"><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/lnb.png" alt="National Library of Latvia" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/support/lu-en-dark.png"/><img src="/assets/support/lu-en-light.png" alt="University of Latvia" loading="lazy"/></picture><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/ilfa.png" alt="Institute of Literature, Folklore and Art, University of Latvia" loading="lazy"/><img class="bssdh-vkkf-logo" src="/assets/bssdh/2026-logos/vkkf.jpg" alt="State Culture Capital Foundation" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/bssdh/2026-logos/eu-nap-en-dark.png"/><img src="/assets/bssdh/2026-logos/eu-nap-en-light.png" alt="European Union and National Development Plan" loading="lazy"/></picture></div></div>}</div></section>
       <section id={lv ? 'programma':'programme'}><div class="bssdh-section-title"><h2>{lv ? 'Programma':'Programme'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno programmu':'Expand full programme'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content bssdh-programme" set:html={programme || `<p>Programme information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
-      <section id={lv ? 'lekcijas':'lectures'}><div class="bssdh-section-title"><h2>{lv ? 'Lekcijas un darbnīcas':'Lectures and workshops'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt visus aprakstus':'Expand all descriptions'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={legacy.lectures || `<p>Lecture and workshop information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
+      <section id={lv ? 'lekcijas':'lectures'}><div class="bssdh-section-title"><h2>{lv ? 'Lekcijas un darbnīcas':'Lectures and workshops'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt visus aprakstus':'Expand all descriptions'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={lectures || `<p>Lecture and workshop information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
       <section id={lv ? 'praktiski':'practical'}><div class="bssdh-section-title"><h2>{lv ? 'Norises vieta':'Venue'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt praktisko informāciju':'Expand practical information'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={legacy.venue || `<p>${item.place}</p>`} /></details></section>
       <section id={lv ? 'registracija':'registration'}><div class="bssdh-section-title"><h2>{lv ? 'Reģistrācija':'Registration'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content" set:html={legacy.registration || `<p>Registration for BSSDH ${year} is closed.</p>`} /></section>
       {legacy.gallery && <section id={lv ? 'galerija':'gallery'}><div class="bssdh-section-title"><h2>{lv ? 'Galerija':'Gallery'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content"><div set:html={legacy.gallery} /></div></section>}
@@ -80,6 +120,13 @@ if (legacy.gallery) tabs.push(lv ? ['Galerija','#galerija'] : ['Gallery','#galle
     const latvian = document.documentElement.lang === 'lv';
     summary.dataset.expandLabel = latvian ? 'Izvērst' : 'Expand';
     summary.dataset.collapseLabel = latvian ? 'Sakļaut' : 'Collapse';
+  });
+  document.querySelectorAll<HTMLAnchorElement>('.bssdh-programme a[href^="#"]').forEach(link => {
+    link.addEventListener('click', () => {
+      const target = document.querySelector<HTMLElement>(link.hash);
+      const details = target?.closest<HTMLDetailsElement>('details');
+      if (details) details.open = true;
+    });
   });
   document.querySelectorAll<HTMLElement>('.bssdh-edition').forEach(page => {
     const about = page.querySelector<HTMLDetailsElement>('.bssdh-sections > section:first-child details');
