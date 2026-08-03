@@ -37,14 +37,7 @@ if (current) {
     ['Using LLMs in Humanities Research via API', 'valdis-saulespurens'],
     ['Data Visualization for Public-Facing Research', 'anda-baklane'],
   ];
-  const speakers = [
-    ['Aldis Ērglis', 'aldis-erglis'], ['Sonja Dorfbauer, Simon Mayer', 'sonja-dorfbauer-simon-mayer'],
-    ['Róbert Péter', 'robert-peter'], ['Tessa Gengnagel', 'tessa-gengnagel'],
-    ['Lars Kjaer', 'lars-kjaer'], ['Giovanni Pietro Vitali', 'giovanni-pietro-vitali'],
-    ['Valdis Saulespurēns', 'valdis-saulespurens'], ['Anda Baklāne', 'anda-baklane'],
-  ];
-  for (const [title, id] of sessions) programme = programme.replaceAll(title, `<a href="#${id}">${title}</a>`);
-  for (const [name, id] of speakers) programme = programme.replaceAll(name, `<a href="#${id}">${name}</a>`);
+  for (const [title, id] of sessions) programme = programme.replaceAll(title, `<a class="bssdh-session-link" href="#${id}">${title}</a>`);
   for (const [title, id] of descriptions) lectures = lectures.replace(title, `<span id="${id}">${title}</span>`);
   const streams = [
     ['Open lecture 1', 'https://youtube.com/live/aX9BK13p7ok?feature=share'],
@@ -52,7 +45,7 @@ if (current) {
     ['Open lecture 3', 'https://youtube.com/live/D1sKyNMTqLA?feature=share'],
     ['Open lecture 4', 'https://youtube.com/live/SXfm8pgJeW0?feature=share'],
   ];
-  for (const [label, url] of streams) programme = programme.replace(new RegExp(label, 'i'), match => `${match} <a href="${url}" target="_blank" rel="noopener">[live streaming]</a>`);
+  for (const [label, url] of streams) programme = programme.replace(new RegExp(label, 'i'), match => `${match}<br><a class="bssdh-live-link" href="${url}" target="_blank" rel="noopener">Watch live stream <span aria-hidden="true">↗</span></a>`);
 }
 const institutions = [
   ['National Library of Latvia','https://lnb.gov.lv/','/assets/bssdh/2026-logos/lnb.png','/assets/bssdh/2026-logos/lnb.png'],
