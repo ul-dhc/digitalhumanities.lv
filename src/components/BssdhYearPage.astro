@@ -10,18 +10,41 @@ const lv = lang === 'lv';
 const item = bssdhYears.find(entry => entry.year === year)!;
 const current = year === '2026';
 const legacy = legacyContent[year as keyof typeof legacyContent];
-const overview = current ? legacy.overview.split(/<p><b>ORGANIZERS<\/b>/i)[0] : legacy.overview;
+const overview = current ? legacy.overview.split(/<p><b>ORGANIZERS<\/b>/i)[0].replace(/Open lectures/g, 'Open Lectures') : legacy.overview;
 let programme = legacy.programme
   .replace(/<tr><td>((?:August|July)[\s\S]*?)<\/td><td><\/td><\/tr>/gi, '<tr class="bssdh-programme-day"><td colspan="2">$1</td></tr>')
   .replace(/(Open lecture\s*\d*\s*<br>)(?!<b>)([\s\S]*?)(<br><i>)/gi, '$1<strong>$2</strong>$3');
 let lectures = legacy.lectures;
+const venue = current ? `
+  <h2>HOW TO REACH RIGA</h2>
+  <h3><i>By air</i></h3>
+  <p>Riga International Airport (RIX) is located just 10 km from the city centre and is easily accessible by <a href="https://saraksti.lv/#bus/22/b-a/en" target="_blank" rel="noopener">public transport</a> or <a href="https://www.riga-airport.com/en/taxi-service" target="_blank" rel="noopener">taxi</a>. It offers routes to 95 destinations, including most European capitals and transfer hubs.</p>
+  <h3><i>By land</i></h3>
+  <p>There is a bus service between Riga and many European countries. This route is served by Lux Express, FlixBus, Ecolines, and others.</p>
+  <h2>HOW TO REACH THE VENUE</h2>
+  <p><a href="https://maps.app.goo.gl/B8dXTxqb9tDnLbkt6" target="_blank" rel="noopener">The National Library of Latvia</a> is located on the left bank of the river Daugava in Riga. The venue is easily accessible from the center by public transport, taxi or walking. Trams (e. g. No. 1, No. 5 and No. 8) and buses (e. g. No. 22 and No. 3) run close to all the hotels in Riga Old Town, cross the bridge and stop close to the conference venue at the stop 'Nacionālā bibliotēka'.</p>
+  <p>Bus: #3, #4, #7, #8, #10, #21, #22, #23, #25, #26, #32, #38, #39, #43, #55, #57, #63</p>
+  <p>Tram: #1, #5, #8, #10, #14</p>
+  <p>Trolley Bus: #9, #27</p>
+  <p><a href="https://www.rigassatiksme.lv/en/tickets-and-e-ticket/" target="_blank" rel="noopener">Ticket price</a> 1.50 EUR (one 90-minute ticket)</p>
+` : legacy.venue;
+const registration = current ? legacy.registration.replace(/Open lectures/g, 'Open Lectures') : legacy.registration;
 if (current) {
+  programme = programme
+    .replace(/Conference centre/gi, 'Conference Centre')
+    .replace(/level -1/gi, 'Level -1')
+    .replace(/Open lecture/gi, 'Open Lecture')
+    .replace(/Coffee break/gi, 'Coffee Break')
+    .replace(/Lunch(?:\s+Break)?/gi, 'Lunch Break')
+    .replace(/Break\s*10\s*min/gi, 'Short Break')
+    .replace(/17:30-/g, '17.30-')
+    .replace(/Data cleaning with Open Refine/g, 'Data Cleaning with Open Refine');
   const sessions = [
     ['Beyond the Canvas: Multimodal Interpretation of Art Masterpieces via Google Nano Banana 2', 'aldis-erglis'],
     ['Structured Data Approaches to Historical Collections: Methods and Insights', 'sonja-dorfbauer-simon-mayer'],
     ['Decoding 18th-century British Masonic Print Culture: Press Trends, Publication Networks, and Constitutional Authorship Attribution', 'robert-peter'],
     ['Computer as Archive, Computer as Agent: Tracing the Evolution of the Digital Humanities from the 1960s to an Uncertain Future', 'tessa-gengnagel'],
-    ['Data cleaning with Open Refine', 'lars-kjaer'],
+    ['Data Cleaning with Open Refine', 'lars-kjaer'],
     ['Analysis and Visualization with Orange Data Mining', 'lars-kjaer'],
     ['Network Analysis for Humanists', 'giovanni-pietro-vitali'],
     ['Using LLMs in Humanities Research via API', 'valdis-saulespurens'],
@@ -69,8 +92,8 @@ if (legacy.gallery) tabs.push(lv ? ['Galerija','#galerija'] : ['Gallery','#galle
       <section id={lv ? 'par':'about'}><div class="bssdh-section-title"><h2>{lv ? 'Pārskats':'About'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'} title={lv ? 'Kopēt saiti':'Copy link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div>{lv && <p class="archive-language-note">Pilnais vēsturiskais saturs saglabāts tā oriģinālajā darba valodā — angļu valodā.</p>}<details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno pārskatu':'Expand full overview'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={overview} /></details>{current && <div class="legacy-bssdh-content bssdh-organization"><div class="bssdh-info-group"><h3>Institutions and organizers</h3><div class="bssdh-affiliation-list">{institutions.map(([name,url], index) => <article><h4><a href={url} target="_blank" rel="noopener">{name}</a></h4><ul>{organizers.filter(([,institution]) => institution === index).map(([name]) => <li>{name}</li>)}</ul></article>)}</div></div><div class="bssdh-info-group"><h3>Supporters</h3><div class="bssdh-supporter-list"><div class="bssdh-supporter-entry"><a href="https://www.kkf.lv/index/english.html" target="_blank" rel="noopener">State Culture Capital Foundation</a></div><div class="bssdh-supporter-entry bssdh-supporter-project"><a href="https://lulfmi.lv/en/research/projects/university-of-latvia-and-institutes-in-the-european-research-area-excellence-in-research-and-collaboration" target="_blank" rel="noopener">University of Latvia and Institutes in the European Research Area – Excellence in Research and Collaboration</a><small>Project No. 1.1.1.5/3/25/I/011</small></div><div class="bssdh-supporter-entry bssdh-supporter-project"><span>State Research Programme project “Latvian History of the 20th–21st Century: Social Morphogenesis, Legacy and Challenges”</span><small>VPP-IZM-Vēsture-2023/1-0003</small></div></div></div><div class="bssdh-info-group"><h3>Contact</h3><p>Coordinator Anda Baklāne<br/><a href="mailto:dh@lnb.lv">dh@lnb.lv</a></p></div><div class="bssdh-logo-collection" aria-label="Organizers and supporters"><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/lnb.png" alt="National Library of Latvia" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/support/lu-en-dark.png"/><img src="/assets/support/lu-en-light.png" alt="University of Latvia" loading="lazy"/></picture><img class="bssdh-monochrome-logo" src="/assets/bssdh/2026-logos/ilfa.png" alt="Institute of Literature, Folklore and Art, University of Latvia" loading="lazy"/><img class="bssdh-vkkf-logo" src="/assets/bssdh/2026-logos/vkkf.jpg" alt="State Culture Capital Foundation" loading="lazy"/><picture><source media="(prefers-color-scheme: dark)" srcset="/assets/bssdh/2026-logos/eu-nap-en-dark.png"/><img src="/assets/bssdh/2026-logos/eu-nap-en-light.png" alt="European Union and National Development Plan" loading="lazy"/></picture></div></div>}</div></section>
       <section id={lv ? 'programma':'programme'}><div class="bssdh-section-title"><h2>{lv ? 'Programma':'Programme'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt pilno programmu':'Expand full programme'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content bssdh-programme" set:html={programme || `<p>Programme information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
       <section id={lv ? 'lekcijas':'lectures'}><div class="bssdh-section-title"><h2>{lv ? 'Lekcijas un darbnīcas':'Lectures and workshops'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt visus aprakstus':'Expand all descriptions'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={lectures || `<p>Lecture and workshop information for BSSDH ${year} is preserved in the archive.</p>`} /></details></section>
-      <section id={lv ? 'praktiski':'practical'}><div class="bssdh-section-title"><h2>{lv ? 'Norises vieta':'Venue'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt praktisko informāciju':'Expand practical information'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={legacy.venue || `<p>${item.place}</p>`} /></details></section>
-      <section id={lv ? 'registracija':'registration'}><div class="bssdh-section-title"><h2>{lv ? 'Reģistrācija':'Registration'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content" set:html={legacy.registration || `<p>Registration for BSSDH ${year} is closed.</p>`} /></section>
+      <section id={lv ? 'praktiski':'practical'}><div class="bssdh-section-title"><h2>{lv ? 'Norises vieta':'Venue'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><details class="bssdh-expander"><summary>{lv ? 'Atvērt praktisko informāciju':'Expand practical information'}<ChevronDown size={18}/></summary><div class="legacy-bssdh-content" set:html={venue || `<p>${item.place}</p>`} /></details></section>
+      <section id={lv ? 'registracija':'registration'}><div class="bssdh-section-title"><h2>{lv ? 'Reģistrācija':'Registration'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content" set:html={registration || `<p>Registration for BSSDH ${year} is closed.</p>`} /></section>
       {legacy.gallery && <section id={lv ? 'galerija':'gallery'}><div class="bssdh-section-title"><h2>{lv ? 'Galerija':'Gallery'}</h2><button class="bssdh-copy-link" type="button" data-section-copy aria-label={lv ? 'Kopēt sadaļas saiti':'Copy section link'}><Link2 class="link-icon" size={18}/><Check class="check-icon" size={18}/></button></div><div class="legacy-bssdh-content"><div set:html={legacy.gallery} /></div></section>}
     </div>
   </article>
