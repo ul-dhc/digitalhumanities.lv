@@ -19,11 +19,11 @@ const current = bssdhYears[0];
       <header><h2>{lv ? 'Arhīvs' : 'Archive'}</h2></header>
       <div class="bssdh-archive-list">
         {bssdhYears.map((item) =>
-          <a href={`/${lang}/bssdh/${item.year}/`} class="bssdh-archive-row">
+          <a href={item.externalUrl ?? `/${lang}/bssdh/${item.year}/`} class="bssdh-archive-row" target={item.externalUrl ? '_blank' : undefined} rel={item.externalUrl ? 'noreferrer' : undefined}>
             <span class="bssdh-archive-year">{item.year}</span>
             <h3>{item.theme}</h3>
             <span class="bssdh-archive-dates">{item.dates}</span>
-            <strong>{lv ? 'Skatīt arhīvu' : 'View archive'} <span aria-hidden="true">→</span></strong>
+            <strong>{lv ? 'Skatīt arhīvu' : 'View archive'} <span aria-hidden="true">{item.externalUrl ? '↗' : '→'}</span></strong>
           </a>
         )}
       </div>
