@@ -24,7 +24,11 @@ for (const line of source.split(/\r?\n/)) {
 }
 
 for (const [from, to] of redirects) {
-  const outputFile = join(distPath.pathname, from, 'index.html');
+  // Preserve historical Mozello URLs ending in .html as real files. Other
+  // routes use GitHub Pages' directory/index.html convention.
+  const outputFile = from.toLowerCase().endsWith('.html')
+    ? join(distPath.pathname, from)
+    : join(distPath.pathname, from, 'index.html');
   await mkdir(dirname(outputFile), { recursive: true });
   const target = escapeHtml(to);
   const html = `<!doctype html>
