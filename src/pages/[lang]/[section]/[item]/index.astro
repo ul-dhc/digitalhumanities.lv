@@ -9,9 +9,6 @@ interface ShareRecord {
   slug: string;
   archive_url: string;
   share_url: string;
-  image_url?: string;
-  image_url_new?: string;
-  image_url_original?: string;
   status: string;
 }
 
@@ -29,7 +26,6 @@ export function getStaticPaths() {
 
 const { record } = Astro.props as { record: ShareRecord };
 const target = new URL(record.archive_url).pathname + new URL(record.archive_url).hash;
-const image = record.image_url || record.image_url_new || record.image_url_original;
 ---
 <!doctype html>
 <html lang={record.language}>
@@ -42,7 +38,6 @@ const image = record.image_url || record.image_url_new || record.image_url_origi
     <meta property="og:title" content={record.title} />
     <meta property="og:description" content={record.summary} />
     <meta property="og:type" content="article" />
-    {image && <meta property="og:image" content={image} />}
     <link rel="canonical" href={target} />
   </head>
   <body>
