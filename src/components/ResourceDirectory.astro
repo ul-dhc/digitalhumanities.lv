@@ -81,7 +81,7 @@ const copy = lv ? {
   access: 'Piekļuve', allAccess: 'Jebkāda piekļuve', open: 'Brīva piekļuve', registration: 'Ar reģistrēšanos', restricted: 'Ierobežota', unknown: 'Nav norādīts',
   results: 'resursi', cards: 'Režģis', list: 'Saraksts', explore: 'Izpētīt', carousel: 'Karuselis', view: 'Mainīt skatu', sort: 'Kārtot', recommended: 'Nejauša secība', az: 'A–Z', za: 'Z–A',
   clear: 'Notīrīt', activeFilters: 'Aktīvie filtri', noResults: 'Neviens resurss neatbilst izvēlētajiem filtriem.', reset: 'Atiestatīt filtrus', openResource: 'Atvērt resursu',
-  creator: 'Izstrādājis', creatorFilter: 'Institūcija', creatorSearch: 'Meklēt institūciju…', more: 'Rādīt vairāk', page: 'Lapa', previous: 'Iepriekšējā', next: 'Nākamā', of: 'no', database: 'Resursu datubāze', filterHint: 'Izvēlies vienu vai vairākus filtrus', perPage: 'Rādīt', itemsPerPage: 'vienā lapā', all: 'Visus', details: 'Atvērt pilnu aprakstu', copyLink: 'Kopēt saiti', copied: 'Saite nokopēta', networkTitle: 'Resursu saikņu tīkls', networkHint: 'Velc fonu, lai pārvietotos. Ritini vai izmanto pogas, lai tuvinātu. Klikšķini uz mezgla, lai izgaismotu tā saiknes.', networkHelp: 'Izvēlies resursa mezglu, lai apskatītu tā aprakstu un saiknes. Priekšskatījuma kartītē resursu vari piespraust. Piespraustie resursi tiek saglabāti Tavā pārlūkā, un visu atlasi vari atvērt kopā jaunā cilnē. Tīklu vari pārvietot, tuvināt un filtrēt pēc mezglu veida.', carouselTitle: 'Resursu karuselis', carouselHint: 'Katrs pikselis attēlo vienu resursu. Velc karuseli, lai mainītu griešanās virzienu, un izvēlies pikseli, lai atvērtu resursa informāciju.', carouselHelp: 'Katrs vienāda izmēra pikselis ir viens resurss. Velc karuseli horizontāli vai vertikāli, lai mainītu tā kustību. Izvēlies pikseli, lai apskatītu resursa informāciju un to piespraustu.', zoomIn: 'Tuvināt', zoomOut: 'Tālināt', resetView: 'Centrēt tīklu', networkPause: 'Apturēt kustību', networkResume: 'Turpināt kustību', resourceNode: 'Resurss', typeNode: 'Resursa tips', topicNode: 'Temats', institutionNode: 'Institūcija', networkLayers: 'Rādīt tīklā', networkExpand: 'Izvērst', networkViewAll: 'Aplūkot visus jaunā cilnē', networkRelated: 'saistīti resursi', networkClose: 'Aizvērt priekšskatījumu', networkPin: 'Piespraust', networkUnpin: 'Atspraust', pinnedTitle: 'Piespraustie resursi', pinnedOpen: 'Aplūkot atlasi jaunā cilnē', pinnedClear: 'Notīrīt atlasi', cardPinsClear: 'Noņemt visas piespraudes', previewDrag: 'Velc, lai pārvietotu kartīti',
+  creator: 'Izstrādājis', creatorFilter: 'Institūcija', creatorSearch: 'Meklēt institūciju…', more: 'Rādīt vairāk', page: 'Lapa', previous: 'Iepriekšējā', next: 'Nākamā', of: 'no', database: 'Resursu datubāze', filterHint: 'Izvēlies vienu vai vairākus filtrus', perPage: 'Rādīt', itemsPerPage: 'vienā lapā', all: 'Visus', details: 'Atvērt pilnu aprakstu', copyLink: 'Kopēt saiti', copied: 'Saite nokopēta', networkTitle: 'Resursu saikņu tīkls', networkHint: 'Velc fonu, lai pārvietotos. Ritini vai izmanto pogas, lai tuvinātu. Klikšķini uz mezgla, lai izgaismotu tā saiknes.', networkHelp: 'Izvēlies resursa mezglu, lai apskatītu tā aprakstu un saiknes. Priekšskatījuma kartītē resursu vari piespraust. Piespraustie resursi tiek saglabāti Tavā pārlūkā, un visu atlasi vari atvērt kopā jaunā cilnē. Tīklu vari pārvietot, tuvināt un filtrēt pēc mezglu veida.', carouselTitle: 'Resursu karuselis', carouselHint: 'Katrs pikselis attēlo vienu resursu. Velc karuseli, lai mainītu griešanās virzienu, un izvēlies pikseli, lai atvērtu resursa informāciju.', carouselHelp: 'Katrs pikselis ir viens resurss.', zoomIn: 'Tuvināt', zoomOut: 'Tālināt', resetView: 'Centrēt tīklu', networkPause: 'Apturēt kustību', networkResume: 'Turpināt kustību', resourceNode: 'Resurss', typeNode: 'Resursa tips', topicNode: 'Temats', institutionNode: 'Institūcija', networkLayers: 'Rādīt tīklā', networkExpand: 'Izvērst', networkViewAll: 'Aplūkot visus jaunā cilnē', networkRelated: 'saistīti resursi', networkClose: 'Aizvērt priekšskatījumu', networkPin: 'Piespraust', networkUnpin: 'Atspraust', pinnedTitle: 'Piespraustie resursi', pinnedOpen: 'Aplūkot atlasi jaunā cilnē', pinnedClear: 'Notīrīt atlasi', cardPinsClear: 'Noņemt visas piespraudes', previewDrag: 'Velc, lai pārvietotu kartīti',
 } : {
   title: 'Resources and tools', lead: 'Digital humanities resources for research, teaching and exploring cultural heritage.',
   search: 'Search by title, institution or description…', filters: 'Filters', close: 'Close filters', type: 'Resource type', topic: 'Topic',
@@ -127,17 +127,6 @@ const accessLabel = (value = '') => {
           <fieldset><legend>{copy.creatorFilter}</legend>
             <label class="resource-creator-search"><Search size={15} /><span class="sr-only">{copy.creatorSearch}</span><input type="search" placeholder={copy.creatorSearch} data-creator-search /></label>
             <div class="resource-filter-options resource-creator-options" data-creator-options>{creatorDefs.map((label) => <label data-creator-option><input type="checkbox" value={normalize(label)} data-institution-code={institutionCodeByLabel.get(label) || ''} data-resource-creator /><span><Check size={13} />{label}</span></label>)}</div>
-          </fieldset>
-          <fieldset><legend>{copy.access}</legend>
-            <div class="resource-access-select" data-access-menu>
-              <select data-resource-access hidden aria-hidden="true"><option value="all">{copy.allAccess}</option><option value="open">{copy.open}</option><option value="registration">{copy.registration}</option><option value="restricted">{copy.restricted}</option><option value="unknown">{copy.unknown}</option></select>
-              <button class="resource-access-trigger" type="button" aria-expanded="false" data-access-trigger><span data-access-label>{copy.allAccess}</span><ChevronDown size={15} /></button>
-              <div class="resource-access-options" data-access-options hidden>
-                {[
-                  ['all', copy.allAccess], ['open', copy.open], ['registration', copy.registration], ['restricted', copy.restricted], ['unknown', copy.unknown],
-                ].map(([value, label]) => <button type="button" data-access-option data-value={value} aria-pressed={value === 'all' ? 'true' : 'false'}><span class="resource-access-option-mark"></span><span>{label}</span><Check size={14} /></button>)}
-              </div>
-            </div>
           </fieldset>
           <button class="resource-clear" type="button" data-resource-clear><RotateCcw size={15} />{copy.clear}</button>
         </aside>
@@ -292,7 +281,6 @@ const accessLabel = (value = '') => {
   if (root) {
     const search = root.querySelector<HTMLInputElement>('[data-resource-search]');
     const sort = root.querySelector<HTMLSelectElement>('[data-resource-sort]');
-    const access = root.querySelector<HTMLSelectElement>('[data-resource-access]');
     const typeInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-type]')];
     const topicInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-topic]')];
     const creatorInputs = [...root.querySelectorAll<HTMLInputElement>('[data-resource-creator]')];
@@ -315,11 +303,6 @@ const accessLabel = (value = '') => {
     const detailContent = root.querySelector<HTMLElement>('[data-resource-dialog-content]');
     const filterToggle = root.querySelector<HTMLButtonElement>('[data-filter-toggle]');
     const filterPanel = root.querySelector<HTMLElement>('[data-resource-filters]');
-    const accessMenu = root.querySelector<HTMLElement>('[data-access-menu]');
-    const accessTrigger = root.querySelector<HTMLButtonElement>('[data-access-trigger]');
-    const accessOptions = root.querySelector<HTMLElement>('[data-access-options]');
-    const accessLabel = root.querySelector<HTMLElement>('[data-access-label]');
-    const accessOptionButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-access-option]')];
     const explorer = root.querySelector<HTMLElement>('[data-resource-explorer]');
     const networkStage = root.querySelector<HTMLElement>('[data-network-stage]');
     const networkSvg = root.querySelector<SVGSVGElement>('[data-resource-network]');
@@ -406,7 +389,7 @@ const accessLabel = (value = '') => {
         button.addEventListener('click', () => { input.checked = false; applyFilters(true); });
         activeFilters.append(button);
       });
-      const filterTotal = selected.length + (access?.value && access.value !== 'all' ? 1 : 0);
+      const filterTotal = selected.length;
       if (filterCount) { filterCount.textContent = String(filterTotal); filterCount.hidden = filterTotal === 0; }
     };
     const applyFilters = (resetPage = false) => {
@@ -415,12 +398,11 @@ const accessLabel = (value = '') => {
       const types = selectedValues(typeInputs);
       const topics = selectedValues(topicInputs);
       const creators = creatorInputs.filter((input) => input.checked).map((input) => ({ value: input.value, code: input.dataset.institutionCode || '' }));
-      const accessValue = access?.value || 'all';
       const matching = cards.filter((card) => {
         const cardTypes = (card.dataset.types || '').split(' ');
         const cardTopics = (card.dataset.topics || '').split(' ');
         const creatorMatch = !creators.length || creators.some((creator) => cardMatchesInstitution(card, creator));
-        return (!requestedResourceSlugs.size || requestedResourceSlugs.has(card.dataset.slug || '')) && (!query || card.dataset.search?.includes(query)) && (!types.length || types.some((value) => cardTypes.includes(value))) && (!topics.length || topics.some((value) => cardTopics.includes(value))) && creatorMatch && (accessValue === 'all' || card.dataset.access === accessValue);
+        return (!requestedResourceSlugs.size || requestedResourceSlugs.has(card.dataset.slug || '')) && (!query || card.dataset.search?.includes(query)) && (!types.length || types.some((value) => cardTypes.includes(value))) && (!topics.length || topics.some((value) => cardTopics.includes(value))) && creatorMatch;
       });
       currentMatching = matching;
       const direction = sort?.value || 'random';
@@ -455,15 +437,7 @@ const accessLabel = (value = '') => {
         });
       }
     };
-    const setAccess = (value: string) => {
-      if (!access) return;
-      access.value = value;
-      const selected = accessOptionButtons.find((button) => button.dataset.value === value);
-      if (accessLabel) accessLabel.textContent = selected?.querySelector('span:nth-child(2)')?.textContent || '';
-      accessOptionButtons.forEach((button) => button.setAttribute('aria-pressed', String(button === selected)));
-    };
-    const closeAccessMenu = () => { if (accessOptions) accessOptions.hidden = true; accessTrigger?.setAttribute('aria-expanded', 'false'); };
-    const resetFilters = () => { if (search) search.value = ''; if (creatorSearch) creatorSearch.value = ''; setAccess('all'); [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => input.checked = false); root.querySelectorAll<HTMLElement>('[data-creator-option]').forEach((option) => option.hidden = false); applyFilters(true); };
+    const resetFilters = () => { if (search) search.value = ''; if (creatorSearch) creatorSearch.value = ''; [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => input.checked = false); root.querySelectorAll<HTMLElement>('[data-creator-option]').forEach((option) => option.hidden = false); applyFilters(true); };
     search?.addEventListener('input', () => applyFilters(true));
     sort?.addEventListener('change', () => applyFilters(true));
     pageSizeSelect?.addEventListener('change', () => {
@@ -471,10 +445,6 @@ const accessLabel = (value = '') => {
       localStorage.setItem('dh-resource-page-size', pageSizeSelect.value);
       applyFilters(true);
     });
-    access?.addEventListener('change', () => applyFilters(true));
-    accessTrigger?.addEventListener('click', () => { const open = accessOptions?.hidden ?? true; if (accessOptions) accessOptions.hidden = !open; accessTrigger.setAttribute('aria-expanded', String(open)); });
-    accessOptionButtons.forEach((button) => button.addEventListener('click', () => { setAccess(button.dataset.value || 'all'); closeAccessMenu(); applyFilters(true); }));
-    document.addEventListener('click', (event) => { if (accessMenu && !accessMenu.contains(event.target as Node)) closeAccessMenu(); });
     [...typeInputs, ...topicInputs, ...creatorInputs].forEach((input) => input.addEventListener('change', () => applyFilters(true)));
     networkLayerInputs.forEach((input) => input.addEventListener('change', () => {
       clearGraphSelection();
