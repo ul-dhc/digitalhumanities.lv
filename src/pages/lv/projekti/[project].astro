@@ -11,12 +11,16 @@ export function getStaticPaths() {
     late: ['LATE', 'Mūsdienu latviešu valodas izpēte un valodas tehnoloģiju attīstība', '2022–2024'],
     'teiktas-dziesmas': ['Teiktās dziesmas', 'Teiktās dziesmas: kompozīcijas un improvizācijas algoritmi', '2026–2028'],
     'lu-open': ['ȬPEN', 'Atvērtās zināšanu ekosistēmas sabiedriskās zinātnes attīstībai', '2026–2028'],
+    'going-beyond-search': ['NORDPLUS', 'Going Beyond Search: Advancing Digital Competences in Libraries and Research Communities', '2019–2021'],
   } as const;
   return Object.entries(meta).map(([project, data]) => ({ params: { project }, props: { project, data } }));
 }
 const { project, data } = Astro.props;
 const [acronym, title, years] = data;
-const blocks = details[`lv/${project}` as keyof typeof details] || [];
+// NORDPLUS intentionally reuses the source English content in the Latvian section.
+const blocks = details[`lv/${project}` as keyof typeof details]
+  || details[`en/${project}` as keyof typeof details]
+  || [];
 const hasEnglish = project !== 'lu-open';
 const alternateUrl = hasEnglish ? `/en/projects/${project}/` : `/en/projects/#${project}`;
 ---

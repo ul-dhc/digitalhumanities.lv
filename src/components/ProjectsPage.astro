@@ -86,7 +86,7 @@ const copy = isLv ? {
       </div>
       <div class="project-list">
         {projects.map((project) => {
-          const hasDetail = isLv ? project.id !== 'going-beyond-search' : project.id !== 'lu-open';
+          const hasDetail = isLv || project.id !== 'lu-open';
           const detailUrl = isLv ? `/lv/projekti/${project.id}/` : `/en/projects/${project.id}/`;
           return (
           <article id={project.id} class="project-row" data-project data-status={project.status} data-search={`${project.acronym} ${project.title} ${project.description} ${project.tags.join(' ')}`.toLocaleLowerCase(lang)}>

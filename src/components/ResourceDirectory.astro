@@ -559,7 +559,7 @@ const accessLabel = (value = '') => {
           const label = document.createElement('strong'); label.textContent = card.dataset.title || card.dataset.slug || '';
           content.append(kind, label);
           button.append(pin, content);
-          button.addEventListener('click', () => { pinnedSlugs.delete(card.dataset.slug || ''); persistPins(); renderPinnedResources(); applyFilters(true); });
+          button.addEventListener('click', () => { pinnedSlugs.delete(card.dataset.slug || ''); persistPins(); renderPinnedResources(); applyFilters(); });
           list.append(button);
         });
       };
@@ -586,8 +586,18 @@ const accessLabel = (value = '') => {
     const togglePinnedResource = (card: HTMLElement) => {
       const slug = card.dataset.slug || '';
       if (!slug) return;
-      if (pinnedSlugs.has(slug)) pinnedSlugs.delete(slug); else pinnedSlugs.add(slug);
-      persistPins(); renderPinnedResources(); applyFilters(true);
+      const wasPinned = pinnedSlugs.has(slug);
+      if (wasPinned) pinnedSlugs.delete(slug); else pinnedSlugs.add(slug);
+      card.classList.add('is-pin-changing');
+      card.classList.toggle('is-pin-leaving', !wasPinned);
+      persistPins();
+      renderPinnedResources();
+      window.setTimeout(() => {
+        const scrollY = window.scrollY;
+        applyFilters();
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
+        card.classList.remove('is-pin-changing', 'is-pin-leaving');
+      }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 360);
     };
 
     type CarouselParticle = { card: HTMLElement; x: number; y: number; previousX: number; previousY: number; angle: number; radius: number; vertical: number; speed: number; phase: number; depth: number; };
@@ -1256,9 +1266,9 @@ const accessLabel = (value = '') => {
     updateNetworkMotionControl();
     root.querySelector('[data-network-preview-close]')?.addEventListener('click', clearGraphSelection);
     networkPreviewPin?.addEventListener('click', () => { if (selectedPreviewCard) togglePinnedResource(selectedPreviewCard); });
-    networkPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
-    carouselPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
-    resourcePinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(true); });
+    networkPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(); });
+    carouselPinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(); });
+    resourcePinsClear?.addEventListener('click', () => { pinnedSlugs.clear(); persistPins(); renderPinnedResources(); applyFilters(); });
     const openPinnedResources = () => {
       if (!pinnedSlugs.size) return;
       const url = new URL(window.location.href);

@@ -74,6 +74,7 @@ const escapeHtml = (value: string) => value
   .replaceAll("'", '&#039;');
 
 const safeUrl = (value: string) => /^(?:https?:\/\/|mailto:|\/|\.\.?\/)/i.test(value.trim()) ? value.trim() : '#';
+const cleanSummary = (value: string) => value.replace(/&amp;(?:amp;)+/gi, '&');
 
 const renderInline = (source: string) => {
   const links: string[] = [];
@@ -92,6 +93,7 @@ const renderInline = (source: string) => {
 
 const renderMarkdown = (source: string) => {
   const normalizedSource = source
+    .replace(/\[[^\]]*digitalhumanities\.lv\/notikumi\/clarin-dariah-pavasara-konference2026[^\]]*\]\([^)]+\)/gi, '[CLARIN–DARIAH Spring Conference 2026](/lv/pasakumi/clarin-dariah-pavasara-konference-2026/)')
     .replace(/\r\n?/g, '\n')
     .replace(/🔗\s*(?=\[[^\]]+\]\([^)]+\))/g, '')
     .trim();
@@ -159,7 +161,7 @@ const renderMarkdown = (source: string) => {
             <summary>
               <div class="archive-date"><CalendarDays size={17} /><time datetime={item.published_at}>{dateFormatter.format(new Date(item.published_at))}</time>{isPinned && <span class="archive-pinned"><Pin size={13} />{labels.pinned}</span>}</div>
               <div class="archive-title-row"><h2>{item.title}</h2><button class="archive-copy-link" type="button" data-archive-copy={item.slug} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={17} aria-hidden="true" /><Check class="check-icon" size={17} aria-hidden="true" /></button></div>
-              <p>{item.summary}</p>
+              <p>{cleanSummary(item.summary)}</p>
             </summary>
             <div class="archive-body">
               {imageUrl && <img src={imageUrl} alt={item.image_alt || ''} loading="lazy" />}

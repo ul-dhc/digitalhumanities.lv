@@ -9,8 +9,30 @@ interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?
 interface Props { lang: 'lv' | 'en'; slug: string; acronym: string; title: string; years: string; blocks: Block[]; alternateUrl: string; }
 const { lang, slug, acronym, title, years, blocks, alternateUrl } = Astro.props;
 const isLv = lang === 'lv';
-const logoMarkerIndex = blocks.findIndex((block) => /^(projekta institūcijas|project institutions)$/i.test(block.text || ''));
-const rawContentBlocks = logoMarkerIndex >= 0 ? blocks.slice(0, logoMarkerIndex) : blocks;
+const withoutProtectedEmail = (block: Block): Block | null => {
+  if (!block.text?.includes('[email protected]')) return block;
+  const text = block.text
+    .split('\n')
+    .filter((line) => !/^(?:contact(?:s| information)?|kontaktinformācija|saziņai)\s*:/i.test(line.trim()) || !line.includes('[email protected]'))
+    .map((line) => line
+      .replace(/\s*(?:contact(?:s| information)?|kontaktinformācija|saziņai)\s*:\s*\[email protected\]/gi, '')
+      .replace(/(?:,?\s*(?:e-?mail|e-pasts)\s*:?)?\s*\[email protected\]/gi, '')
+      .replace(/\(\s*\)/g, '')
+      .replace(/\s+([,.;:])/g, '$1')
+      .trim())
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+  if (!text) return null;
+  return {
+    ...block,
+    text,
+    links: block.links?.filter((link) => !/email-protection|email protected/i.test(`${link.text} ${link.url}`)),
+  };
+};
+const sanitizedBlocks = blocks.map(withoutProtectedEmail).filter((block): block is Block => Boolean(block));
+const logoMarkerIndex = sanitizedBlocks.findIndex((block) => /^(projekta institūcijas|project institutions)$/i.test(block.text || ''));
+const rawContentBlocks = logoMarkerIndex >= 0 ? sanitizedBlocks.slice(0, logoMarkerIndex) : sanitizedBlocks;
 const footerLogos = logoMarkerIndex >= 0 ? blocks.slice(logoMarkerIndex + 1).filter((block) => block.tag === 'img') : [];
 const firstHeadingIndex = rawContentBlocks.findIndex((block) => block.tag === 'h1' || block.tag === 'h2');
 const leadingBlocks = firstHeadingIndex > 0 ? rawContentBlocks.slice(0, firstHeadingIndex) : [];
