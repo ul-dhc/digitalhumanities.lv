@@ -11,4 +11,4 @@ const html = text.split(/\n\s*\n/).filter(Boolean).map(paragraph => {
   return `<p>${inline(paragraph).replaceAll('\n', '<br />')}</p>`;
 }).join('');
 ---
-<div set:html={html} />
+<div class="sheet-markdown" set:html={html} />
