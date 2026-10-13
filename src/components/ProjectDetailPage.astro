@@ -72,6 +72,9 @@ for (const section of sections) {
   profileLogos.push(...trailing);
 }
 const projectLogos = profileLogos.length > 0 ? profileLogos : footerLogos;
+if (slug === 'digilate') {
+  projectLogos.push({ tag: 'img', src: '/assets/project-details/shared/rtu-rezekne.png', alt: 'RTU Rēzekne' });
+}
 const normalizedTitle = title.trim().replace(/\s+/g, ' ').toLocaleLowerCase(lang);
 const normalizedAcronym = acronym.trim().replace(/\s+/g, ' ').toLocaleLowerCase(lang);
 const nameLabel = isLv ? /^Projekta nosaukums\s*\((latviski|angliski)\)\s*:/i : /^Project title\s*\((Latvian|English)\)\s*:/i;
