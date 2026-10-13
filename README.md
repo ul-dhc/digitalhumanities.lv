@@ -27,7 +27,7 @@ separate “Publish to web” configuration. The spreadsheet must remain readabl
 without login. Environment overrides: `GOOGLE_SHEETS_CONTENT_ID`,
 `GOOGLE_SHEETS_PROJECTS_GID`, `GOOGLE_SHEETS_SEMINARS_GID`.
 
-The deployment workflow rebuilds on pushes to `main` and every six hours.
+The deployment workflow rebuilds on pushes to `main` and manual **Run workflow**.
 New tab support becomes live after these code changes are merged to `main`.
 Run `node --test scripts/sync-google-sheets.test.mjs` and `pnpm build` to verify.
 
@@ -40,7 +40,11 @@ attempts for transient failures. Invalid or inaccessible data stops publication
 instead of replacing the live site with incomplete content.
 
 Every build writes `/version.json` with its Git commit and build time. The deployment
-job verifies this file on the public domain before reporting success. Scheduled
+job verifies this file on the public domain before reporting success. Manual
 builds keep the same commit but receive a new build time and fresh spreadsheet data.
 GitHub-hosted runner queueing and environment approvals are separate from job
 execution timeouts; cancel an obsolete blocked run in Actions if it blocks the queue.
+
+For content edits: set the row status to `published`, open GitHub Actions →
+**Deploy Digitalhumanities.lv** → **Run workflow**, select `main`, and run it.
+Spreadsheet edits are imported by that run; no six-hour polling is configured.
