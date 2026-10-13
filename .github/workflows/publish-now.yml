@@ -1,0 +1,41 @@
+name: Publish website now
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: digitalhumanities-lv-production
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Import content and build website
+        uses: withastro/action@v6
+        env:
+          SITE_URL: https://digitalhumanities.lv
+          BASE_PATH: /
+        with:
+          node-version: 22
+          package-manager: pnpm@11.9.0
+      - name: Run publication checks
+        run: node --test scripts/*.test.mjs
+      - name: Publish website
+        id: deployment
+        uses: actions/deploy-pages@v5
+      - name: Verify live website
+        env:
+          SITE_URL: https://digitalhumanities.lv
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: node scripts/verify-deployment.mjs
