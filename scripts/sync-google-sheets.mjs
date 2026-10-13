@@ -337,7 +337,7 @@ const projectEntries = projectRows.map((row, index) => {
   if (Number.isNaN(Date.parse(record.event_date || record.published_at))) throw new Error(`DigiLATEs jaunumi rinda ${index + 2}: nederīgs datums.`);
   const base = record.language === 'lv' ? '/lv/projekti/digilate/' : '/en/projects/digilate/';
   return { ...record, project_id: 'digilates', archive_url: `${origin}${base}#${encodeURIComponent(record.slug)}`, share_url: `${origin}${base}#${encodeURIComponent(record.slug)}` };
-}).filter(Boolean).sort(sortRecords);
+}).filter(Boolean).sort((a, b) => (b.event_date || b.published_at).localeCompare(a.event_date || a.published_at));
 const seminars = seminarRows.map((row, index) => {
   if (row.series_id && row.series_id !== 'digitalhumanities-lv') throw new Error('Neatpazīts series_id semināru cilnē.');
   const record = normalizeNewRecord({ ...row, content_type: 'seminar' }, index);
