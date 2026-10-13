@@ -71,7 +71,7 @@ const copy = isLv ? {
   search: 'Search projects', searchPlaceholder: 'Title, topic or keyword…', status: 'Project status', all: 'All projects', active: 'Active', completed: 'Completed', count: 'projects', noResults: 'No projects match the selected filters.', external: 'Project website', more: 'Full project information', cards: 'Cards', list: 'List', view: 'Change view',
 };
 ---
-<BaseLayout title={`${copy.title} — Digital Humanities LV`} description={copy.description} lang={lang} alternateUrl={alternateUrl}>
+<BaseLayout title={`${copy.title} – Digital Humanities LV`} description={copy.description} lang={lang} alternateUrl={alternateUrl}>
   <div class="projects-page" data-alternate-base={alternateUrl}>
     <section class="page-heading projects-heading shell"><a class="back-link projects-home-link" href={isLv ? '/lv/' : '/en/'}><ArrowLeft size={17} />{isLv ? 'Uz sākumlapu' : 'Back to home'}</a><h1>{copy.title}</h1><p class="lead">{copy.intro}</p></section>
     <section class="projects-directory shell" data-project-directory data-view="cards">

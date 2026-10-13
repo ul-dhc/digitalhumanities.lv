@@ -124,7 +124,7 @@ const renderMarkdown = (source: string) => {
   }).join('');
 };
 ---
-<BaseLayout title={`${title} — Digital Humanities LV`} description={description} lang={lang} alternateUrl={alternateUrl}>
+<BaseLayout title={`${title} – Digital Humanities LV`} description={description} lang={lang} alternateUrl={alternateUrl}>
   <section class="page-heading shell archive-heading">
     <HomeBackLink lang={lang} />
     <h1>{title}</h1>
@@ -139,7 +139,7 @@ const renderMarkdown = (source: string) => {
         {timeline.map(group => <div class="archive-year-group">
           <div class="archive-year-caption">{group.year}</div>
           <div class="archive-pixels">
-            {group.items.map(item => <button type="button" data-timeline-slug={item.slug} aria-label={`${dateFormatter.format(new Date(item.published_at))}: ${item.title}`} title={`${dateFormatter.format(new Date(item.published_at))} — ${item.title}`}><span class="sr-only">{item.title}</span></button>)}
+            {group.items.map(item => <button type="button" data-timeline-slug={item.slug} aria-label={`${dateFormatter.format(new Date(item.published_at))}: ${item.title}`} title={`${dateFormatter.format(new Date(item.published_at))} – ${item.title}`}><span class="sr-only">{item.title}</span></button>)}
           </div>
         </div>)}
       </div>

@@ -32,6 +32,7 @@ function csvUrl(gid) {
 }
 
 function parseCsv(text) {
+  text = text.replace(/\u2014/g, '\u2013');
   const rows = [];
   let row = [];
   let field = '';

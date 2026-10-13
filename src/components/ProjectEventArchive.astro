@@ -9,7 +9,7 @@ interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?
 interface Props { blocks: Block[]; lang: 'lv' | 'en'; slug: string; }
 const { blocks, lang, slug } = Astro.props;
 
-const dateStart = /^(?:\d{1,2}\.){1,2}(?:[–—-](?:\d{1,2}\.){1,2})?20\d{2}\.?/;
+const dateStart = /^(?:\d{1,2}\.){1,2}(?:[–\u2014-](?:\d{1,2}\.){1,2})?20\d{2}\.?/;
 const isStart = (block: Block, index: number) => {
   const text = (block.text || '').trim();
   if (!text) return false;
@@ -31,7 +31,7 @@ for (let index = 0; index < blocks.length; index++) {
     const startsWithDate = dateStart.test(raw);
     const placeholder = lang === 'lv' ? 'Projekta norise' : 'Project update';
     if (current && current.heading === placeholder && current.date && current.blocks.length === 0 && current.images.length === 0) {
-      const withoutRepeatedDate = startsWithDate ? raw.replace(dateStart, '').replace(/^[.\s–—-]+/, '').trim() : raw;
+      const withoutRepeatedDate = startsWithDate ? raw.replace(dateStart, '').replace(/^[.\s–\u2014-]+/, '').trim() : raw;
       const firstSentence = withoutRepeatedDate.match(/^(.{25,180}?[.!?])(?:\s|$)/s)?.[1];
       current.heading = firstSentence || `${withoutRepeatedDate.slice(0, 165).trim()}${withoutRepeatedDate.length > 165 ? '…' : ''}`;
       if (withoutRepeatedDate.length > 180) current.blocks.push({ ...block, tag: 'p', text: withoutRepeatedDate });
@@ -41,7 +41,7 @@ for (let index = 0; index < blocks.length; index++) {
     if (year) inheritedYear = year;
     const dateMatch = raw.match(/^(.*?\b20\d{2}\.?)(.*)$/s);
     const date = dateMatch?.[1]?.trim() || '';
-    const afterDate = dateMatch?.[2]?.replace(/^[.\s–—-]+/, '').trim() || (date ? '' : raw);
+    const afterDate = dateMatch?.[2]?.replace(/^[.\s–\u2014-]+/, '').trim() || (date ? '' : raw);
     const lines = afterDate.split('\n').map((line) => line.trim()).filter(Boolean);
     let heading = lines.shift() || (date ? (lang === 'lv' ? 'Projekta norise' : 'Project update') : raw);
     let remainder = lines.join('\n');
@@ -152,6 +152,10 @@ const anchorFor = (event: EventItem) => {
       </select>
     </label>
     <p class="project-event-result" aria-live="polite"><strong data-event-count>{events.length}</strong> {lang === 'lv' ? 'ieraksti' : 'updates'}</p>
+    <div class="project-event-bulk-actions" role="group" aria-label={lang === 'lv' ? 'Redzamo ierakstu izvēršana un sakļaušana' : 'Expand or collapse visible updates'}>
+      <button type="button" data-event-expand-all>{lang === 'lv' ? 'Izvērst visu' : 'Expand all'}</button>
+      <button type="button" data-event-collapse-all>{lang === 'lv' ? 'Sakļaut visu' : 'Collapse all'}</button>
+    </div>
   </div>
   {[...groups.entries()].map(([year, yearEvents]) => (
     <section class="project-event-year" data-event-group data-year={year}>
@@ -208,8 +212,23 @@ const anchorFor = (event: EventItem) => {
     const pageStatus = archive.querySelector<HTMLElement>('[data-page-status]');
     const previous = archive.querySelector<HTMLButtonElement>('[data-page-previous]');
     const next = archive.querySelector<HTMLButtonElement>('[data-page-next]');
+    const expandAll = archive.querySelector<HTMLButtonElement>('[data-event-expand-all]');
+    const collapseAll = archive.querySelector<HTMLButtonElement>('[data-event-collapse-all]');
     const pageSize = 20;
     let currentPage = 1;
+
+    const updateBulkActions = () => {
+      const visibleItems = items.filter((item) => !item.hidden);
+      if (expandAll) expandAll.disabled = !visibleItems.some((item) => !item.hasAttribute('open'));
+      if (collapseAll) collapseAll.disabled = !visibleItems.some((item) => item.hasAttribute('open'));
+    };
+    const setVisibleExpanded = (expanded: boolean) => {
+      items.filter((item) => !item.hidden).forEach((item) => item.toggleAttribute('open', expanded));
+      updateBulkActions();
+    };
+    expandAll?.addEventListener('click', () => setVisibleExpanded(true));
+    collapseAll?.addEventListener('click', () => setVisibleExpanded(false));
+    items.forEach((item) => item.addEventListener('toggle', updateBulkActions));
 
     const filterEvents = (target?: HTMLElement) => {
       const query = normalise(search?.value.trim() || '');
@@ -229,6 +248,7 @@ const anchorFor = (event: EventItem) => {
 
       items.forEach((event) => { event.hidden = !pageItems.has(event); });
       groups.forEach((group) => { group.hidden = ![...group.querySelectorAll<HTMLElement>('[data-event-item]')].some((event) => !event.hidden); });
+      updateBulkActions();
 
       if (count) count.textContent = String(matches.length);
       if (empty) empty.hidden = matches.length !== 0;

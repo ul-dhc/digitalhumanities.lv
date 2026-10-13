@@ -529,6 +529,9 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 .legacy-project-copy .legacy-multiline { padding: 22px 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); line-height: 1.85; }
 .legacy-project-copy h3 { margin: 36px 0 13px; color: var(--accent); font-size: 1rem; }
 .legacy-project-copy > h3:first-child { margin-top: 0; }
+.project-detail[data-project-slug="digilate"] .project-detail-section { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+.project-detail[data-project-slug="digilate"] .legacy-project-copy { padding: 0; border: 0; }
+.project-detail[data-project-slug="digilate"] .legacy-project-copy > :is(p, h3, .legacy-list-item) { max-width: 90ch; }
 .project-facts { margin: 0 0 46px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(36px, 7vw, 90px); row-gap: 30px; }
 .project-fact { min-width: 0; padding: 0; }
 .project-fact-wide, .project-fact-keywords { grid-column: 1 / -1; }
@@ -559,6 +562,10 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 .project-event-year-filter select { min-width: 100px; flex: 1; border: 0; outline: 0; background: transparent; color: var(--text); font-weight: 600; }
 .project-event-result { margin: 0; padding-inline: 12px 6px; color: var(--muted); font-size: .76rem; white-space: nowrap; }
 .project-event-result strong { color: var(--text); }
+.project-event-bulk-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.project-event-bulk-actions button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text); font-size: .76rem; font-weight: 600; cursor: pointer; }
+.project-event-bulk-actions button:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.project-event-bulk-actions button:disabled { opacity: .38; cursor: default; }
 .project-event-empty { margin: 0; padding: 48px 24px; border-radius: 8px; background: var(--surface-soft); color: var(--muted); text-align: center; }
 .project-event-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .project-event-pagination > button, .project-event-pages button { min-width: 40px; height: 40px; padding-inline: 11px; border: 1px solid var(--line); border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--surface); color: var(--text); font-size: .76rem; font-weight: 600; cursor: pointer; }

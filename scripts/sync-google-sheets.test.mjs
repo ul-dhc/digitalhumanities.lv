@@ -43,6 +43,13 @@ test('imports bilingual project updates and seminar details; ignores empty check
   assert.match(output.entries[0].archive_url, /\/lv\/seminari\/#workshop$/);
 });
 
+test('replaces em dashes in imported text with en dashes', async () => {
+  const output = await run([row({ title: 'Title \u2014 subtitle', body_markdown: 'First \u2014 second' })], []);
+  assert.equal(output.result.status, 0, output.result.stderr);
+  assert.equal(output.projects[0].title, 'Title \u2013 subtitle');
+  assert.equal(output.projects[0].body_markdown, 'First \u2013 second');
+});
+
 test('recovers from transient Google failure, while access errors fail immediately', async () => {
   const recovered = await run([row({})], [], false, 503);
   assert.equal(recovered.result.status, 0, recovered.result.stderr);
