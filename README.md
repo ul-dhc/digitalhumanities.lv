@@ -33,7 +33,7 @@ Run `node --test scripts/sync-google-sheets.test.mjs` and `pnpm build` to verify
 
 ## Publishing reliability
 
-The newest deployment cancels an older run in the same `pages` concurrency group.
+The newest deployment cancels an older run in the dedicated `digitalhumanities-lv-production` concurrency group.
 Builds have a 10-minute execution limit; deployment and live-version verification
 have a 5-minute limit. Google requests have 30-second timeouts and up to three
 attempts for transient failures. Invalid or inaccessible data stops publication

@@ -12,12 +12,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: digitalhumanities-lv-production
   cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -38,7 +38,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     environment:
