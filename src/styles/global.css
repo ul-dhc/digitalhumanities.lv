@@ -540,10 +540,10 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 .legacy-list-item::before { content: ''; width: 5px; height: 5px; position: absolute; left: 0; top: .7em; border-radius: 50%; background: var(--accent); }
 .legacy-project-image { margin: 32px 0; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .legacy-project-image img { display: block; width: auto; max-width: 100%; max-height: 440px; margin-inline: auto; object-fit: contain; }
-.project-logo-bar { margin-top: 8px; margin-bottom: 64px; padding: 36px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: center; gap: clamp(32px, 7vw, 100px); }
-.project-logo-bar .legacy-project-image { min-width: 0; min-height: 142px; margin: 0; padding: 0; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
-.project-logo-bar .legacy-project-image img { max-width: min(100%, 380px); max-height: 122px; }
-.project-logo-bar .legacy-project-image img[src$="/rtu-rezekne.png"] { width: 244px; height: 122px; object-fit: cover; }
+.project-logo-bar { margin-top: 8px; margin-bottom: 64px; padding: 36px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: stretch; gap: 20px; }
+.project-logo-bar .legacy-project-image { min-width: 0; height: 170px; margin: 0; padding: 20px; border: 1px solid #dedee7; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #fff; }
+.project-logo-bar .legacy-project-image img { max-width: 100%; max-height: 110px; }
+.project-logo-bar .legacy-project-image img[src$="/rtu-rezekne.png"] { width: 220px; height: 110px; object-fit: cover; }
 .legacy-inline-link { color: var(--accent); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .legacy-inline-link svg { margin-left: 3px; display: inline; vertical-align: -.08em; }
 .legacy-unmatched-links { margin: -8px 0 20px; display: flex; flex-wrap: wrap; gap: 10px 18px; }
