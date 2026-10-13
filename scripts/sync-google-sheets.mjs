@@ -6,7 +6,11 @@ const publicId = process.env.GOOGLE_SHEETS_PUBLIC_ID
 const sheetGids = {
   newEntries: process.env.GOOGLE_SHEETS_NEW_ENTRIES_GID || '548994246',
   archive: process.env.GOOGLE_SHEETS_ARCHIVE_GID || '341542364',
+  projects: process.env.GOOGLE_SHEETS_PROJECTS_GID || '2026101301',
+  seminars: process.env.GOOGLE_SHEETS_SEMINARS_GID || '2026101302',
 };
+const contentSheetId = process.env.GOOGLE_SHEETS_CONTENT_ID
+  || '1-76WTvCvuthtrHcadCc6NtMn3PuQemA_rj9NLipm-_4';
 const resourceSheetId = process.env.GOOGLE_SHEETS_RESOURCES_ID
   || '1fKTpcKvhtsettUbzM1WMG0yDszKd6smj';
 const resourceSheetName = process.env.GOOGLE_SHEETS_RESOURCES_SHEET
@@ -70,11 +74,18 @@ function parseCsv(text) {
     .map(values => Object.fromEntries(headers.map((header, index) => [header.trim(), values[index]?.trim() || ''])));
 }
 
-async function fetchSheet(gid, label) {
-  const response = await fetch(csvUrl(gid));
+async function fetchSheet(gid, label, direct = false) {
+  const url = direct
+    ? `https://docs.google.com/spreadsheets/d/${contentSheetId}/export?format=csv&gid=${gid}`
+    : csvUrl(gid);
+  const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`${label}: Google Sheets atbildēja ar ${response.status}.`);
   const text = await response.text();
-  const records = parseCsv(text);
+  if (!text.replace(/^\uFEFF/, '').startsWith('record_id,')) {
+    throw new Error(`${label}: nav saņemta paredzētā CSV galvene.`);
+  }
+  // Unchecked checkbox cells export as FALSE even in otherwise empty rows.
+  const records = parseCsv(text).filter(row => Object.entries(row).some(([key, value]) => key !== 'featured' && value));
   console.log(`${label}: saņemtas ${records.length} datu rindas.`);
   return records;
 }
@@ -310,14 +321,34 @@ function normalizeResourceRecord(row, index) {
   };
 }
 
-const [newRows, archiveRows, resourceRows] = await Promise.all([
+const [newRows, archiveRows, resourceRows, projectRows, seminarRows] = await Promise.all([
   fetchSheet(sheetGids.newEntries, 'Jaunumi&notikumi'),
   fetchSheet(sheetGids.archive, 'Vecais arhīvs'),
   fetchResourceSheet(),
+  fetchSheet(sheetGids.projects, 'DigiLATEs jaunumi', true),
+  fetchSheet(sheetGids.seminars, 'Semināri', true),
 ]);
 
 const sortRecords = (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.published_at.localeCompare(a.published_at);
-const newEntries = newRows.map(normalizeNewRecord).filter(Boolean).sort(sortRecords);
+const projectEntries = projectRows.map((row, index) => {
+  if (row.project_id && row.project_id !== 'digilates') throw new Error('Neatpazīts project_id DigiLATEs cilnē.');
+  const record = normalizeNewRecord({ ...row, content_type: row.content_type || 'news' }, index);
+  if (!record) return null;
+  if (Number.isNaN(Date.parse(record.event_date || record.published_at))) throw new Error(`DigiLATEs jaunumi rinda ${index + 2}: nederīgs datums.`);
+  const base = record.language === 'lv' ? '/lv/projekti/digilate/' : '/en/projects/digilate/';
+  return { ...record, project_id: 'digilates', archive_url: `${origin}${base}#${encodeURIComponent(record.slug)}`, share_url: `${origin}${base}#${encodeURIComponent(record.slug)}` };
+}).filter(Boolean).sort(sortRecords);
+const seminars = seminarRows.map((row, index) => {
+  if (row.series_id && row.series_id !== 'digitalhumanities-lv') throw new Error('Neatpazīts series_id semināru cilnē.');
+  const record = normalizeNewRecord({ ...row, content_type: 'seminar' }, index);
+  if (!record) return null;
+  if (!record.event_date && record.status !== 'published') return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(record.event_date) || Number.isNaN(Date.parse(record.event_date))) {
+    throw new Error(`Semināri rinda ${index + 2}: vajadzīgs event_date (YYYY-MM-DD).`);
+  }
+  return { ...record, series_id: 'digitalhumanities-lv', speakers: row.speakers || '', event_time: row.event_time || '', timezone: row.timezone || 'Europe/Riga', location: row.location || '', registration_url: row.registration_url || '', recording_url: row.recording_url || '' };
+}).filter(Boolean).sort(sortRecords);
+const newEntries = [...new Map([...newRows.map(normalizeNewRecord).filter(Boolean), ...seminars].map(record => [record.record_id, record])).values()].sort(sortRecords);
 const archive = archiveRows.map(normalizeArchiveRecord).filter(Boolean).sort(sortRecords);
 const resources = resourceRows
   .map(normalizeResourceRecord)
@@ -328,6 +359,8 @@ await Promise.all([
   fs.writeFile(new URL('src/data/new-entries.json', projectRoot), `${JSON.stringify(newEntries, null, 2)}\n`),
   fs.writeFile(new URL('src/data/archive.json', projectRoot), `${JSON.stringify(archive, null, 2)}\n`),
   fs.writeFile(new URL('src/data/resources.json', projectRoot), `${JSON.stringify(resources, null, 2)}\n`),
+  fs.writeFile(new URL('src/data/project-entries.json', projectRoot), `${JSON.stringify(projectEntries, null, 2)}\n`),
+  fs.writeFile(new URL('src/data/seminar-entries.json', projectRoot), `${JSON.stringify(seminars, null, 2)}\n`),
 ]);
 
-console.log(`Sinhronizācija pabeigta: ${newEntries.length} jauni ieraksti, ${archive.length} arhīva ieraksti, ${resources.length} resursu ieraksti.`);
+console.log(`Sinhronizācija pabeigta: ${newEntries.length} jauni ieraksti, ${archive.length} arhīva ieraksti, ${resources.length} resursu ieraksti, ${projectEntries.length} projekta ziņas, ${seminars.length} semināri.`);

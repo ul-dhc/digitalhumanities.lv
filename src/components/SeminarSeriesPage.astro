@@ -2,6 +2,8 @@
 import { CalendarDays, Check, ExternalLink, Link2, Play, Search, Users } from '@lucide/astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeBackLink from './HomeBackLink.astro';
+import SheetMarkdown from './SheetMarkdown.astro';
+import seminarEntries from '../data/seminar-entries.json';
 
 type Language = 'lv' | 'en';
 interface Props { lang: Language; alternateUrl: string; }
@@ -54,7 +56,15 @@ const en = [
 ];
 
 const content = isLv ? lv : en;
-const items = common.map((item, index) => ({ ...item, ...content[index], info: isLv ? item.infoLv : item.infoEn }));
+const legacyItems = common.map((item, index) => ({ ...item, ...content[index], info: isLv ? item.infoLv : item.infoEn, markdown: '', eventTime: '', timezone: '', location: '', registration: '' }));
+const sheetItems = seminarEntries.filter(item => item.language === lang && item.status === 'published').map(item => ({
+  id: item.slug, date: item.event_date, dateEnd: '', image: item.image_url,
+  title: item.title, speakers: item.speakers, description: item.summary,
+  markdown: item.body_markdown, info: item.external_url, video: item.recording_url,
+  eventTime: item.event_time, timezone: item.timezone, location: item.location,
+  registration: item.registration_url,
+}));
+const items = [...new Map([...legacyItems, ...sheetItems].map(item => [item.id, item])).values()].sort((a, b) => b.date.localeCompare(a.date));
 const labels = isLv ? {
   title: 'Digitalhumanities.lv semināru cikls', shortTitle: 'Semināru cikls', kicker: 'Zināšanu un pieredzes apmaiņas platforma', intro: 'Digitalhumanities.lv/DARIAH-LV semināru cikls ir paredzēts pētniekiem, studentiem, kultūras mantojuma ekspertiem un citiem digitālo humanitāro zinātņu interesentiem. Tā mērķis ir pieredzes apmaiņa un diskusijas par digitālo humanitāro zinātņu jaunākajiem pētījumiem, rīkiem un metodēm.', detail: 'Semināri tiek organizēti sadarbībā ar DARIAH-LV un dažādiem digitālo humanitāro zinātņu projektiem, kurus īsteno partnerinstitūcijas. Tie mēdz notikt gan klātienē, gan attālināti. Grafiks nav stingri noteikts, tomēr ierasti gada laikā tiek organizēti aptuveni 3–4 semināri.', archive: 'Semināru arhīvs', search: 'Meklēt pēc tēmas vai runātāja', allYears: 'Visi gadi', expandAll: 'Izvērst visu', collapseAll: 'Sakļaut visu', found: 'semināri', speakers: 'Runātāji', info: 'Plašāka informācija', video: 'Skatīties video', copy: 'Kopēt saiti uz semināru', copied: 'Saite nokopēta', empty: 'Nav atrasts neviens seminārs.', expand: 'Izvērst semināra informāciju', dateLocale: 'lv-LV', description: 'Digitalhumanities.lv semināru cikla informācija un arhīvs.'
 } : {
@@ -78,7 +88,7 @@ const formatDate = (item: typeof items[number]) => item.dateEnd
   </section>
   <section class="seminar-about shell"><p>{labels.detail}</p><dl><div><dt>{isLv ? 'Kopš' : 'Since'}</dt><dd>2023</dd></div><div><dt>{isLv ? 'Arhīvā' : 'In the archive'}</dt><dd>{items.length}</dd></div><div><dt>{isLv ? 'Sadarbībā ar' : 'In cooperation with'}</dt><dd>DARIAH · CLARIN</dd></div></dl></section>
   <section class="seminar-archive shell" data-seminar-archive>
-    <div class="seminar-archive-heading"><div><p class="section-label">2023–2026</p><h2>{labels.archive}</h2></div><p><strong data-seminar-count>{items.length}</strong> {labels.found}</p></div>
+    <div class="seminar-archive-heading"><div><p class="section-label">{[...years].reverse()[0]}–{years[0]}</p><h2>{labels.archive}</h2></div><p><strong data-seminar-count>{items.length}</strong> {labels.found}</p></div>
     <div class="seminar-toolbar">
       <label class="seminar-search"><Search size={18} /><span class="sr-only">{labels.search}</span><input type="search" placeholder={labels.search} data-seminar-search /></label>
       <div class="seminar-filter-actions"><div class="seminar-years" aria-label={isLv ? 'Filtrēt pēc gada' : 'Filter by year'}><button type="button" class="is-active" data-year-filter="all">{labels.allYears}</button>{years.map(year => <button type="button" data-year-filter={year}>{year}</button>)}</div><button class="seminar-bulk-toggle" type="button" data-seminar-bulk data-expand-label={labels.expandAll} data-collapse-label={labels.collapseAll} aria-expanded="false">{labels.expandAll}</button></div>
@@ -86,11 +96,11 @@ const formatDate = (item: typeof items[number]) => item.dateEnd
     <div class="seminar-list">
       {items.map((item, index) => <details class="seminar-item" id={item.id} data-seminar-item data-year={item.date.slice(0, 4)} data-search={`${item.title} ${item.speakers} ${item.description}`.toLocaleLowerCase(lang)} open={index === 0}>
         <summary aria-label={`${labels.expand}: ${item.title}`}>
-          <div class="seminar-thumb"><img src={item.image} alt="" width="1200" height="600" loading={index === 0 ? 'eager' : 'lazy'} /></div>
+          <div class="seminar-thumb">{item.image && <img src={item.image} alt="" width="1200" height="600" loading={index === 0 ? 'eager' : 'lazy'} />}</div>
           <div class="seminar-summary-copy"><div class="seminar-date"><CalendarDays size={16} /><time datetime={item.date}>{formatDate(item)}</time></div><h3>{item.title}</h3><p>{item.speakers}</p></div>
           <button class="seminar-copy-link" type="button" data-copy={item.id} data-copy-label={labels.copy} data-copied-label={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={18} /><Check class="check-icon" size={18} /></button>
         </summary>
-        <div class="seminar-body"><img src={item.image} alt={`${item.title} – ${isLv ? 'semināra vizuālais materiāls' : 'workshop visual'}`} width="1200" height="600" loading="lazy" /><div class="seminar-body-copy"><p class="seminar-speakers"><Users size={17} /><span><strong>{labels.speakers}</strong>{item.speakers}</span></p><p>{item.description}</p><div class="seminar-actions"><a href={item.info} target={item.info.startsWith('http') ? '_blank' : undefined} rel={item.info.startsWith('http') ? 'noopener noreferrer' : undefined}><ExternalLink size={16} />{labels.info}</a>{item.video && <a href={item.video} target="_blank" rel="noopener noreferrer"><Play size={16} />{labels.video}</a>}</div></div></div>
+        <div class="seminar-body">{item.image && <img src={item.image} alt={`${item.title} – ${isLv ? 'semināra vizuālais materiāls' : 'workshop visual'}`} width="1200" height="600" loading="lazy" />}<div class="seminar-body-copy"><p class="seminar-speakers"><Users size={17} /><span><strong>{labels.speakers}</strong>{item.speakers}</span></p><p>{[item.eventTime && `${item.eventTime} (${item.timezone})`, item.location].filter(Boolean).join(' · ')}</p>{item.markdown ? <SheetMarkdown text={item.markdown} /> : <p>{item.description}</p>}<div class="seminar-actions">{item.info && <a href={item.info} target={item.info.startsWith('http') ? '_blank' : undefined} rel={item.info.startsWith('http') ? 'noopener noreferrer' : undefined}><ExternalLink size={16} />{labels.info}</a>}{item.registration && <a href={item.registration} target="_blank" rel="noopener noreferrer"><ExternalLink size={16} />{isLv ? 'Reģistrēties' : 'Register'}</a>}{item.video && <a href={item.video} target="_blank" rel="noopener noreferrer"><Play size={16} />{labels.video}</a>}</div></div></div>
       </details>)}
       <p class="seminar-empty" data-seminar-empty hidden>{labels.empty}</p>
     </div>

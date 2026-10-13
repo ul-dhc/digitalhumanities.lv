@@ -1,0 +1,14 @@
+---
+interface Props { text: string; }
+const { text } = Astro.props;
+const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+const inline = (value: string) => escape(value)
+  .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, (_match, label, url) => /^(https?:\/\/|\/(?!\/)|mailto:)/i.test(url) ? `<a href="${url}">${label}</a>` : label)
+  .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+const html = text.split(/\n\s*\n/).filter(Boolean).map(paragraph => {
+  const lines = paragraph.trim().split('\n');
+  if (lines.every(line => /^[-*]\s/.test(line))) return `<ul>${lines.map(line => `<li>${inline(line.slice(2))}</li>`).join('')}</ul>`;
+  return `<p>${inline(paragraph).replaceAll('\n', '<br />')}</p>`;
+}).join('');
+---
+<div set:html={html} />

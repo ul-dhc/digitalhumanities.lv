@@ -1,6 +1,8 @@
 ---
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Images, Link, Search } from '@lucide/astro';
 import LegacyProjectBlock from './LegacyProjectBlock.astro';
+import SheetMarkdown from './SheetMarkdown.astro';
+import projectEntries from '../data/project-entries.json';
 
 interface Link { text: string; url: string; }
 interface Block { tag: string; text?: string; links?: Link[]; src?: string; alt?: string; }
@@ -18,7 +20,7 @@ const isStart = (block: Block, index: number) => {
   return block.tag === 'p' && text.length < 140 && !/[.!?]$/.test(text) && blocks[index + 1]?.tag === 'img';
 };
 
-interface EventItem { heading: string; date: string; year: string; blocks: Block[]; images: Block[]; }
+interface EventItem { heading: string; date: string; year: string; blocks: Block[]; images: Block[]; id?: string; markdown?: string; }
 const events: EventItem[] = [];
 let current: EventItem | null = null;
 let inheritedYear = '';
@@ -69,9 +71,24 @@ for (let index = 0; index < blocks.length; index++) {
   else current.blocks.push(block);
 }
 
-const groups = new Map<string, EventItem[]>();
+if (slug === 'digilate') {
+  const additions: EventItem[] = projectEntries
+    .filter(item => item.language === lang && item.status === 'published' && item.project_id === 'digilates')
+    .map(item => {
+      const date = (item.event_date || item.published_at).slice(0, 10);
+      return {
+        id: item.slug, heading: item.title,
+        date: new Intl.DateTimeFormat(lang === 'lv' ? 'lv-LV' : 'en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(date)),
+        year: date.slice(0, 4), markdown: item.body_markdown || item.summary,
+        blocks: item.external_url ? [{ tag: 'p', links: [{ text: lang === 'lv' ? 'Plašāka informācija' : 'More information', url: item.external_url }] }] : [],
+        images: item.image_url ? [{ tag: 'img', src: item.image_url, alt: item.image_alt }] : [],
+      };
+    });
+  events.unshift(...additions);
+}
+let groups = new Map<string, EventItem[]>();
 for (const event of events) {
-  if (slug === 'digilate') {
+  if (slug === 'digilate' && !event.id) {
     const conciseTitles = lang === 'lv' ? {
       '14.05.2026': 'DigiLATE dalība konferencē “Reģions: vēsture, kultūra, valoda”',
       '11.05.2026': 'DigiLATE dalība CMLC-12 seminārā Maljorkā',
@@ -104,8 +121,10 @@ for (const event of events) {
   groups.get(event.year)!.push(event);
 }
 
+groups = new Map([...groups].sort(([a], [b]) => b.localeCompare(a)));
 const anchorCounts = new Map<string, number>();
 const anchorFor = (event: EventItem) => {
+  if (event.id) return event.id;
   const source = `${event.date}-${event.heading}`
     .toLocaleLowerCase('lv')
     .normalize('NFD')
@@ -155,6 +174,7 @@ const anchorFor = (event: EventItem) => {
               <ChevronDown class="project-event-chevron" size={18} />
             </summary>
             <div class="project-event-body">
+              {event.markdown && <SheetMarkdown text={event.markdown} />}
               {event.blocks.length > 0 && <div class="project-event-copy">{event.blocks.map((block) => <LegacyProjectBlock block={block} />)}</div>}
               {event.images.length > 0 && <div class="project-event-gallery">{event.images.map((image) => <LegacyProjectBlock block={image} />)}</div>}
             </div>
