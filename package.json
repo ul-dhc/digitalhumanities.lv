@@ -12,7 +12,7 @@
     "sync:data": "node scripts/sync-google-sheets.mjs",
     "prebuild": "node scripts/sync-google-sheets.mjs",
     "build": "astro build",
-    "postbuild": "node scripts/generate-redirect-pages.mjs && node scripts/apply-base-path.mjs",
+    "postbuild": "node scripts/generate-redirect-pages.mjs && node scripts/apply-base-path.mjs && node scripts/write-deployment-version.mjs",
     "preview": "astro preview"
   },
   "dependencies": {

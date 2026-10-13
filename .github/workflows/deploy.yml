@@ -20,6 +20,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
@@ -34,9 +35,13 @@ jobs:
           node-version: 22
           package-manager: pnpm@11.9.0
 
+      - name: Check import and publication behaviour
+        run: node --test scripts/*.test.mjs
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     environment:
       name: github-pages
@@ -46,3 +51,9 @@ jobs:
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Verify the published version
+        env:
+          SITE_URL: https://digitalhumanities.lv
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: node scripts/verify-deployment.mjs

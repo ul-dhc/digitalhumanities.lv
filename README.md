@@ -30,3 +30,17 @@ without login. Environment overrides: `GOOGLE_SHEETS_CONTENT_ID`,
 The deployment workflow rebuilds on pushes to `main` and every six hours.
 New tab support becomes live after these code changes are merged to `main`.
 Run `node --test scripts/sync-google-sheets.test.mjs` and `pnpm build` to verify.
+
+## Publishing reliability
+
+The newest deployment cancels an older run in the same `pages` concurrency group.
+Builds have a 10-minute execution limit; deployment and live-version verification
+have a 5-minute limit. Google requests have 30-second timeouts and up to three
+attempts for transient failures. Invalid or inaccessible data stops publication
+instead of replacing the live site with incomplete content.
+
+Every build writes `/version.json` with its Git commit and build time. The deployment
+job verifies this file on the public domain before reporting success. Scheduled
+builds keep the same commit but receive a new build time and fresh spreadsheet data.
+GitHub-hosted runner queueing and environment approvals are separate from job
+execution timeouts; cancel an obsolete blocked run in Actions if it blocks the queue.

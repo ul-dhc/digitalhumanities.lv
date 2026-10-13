@@ -11,14 +11,14 @@ const csv = rows => [headers, ...rows.map(row => headers.map(key => row[key] ?? 
 const sheet = rows => headers.join(',') + '\n' + csv(rows).split('\n').slice(1).join('\n');
 const row = overrides => ({ language: 'lv', translation_id: 'test', content_type: 'news', title: 'Test', slug: 'test', published_at: '2026-10-13', status: 'published', ...overrides });
 
-async function run(projects, seminars, malformed = false) {
+async function run(projects, seminars, malformed = false, firstStatus = 0) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'dh-sync-'));
   try {
     await fs.mkdir(path.join(dir, 'scripts'));
     await fs.mkdir(path.join(dir, 'src/data'), { recursive: true });
     await fs.copyFile(new URL('../src/data/institutions.json', import.meta.url), path.join(dir, 'src/data/institutions.json'));
     const responses = { '2026101301': malformed ? '<html>Sign in</html>' : sheet(projects), '2026101302': sheet(seminars), '548994246': sheet([]), '341542364': sheet([]) };
-    const mock = `globalThis.fetch = async input => { const url = new URL(input); if (url.hostname === 'script.google.com') return new Response(JSON.stringify({ok:true,data:[]}), {headers:{'content-type':'application/json'}}); return new Response(${JSON.stringify(responses)}[url.searchParams.get('gid')], {headers:{'content-type':'text/csv'}}); };\n`;
+    const mock = `let attempts = 0; globalThis.fetch = async (input, options) => { if (!options.signal) throw new Error('Missing request timeout'); const url = new URL(input); if (url.searchParams.get('gid') === '2026101301' && ${firstStatus} && attempts++ === 0) return new Response('Temporary failure', {status:${firstStatus || 503}}); if (url.hostname === 'script.google.com') return new Response(JSON.stringify({ok:true,data:[]}), {headers:{'content-type':'application/json'}}); return new Response(${JSON.stringify(responses)}[url.searchParams.get('gid')], {headers:{'content-type':'text/csv'}}); };\n`;
     const source = await fs.readFile(new URL('./sync-google-sheets.mjs', import.meta.url), 'utf8');
     await fs.writeFile(path.join(dir, 'scripts/sync.mjs'), mock + source);
     const result = spawnSync(process.execPath, [path.join(dir, 'scripts/sync.mjs')], { encoding: 'utf8' });
@@ -41,6 +41,17 @@ test('imports bilingual project updates and seminar details; ignores empty check
   assert.equal(output.seminars[0].registration_url, 'https://example.com/register');
   assert.equal(output.entries[0].record_id, 'workshop-lv');
   assert.match(output.entries[0].archive_url, /\/lv\/seminari\/#workshop$/);
+});
+
+test('recovers from transient Google failure, while access errors fail immediately', async () => {
+  const recovered = await run([row({})], [], false, 503);
+  assert.equal(recovered.result.status, 0, recovered.result.stderr);
+  assert.equal(recovered.projects.length, 1);
+  assert.match(recovered.result.stderr, /atkārtoju/);
+  const denied = await run([row({})], [], false, 403);
+  assert.notEqual(denied.result.status, 0);
+  assert.match(denied.result.stderr, /HTTP 403/);
+  assert.doesNotMatch(denied.result.stderr, /atkārtoju/);
 });
 
 test('keeps draft status and rejects a non-CSV response instead of silently clearing data', async () => {

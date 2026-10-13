@@ -74,13 +74,30 @@ function parseCsv(text) {
     .map(values => Object.fromEntries(headers.map((header, index) => [header.trim(), values[index]?.trim() || ''])));
 }
 
+async function fetchSource(url, label, options = {}) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await fetch(url, { ...options, signal: AbortSignal.timeout(30000) });
+      if (!response.ok) {
+        const error = new Error(`${label}: HTTP ${response.status}.`);
+        error.permanent = response.status < 500 && response.status !== 429;
+        throw error;
+      }
+      // Read the body while the same timeout is still active.
+      return { text: await response.text(), contentType: response.headers.get('content-type') || '' };
+    } catch (error) {
+      if (error.permanent || attempt === 3) throw error;
+      console.warn(`${label}: mēģinājums ${attempt}/3 neizdevās (${error.message}); atkārtoju.`);
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+    }
+  }
+}
+
 async function fetchSheet(gid, label, direct = false) {
   const url = direct
     ? `https://docs.google.com/spreadsheets/d/${contentSheetId}/export?format=csv&gid=${gid}`
     : csvUrl(gid);
-  const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
-  if (!response.ok) throw new Error(`${label}: Google Sheets atbildēja ar ${response.status}.`);
-  const text = await response.text();
+  const { text } = await fetchSource(url, label);
   if (!text.replace(/^\uFEFF/, '').startsWith('record_id,')) {
     throw new Error(`${label}: nav saņemta paredzētā CSV galvene.`);
   }
@@ -95,28 +112,24 @@ async function fetchResourceSheetDirectly() {
   url.searchParams.set('tqx', 'out:csv');
   url.searchParams.set('sheet', resourceSheetName);
   url.searchParams.set('_', Date.now().toString());
-  const response = await fetch(url, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`Resursi&Tulkojumi: Google Sheets atbildēja ar ${response.status}.`);
-  const records = parseCsv(await response.text());
+  const { text } = await fetchSource(url, 'Resursi&Tulkojumi', { cache: 'no-store' });
+  const records = parseCsv(text);
   console.log(`Resursi&Tulkojumi: saņemtas ${records.length} datu rindas.`);
   return records;
 }
 
 async function fetchResourceSheetFromAppsScript() {
   const url = new URL(resourceAppsScriptUrl);
-  const response = await fetch(url, {
+  const { text, contentType } = await fetchSource(url, 'Apps Script', {
     cache: 'no-store',
     redirect: 'follow',
     headers: { accept: 'application/json' },
   });
-  if (!response.ok) throw new Error(`Apps Script atbildēja ar ${response.status}.`);
-
-  const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     throw new Error(`Apps Script neatgrieza JSON (${contentType || 'satura tips nav norādīts'}).`);
   }
 
-  const payload = await response.json();
+  const payload = JSON.parse(text);
   if (!payload?.ok) throw new Error(payload?.error || 'Apps Script atgrieza kļūdu.');
   if (!Array.isArray(payload.data)) throw new Error('Apps Script atbildē nav data masīva.');
   console.log(`Resursi&Tulkojumi (Apps Script): saņemtas ${payload.data.length} datu rindas.`);
