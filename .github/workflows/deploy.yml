@@ -46,6 +46,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Check out deployment verification script
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
