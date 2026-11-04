@@ -5,17 +5,24 @@ import { bssdhYears } from '../data/bssdh';
 interface Props { lang:'lv'|'en'; }
 const { lang } = Astro.props;
 const lv = lang === 'lv';
-const current = bssdhYears[0];
 ---
-<BaseLayout title="BSSDH – Baltic Summer School of Digital Humanities" description={lv ? 'Baltijas digitālo humanitāro zinātņu vasaras skola.' : 'Baltic Summer School of Digital Humanities.'} lang={lang} alternateUrl={lv ? '/en/bssdh/' : '/lv/bssdh/'}>
+<BaseLayout title="BSSDH – Baltic Summer School of Digital Humanities" description={lv ? 'BSSDH 2027: 26.–30. jūlijā Latvijas Nacionālās bibliotēkas Konferenču centrā, Rīgā.' : 'BSSDH 2027: 26–30 July at the Conference Centre of the National Library of Latvia, Riga.'} lang={lang} alternateUrl={lv ? '/en/bssdh/' : '/lv/bssdh/'}>
   <div class="bssdh-page">
     <div class="shell"><HomeBackLink lang={lang} /></div>
     <header class="bssdh-hero shell">
-      <div class="bssdh-hero-copy"><p class="event-kicker">BSSDH · SINCE 2018</p><h1>Baltic Summer School of Digital Humanities</h1><p class="lead">{lv ? 'Starptautiska intensīva vasaras skola digitālo pētniecības metožu apguvei humanitāro un sociālo zinātņu pētniekiem, studentiem un kultūras mantojuma profesionāļiem.' : 'An international intensive summer school for researchers and students in the humanities and social sciences, and for cultural heritage professionals learning digital research methods.'}</p><a class="button primary" href={`/${lang}/bssdh/2026/`}>{lv ? 'BSSDH 2026 informācija' : 'Explore BSSDH 2026'} →</a></div>
-      <a class="bssdh-current-card" href={`/${lang}/bssdh/2026/`}><img src={current.image} alt="BSSDH 2026" /><div><span>{current.dates}</span><h2>{current.theme}</h2><strong>{lv ? '8. vasaras skola' : '8th summer school'} →</strong></div></a>
+      <div class="bssdh-hero-copy"><p class="event-kicker">BSSDH · SINCE 2018</p><h1>Baltic Summer School of Digital Humanities</h1><p class="lead">{lv ? 'Starptautiska intensīva vasaras skola digitālo pētniecības metožu apguvei humanitāro un sociālo zinātņu pētniekiem, studentiem un kultūras mantojuma profesionāļiem.' : 'An international intensive summer school for researchers and students in the humanities and social sciences, and for cultural heritage professionals learning digital research methods.'}</p><a class="button" href="#archive">{lv ? 'Iepriekšējās vasaras skolas' : 'Explore past editions'} →</a></div>
+      <section class="bssdh-announcement" aria-labelledby="bssdh-next-title">
+        <p class="bssdh-save-date">{lv ? 'Saglabā datumu' : 'Save the date'}</p>
+        <h2 id="bssdh-next-title">BSSDH <span>2027</span></h2>
+        <dl class="bssdh-next-facts">
+          <div><dt>{lv ? 'Norises laiks' : 'Dates'}</dt><dd><time datetime="2027-07-26">{lv ? '26.' : '26'}</time>–<time datetime="2027-07-30">{lv ? '30. jūlijs, 2027' : '30 July 2027'}</time></dd></div>
+          <div><dt>{lv ? 'Norises vieta' : 'Venue'}</dt><dd>{lv ? 'Latvijas Nacionālās bibliotēkas Konferenču centrs' : 'National Library of Latvia, Conference Centre'}<span>{lv ? 'Rīga, Latvija' : 'Riga, Latvia'}</span></dd></div>
+        </dl>
+        <p class="bssdh-next-note">{lv ? 'Vasaras skolas tēmu, programmu un informāciju par pieteikšanos publicēsim vēlāk.' : 'The summer school theme, programme and application details will be announced later.'}</p>
+      </section>
     </header>
     <section class="shell bssdh-about"><h2>{lv ? 'Par BSSDH' : 'About BSSDH'}</h2><div><p>{lv ? 'Baltijas digitālo humanitāro zinātņu vasaras skola kopš 2018. gada Rīgā veido mācību un sadarbības vidi, kurā digitālās humanitārās zinātnes tiek apgūtas lekcijās, praktiskās darbnīcās un kopīgā pieredzes apmaiņā.' : 'Since 2018, the Baltic Summer School of Digital Humanities has created a learning and collaboration environment in Riga where digital humanities are explored through lectures, practical workshops and peer exchange.'}</p><p>{lv ? 'Programmā nav nepieciešamas priekšzināšanas programmēšanā. Tās tēmas katru gadu mainās – no teksta ieguves, programmēšanas un datu vizualizācijas līdz vēsturiskajiem tīkliem, lielajiem valodu modeļiem un kultūras datu analītikai.' : 'No prior programming experience is required. The annual themes range from text mining, coding and data visualisation to historical networks, large language models and cultural data analytics.'}</p></div></section>
-    <section class="shell bssdh-archive">
+    <section id="archive" class="shell bssdh-archive">
       <header><h2>{lv ? 'Arhīvs' : 'Archive'}</h2></header>
       <div class="bssdh-archive-list">
         {bssdhYears.map((item) =>
@@ -30,3 +37,17 @@ const current = bssdhYears[0];
     </section>
   </div>
 </BaseLayout>
+
+<style>
+  .bssdh-announcement { padding: clamp(28px, 4vw, 48px); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 14px; background: var(--accent-soft); }
+  .bssdh-save-date { margin: 0 0 28px; color: var(--accent); font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  .bssdh-announcement h2 { margin: 0 0 32px; font-size: 1.65rem; line-height: 1.05; }
+  .bssdh-announcement h2 span { display: block; margin-top: 8px; color: var(--accent); font-size: clamp(5rem, 8vw, 7.5rem); letter-spacing: -.065em; }
+  .bssdh-next-facts { margin: 0; }
+  .bssdh-next-facts > div { padding-block: 18px; border-top: 1px solid var(--line); }
+  .bssdh-next-facts dt { margin-bottom: 6px; color: var(--muted); font-size: .75rem; }
+  .bssdh-next-facts dd { margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.5; }
+  .bssdh-next-facts dd span { display: block; margin-top: 4px; color: var(--muted); font-size: .85rem; font-weight: 400; }
+  .bssdh-next-note { margin: 8px 0 0; color: var(--muted); font-size: .83rem; line-height: 1.65; }
+  #archive { scroll-margin-top: 100px; }
+</style>
