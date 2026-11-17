@@ -54,9 +54,9 @@ const counterpartByTranslationId = new Map(
 const counterpartBySlug = new Map(otherLanguageItems.map(item => [item.slug, item.archive_url]));
 const dateFormatter = new Intl.DateTimeFormat(lang === 'lv' ? 'lv-LV' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 const labels = lang === 'lv' ? {
-  search: 'Meklēt arhīvā', found: 'ieraksti', share: 'Kopīgošanas saite', open: 'Ārējā saite', empty: 'Nekas netika atrasts.', latest: 'Jaunākā ziņa', copy: 'Kopēt saiti', copied: 'Saite nokopēta', allYears: 'Visi gadi', byTime: 'Norises pa gadiem', perPage: 'Vienā lapā', previous: 'Iepriekšējā', next: 'Nākamā', page: 'Lapa', of: 'no', allMonths: 'Viss gads',
+  search: 'Meklēt arhīvā', found: 'ieraksti', share: 'Kopīgošanas saite', open: 'Ārējā saite', empty: 'Nekas netika atrasts.', latest: 'Jaunākā ziņa', readMore: 'Lasīt vairāk', readLess: 'Rādīt mazāk', copy: 'Kopēt saiti', copied: 'Saite nokopēta', allYears: 'Visi gadi', byTime: 'Norises pa gadiem', perPage: 'Vienā lapā', previous: 'Iepriekšējā', next: 'Nākamā', page: 'Lapa', of: 'no', allMonths: 'Viss gads',
 } : {
-  search: 'Search the archive', found: 'items', share: 'Share link', open: 'External link', empty: 'No items found.', latest: 'Latest update', copy: 'Copy link', copied: 'Link copied', allYears: 'All years', byTime: 'Events over time', perPage: 'Per page', previous: 'Previous', next: 'Next', page: 'Page', of: 'of', allMonths: 'Full year',
+  search: 'Search the archive', found: 'items', share: 'Share link', open: 'External link', empty: 'No items found.', latest: 'Latest update', readMore: 'Read more', readLess: 'Show less', copy: 'Copy link', copied: 'Link copied', allYears: 'All years', byTime: 'Events over time', perPage: 'Per page', previous: 'Previous', next: 'Next', page: 'Page', of: 'of', allMonths: 'Full year',
 };
 const years = [...new Set(items.map(item => new Date(item.published_at).getFullYear()))].sort((a, b) => b - a);
 const timeline = years.map(year => ({
@@ -155,6 +155,12 @@ const renderMarkdown = (source: string) => {
       {items.map((item, index) => {
         const imageUrl = item.image_url || item.image_url_new || item.image_url_original;
         const isPinned = index === 0;
+        const bodyHtml = renderMarkdown(item.body_markdown);
+        const paragraphEnds = [...bodyHtml.matchAll(/<\/p>/g)];
+        const previewEnd = paragraphEnds[1] ? paragraphEnds[1].index! + 4 : bodyHtml.length;
+        const hasMore = bodyHtml.replace(/<[^>]*>/g, '').length > 1200 && previewEnd < bodyHtml.length;
+        const previewHtml = hasMore ? bodyHtml.slice(0, previewEnd) : bodyHtml;
+        const remainingHtml = hasMore ? bodyHtml.slice(previewEnd) : '';
         const showExternalAction = Boolean(item.external_url && !item.body_markdown.includes(item.external_url));
         return (
           <details class:list={['archive-item', { 'is-pinned': isPinned }]} id={item.slug} data-archive-item data-period={`${new Date(item.published_at).getFullYear()}-${new Date(item.published_at).getMonth() + 1}`} data-search={`${item.title} ${item.summary}`.toLowerCase()} data-counterpart-url={counterpartByTranslationId.get(item.translation_id) || counterpartBySlug.get(item.slug) || ''} open={index === 0}>
@@ -165,7 +171,11 @@ const renderMarkdown = (source: string) => {
             </summary>
             <div class="archive-body">
               {imageUrl && <img src={imageUrl} alt={item.image_alt || ''} loading="lazy" />}
-              <div class="archive-copy" set:html={renderMarkdown(item.body_markdown)}></div>
+              <div class="archive-copy" set:html={previewHtml}></div>
+              {hasMore && <details class="archive-more">
+                <summary><span class="archive-more-closed">{labels.readMore}</span><span class="archive-more-open">{labels.readLess}</span></summary>
+                <div class="archive-copy" set:html={remainingHtml}></div>
+              </details>}
               {showExternalAction && <div class="archive-actions"><a href={item.external_url} target="_blank" rel="noopener"><ExternalLink size={16} />{labels.open}</a></div>}
             </div>
           </details>

@@ -946,6 +946,12 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 .archive-copy li { margin-bottom: 8px; padding-left: 4px; }
 .archive-copy h3 { margin: 30px 0 12px; font-size: 1.05rem; }
 .archive-copy hr { margin: 30px 0; border: 0; border-top: 1px solid var(--line); }
+.archive-more > summary { width: fit-content; min-height: 44px; padding: 9px 14px; margin: 4px 0 20px; border: 1px solid var(--line); border-radius: 6px; color: var(--accent); background: var(--surface); font-size: .9rem; font-weight: 600; cursor: pointer; list-style: none; }
+.archive-more > summary::-webkit-details-marker { display: none; }
+.archive-more > summary:hover { background: var(--accent-soft); }
+.archive-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.archive-more-open, .archive-more[open] > summary .archive-more-closed { display: none; }
+.archive-more[open] > summary .archive-more-open { display: inline; }
 .archive-actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px; }
 .archive-actions a { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); font-size: .85rem; font-weight: 600; }
 .archive-empty { padding: 54px 0; color: var(--muted); }
