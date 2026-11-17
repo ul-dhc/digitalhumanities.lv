@@ -1,5 +1,5 @@
 ---
-import { CalendarDays, Check, ExternalLink, Link2, Pin, Search } from '@lucide/astro';
+import { CalendarDays, Check, ExternalLink, Link2, Search } from '@lucide/astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeBackLink from './HomeBackLink.astro';
 import archiveData from '../data/archive.json';
@@ -54,9 +54,9 @@ const counterpartByTranslationId = new Map(
 const counterpartBySlug = new Map(otherLanguageItems.map(item => [item.slug, item.archive_url]));
 const dateFormatter = new Intl.DateTimeFormat(lang === 'lv' ? 'lv-LV' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 const labels = lang === 'lv' ? {
-  search: 'Meklēt arhīvā', found: 'ieraksti', share: 'Kopīgošanas saite', open: 'Ārējā saite', empty: 'Nekas netika atrasts.', pinned: 'Piesprausts', copy: 'Kopēt saiti', copied: 'Saite nokopēta', allYears: 'Visi gadi', byTime: 'Norises pa gadiem', perPage: 'Vienā lapā', previous: 'Iepriekšējā', next: 'Nākamā', page: 'Lapa', of: 'no', allMonths: 'Viss gads',
+  search: 'Meklēt arhīvā', found: 'ieraksti', share: 'Kopīgošanas saite', open: 'Ārējā saite', empty: 'Nekas netika atrasts.', copy: 'Kopēt saiti', copied: 'Saite nokopēta', allYears: 'Visi gadi', byTime: 'Norises pa gadiem', perPage: 'Vienā lapā', previous: 'Iepriekšējā', next: 'Nākamā', page: 'Lapa', of: 'no', allMonths: 'Viss gads',
 } : {
-  search: 'Search the archive', found: 'items', share: 'Share link', open: 'External link', empty: 'No items found.', pinned: 'Pinned', copy: 'Copy link', copied: 'Link copied', allYears: 'All years', byTime: 'Events over time', perPage: 'Per page', previous: 'Previous', next: 'Next', page: 'Page', of: 'of', allMonths: 'Full year',
+  search: 'Search the archive', found: 'items', share: 'Share link', open: 'External link', empty: 'No items found.', copy: 'Copy link', copied: 'Link copied', allYears: 'All years', byTime: 'Events over time', perPage: 'Per page', previous: 'Previous', next: 'Next', page: 'Page', of: 'of', allMonths: 'Full year',
 };
 const years = [...new Set(items.map(item => new Date(item.published_at).getFullYear()))].sort((a, b) => b - a);
 const timeline = years.map(year => ({
@@ -159,7 +159,7 @@ const renderMarkdown = (source: string) => {
         return (
           <details class:list={['archive-item', { 'is-pinned': isPinned }]} id={item.slug} data-archive-item data-period={`${new Date(item.published_at).getFullYear()}-${new Date(item.published_at).getMonth() + 1}`} data-search={`${item.title} ${item.summary}`.toLowerCase()} data-counterpart-url={counterpartByTranslationId.get(item.translation_id) || counterpartBySlug.get(item.slug) || ''} open={index === 0}>
             <summary>
-              <div class="archive-date"><CalendarDays size={17} /><time datetime={item.published_at}>{dateFormatter.format(new Date(item.published_at))}</time>{isPinned && <span class="archive-pinned"><Pin size={13} />{labels.pinned}</span>}</div>
+              <div class="archive-date"><CalendarDays size={17} /><time datetime={item.published_at}>{dateFormatter.format(new Date(item.published_at))}</time></div>
               <div class="archive-title-row"><h2>{item.title}</h2><button class="archive-copy-link" type="button" data-archive-copy={item.slug} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label={labels.copy} title={labels.copy}><Link2 class="link-icon" size={17} aria-hidden="true" /><Check class="check-icon" size={17} aria-hidden="true" /></button></div>
               <p>{cleanSummary(item.summary)}</p>
             </summary>
