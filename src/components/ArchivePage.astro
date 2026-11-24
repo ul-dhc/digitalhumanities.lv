@@ -1,5 +1,6 @@
 ---
 import { CalendarDays, Check, ExternalLink, Link2, Pin, Search } from '@lucide/astro';
+import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeBackLink from './HomeBackLink.astro';
 import archiveData from '../data/archive.json';
@@ -76,13 +77,18 @@ const escapeHtml = (value: string) => value
 const safeUrl = (value: string) => /^(?:https?:\/\/|mailto:|\/|\.\.?\/)/i.test(value.trim()) ? value.trim() : '#';
 const cleanSummary = (value: string) => value.replace(/&amp;(?:amp;)+/gi, '&');
 
+const iconRenderer = await AstroContainer.create();
+const externalLinkIcon = await iconRenderer.renderToString(ExternalLink, {
+  props: { size: 13, 'aria-hidden': 'true', class: 'inline-link-icon' },
+});
+
 const renderInline = (source: string) => {
   const links: string[] = [];
   const withTokens = source.replace(/\[([\s\S]*?)\]\(([^)\s]+)\)/g, (_match, rawLabel, rawUrl) => {
     const url = safeUrl(rawUrl);
     const label = String(rawLabel).replace(/\s+/g, ' ').trim() || rawUrl;
     const external = /^https?:\/\//i.test(url);
-    links.push(`<a href="${escapeHtml(url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeHtml(label)}${external ? '<span aria-hidden="true">↗</span>' : ''}</a>`);
+    links.push(`<a href="${escapeHtml(url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeHtml(label)}${external ? externalLinkIcon : ''}</a>`);
     return `@@ARCHIVE_LINK_${links.length - 1}@@`;
   });
   return escapeHtml(withTokens)

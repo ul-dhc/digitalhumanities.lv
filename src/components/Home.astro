@@ -2,6 +2,7 @@
 import { ArrowRight, CalendarDays, Database, FolderKanban, GraduationCap, Mic2 } from '@lucide/astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PixelDrift from './PixelDrift.astro';
+import UpcomingEvent from './UpcomingEvent.astro';
 
 interface Props { lang: 'lv' | 'en'; }
 const { lang } = Astro.props;
@@ -37,6 +38,7 @@ const c = lv ? {
     </div>
     <PixelDrift />
   </section>
+  <UpcomingEvent lang={lang} />
   <section class="pathways shell" aria-label={lv ? 'Galvenās sadaļas' : 'Main sections'}>
     {c.paths.map(([title, text, href, Icon]) => <a class="pathway" href={href as string}><Icon size={23} stroke-width={1.7} /><span><strong>{title}</strong><small>{text}</small></span><ArrowRight class="path-arrow" size={20} /></a>)}
   </section>
