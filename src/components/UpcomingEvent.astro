@@ -19,8 +19,9 @@ const moreUrl = (slug: string) => `${lv ? '/lv/aktualitates/' : '/en/updates/'}#
     const location = event.location || event.body_markdown?.match(/📍\s*([^\n]+)/)?.[1]?.replaceAll('**', '').trim() || '';
     const registrationUrl = event.registration_url || event.body_markdown?.match(/\[(?:Reģistrācija|Reģistrēties|Registration|Register)\]\((https?:\/\/[^\s)]+)\)/i)?.[1] || '';
     return <article class:list={['upcoming-event-card', { 'without-poster': !event.image_url }]} data-upcoming-event data-event-date={event.event_date.slice(0, 10)} hidden={index !== 0}>
+    <span class="upcoming-event-pin" role="img" aria-label={lv ? 'Izcelts pasākums' : 'Featured event'} title={lv ? 'Izcelts pasākums' : 'Featured event'}><Pin size={18} aria-hidden="true" /></span>
     <div class="upcoming-event-copy">
-      <div class="upcoming-event-meta"><span><CalendarDays size={17} aria-hidden="true" /><time datetime={event.event_date}>{dateFormatter.format(new Date(event.event_date))}</time></span>{eventTime && <span><Clock3 size={17} aria-hidden="true" />{eventTime}</span>}<span class="upcoming-event-pin" role="img" aria-label={lv ? 'Izcelts pasākums' : 'Featured event'} title={lv ? 'Izcelts pasākums' : 'Featured event'}><Pin size={18} aria-hidden="true" /></span></div>
+      <div class="upcoming-event-meta"><span><CalendarDays size={17} aria-hidden="true" /><time datetime={event.event_date}>{dateFormatter.format(new Date(event.event_date))}</time></span>{eventTime && <span><Clock3 size={17} aria-hidden="true" />{eventTime}</span>}</div>
       <h2>{event.title}</h2>
       <p class="upcoming-event-summary">{event.summary}</p>
       {location && <p class="upcoming-event-location"><MapPin size={17} aria-hidden="true" /><span>{location}</span></p>}
