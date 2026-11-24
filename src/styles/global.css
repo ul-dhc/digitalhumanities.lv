@@ -1315,7 +1315,9 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 
 /* The next upcoming event, supplied by the content spreadsheet. */
 .upcoming-event { margin-block: 0 48px; scroll-margin-top: 100px; }
-.upcoming-event-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .55fr); gap: 44px; padding: clamp(24px, 4vw, 42px); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; background: var(--surface); }
+.upcoming-event-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .55fr); gap: 44px; padding: clamp(24px, 4vw, 42px); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease; }
+.upcoming-event-card:hover, .upcoming-event-card:focus-within { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 4%, var(--surface)); box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 8%, transparent); }
+.upcoming-event-pin { margin-left: auto; width: 28px; height: 28px; justify-content: center; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
 .upcoming-event-card.without-poster { grid-template-columns: 1fr; }
 .upcoming-event-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--muted); font-size: .83rem; }
 .upcoming-event-meta > span, .upcoming-event-location { display: flex; align-items: center; gap: 8px; }
