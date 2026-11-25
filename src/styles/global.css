@@ -1328,7 +1328,7 @@ h1 { margin: 0; max-width: 760px; font-size: clamp(2.7rem, 4.3vw, 4.25rem); line
 .upcoming-event-location svg { margin-top: 3px; }
 .upcoming-event-card .button-row { margin-top: 26px; flex-wrap: wrap; }
 .upcoming-event-poster { display: flex; align-items: center; justify-content: center; min-width: 0; }
-.upcoming-event-poster img { display: block; width: 100%; max-height: 310px; object-fit: contain; border-radius: 6px; }
+.upcoming-event-poster img, .upcoming-event-poster video { display: block; width: 100%; max-height: 310px; object-fit: contain; border-radius: 6px; }
 @media (max-width: 720px) {
   .upcoming-event-card { grid-template-columns: 1fr; gap: 26px; }
   .upcoming-event-poster { max-width: 360px; }

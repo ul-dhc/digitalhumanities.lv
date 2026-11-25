@@ -18,7 +18,8 @@ const moreUrl = (slug: string) => `${lv ? '/lv/aktualitates/' : '/en/updates/'}#
     const eventTime = event.event_time || event.body_markdown?.match(/\b\d{1,2}[.:]\d{2}\s*[–-]\s*\d{1,2}[.:]\d{2}\b/)?.[0] || '';
     const location = event.location || event.body_markdown?.match(/📍\s*([^\n]+)/)?.[1]?.replaceAll('**', '').trim() || '';
     const registrationUrl = event.registration_url || event.body_markdown?.match(/\[(?:Reģistrācija|Reģistrēties|Registration|Register)\]\((https?:\/\/[^\s)]+)\)/i)?.[1] || '';
-    return <article class:list={['upcoming-event-card', { 'without-poster': !event.image_url }]} data-upcoming-event data-event-date={event.event_date.slice(0, 10)} hidden={index !== 0}>
+    const videoUrl = event.translation_id === 'clarin-seminars-2026' ? '/assets/seminars/2026-12-09-clarin.mp4' : '';
+    return <article class:list={['upcoming-event-card', { 'without-poster': !event.image_url && !videoUrl }]} data-upcoming-event data-event-date={event.event_date.slice(0, 10)} hidden={index !== 0}>
     <span class="upcoming-event-pin" role="img" aria-label={lv ? 'Izcelts pasākums' : 'Featured event'} title={lv ? 'Izcelts pasākums' : 'Featured event'}><Pin size={18} aria-hidden="true" /></span>
     <div class="upcoming-event-copy">
       <div class="upcoming-event-meta"><span><CalendarDays size={17} aria-hidden="true" /><time datetime={event.event_date}>{dateFormatter.format(new Date(event.event_date))}</time></span>{eventTime && <span><Clock3 size={17} aria-hidden="true" />{eventTime}</span>}</div>
@@ -30,7 +31,12 @@ const moreUrl = (slug: string) => `${lv ? '/lv/aktualitates/' : '/en/updates/'}#
         {registrationUrl && <a class="button primary" href={registrationUrl} target="_blank" rel="noopener noreferrer">{lv ? 'Reģistrēties' : 'Register'}<ExternalLink size={17} aria-hidden="true" /></a>}
       </div>
     </div>
-    {event.image_url && <a class="upcoming-event-poster" href={moreUrl(event.slug)} aria-label={event.title}><img src={event.image_url} alt={event.image_alt || event.title} loading="lazy" referrerpolicy="no-referrer" /></a>}
+    {videoUrl ? <div class="upcoming-event-poster">
+      <video controls playsinline preload="none" poster={event.image_url} aria-label={lv ? 'CLARIN semināra video' : 'CLARIN workshop video'}>
+        <source src={videoUrl} type="video/mp4" />
+        <a href={videoUrl}>{lv ? 'Lejupielādēt video' : 'Download video'}</a>
+      </video>
+    </div> : event.image_url && <a class="upcoming-event-poster" href={moreUrl(event.slug)} aria-label={event.title}><img src={event.image_url} alt={event.image_alt || event.title} loading="lazy" referrerpolicy="no-referrer" /></a>}
   </article>;
   })}
 </section>}
@@ -41,7 +47,10 @@ const moreUrl = (slug: string) => `${lv ? '/lv/aktualitates/' : '/en/updates/'}#
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Riga', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const cards = [...section.querySelectorAll<HTMLElement>('[data-upcoming-event]')];
     const next = cards.find(card => (card.dataset.eventDate || '') >= today);
-    cards.forEach(card => { card.hidden = card !== next; });
+    cards.forEach(card => {
+      card.hidden = card !== next;
+      if (card.hidden) card.querySelector('video')?.pause();
+    });
     section.hidden = !next;
   };
   updateUpcomingEvent();
